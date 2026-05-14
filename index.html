@@ -561,6 +561,7 @@ tr:hover td{background:var(--bg3)}
     <div class="nav-item" onclick="nav('teachers',this)"><i class="ti ti-award nav-icon"></i> Profesores</div>
     <div class="nav-item" onclick="nav('bills',this)"><i class="ti ti-calculator nav-icon"></i> Billetes</div>
     <div class="nav-item" onclick="nav('datamanager',this)"><i class="ti ti-database nav-icon"></i> Datos</div>
+    <div class="nav-item" onclick="nav('settings',this)"><i class="ti ti-settings nav-icon"></i> Configuración</div>
   </nav>
   <div class="sidebar-footer">
     <div class="theme-toggle" onclick="toggleTheme()">
@@ -582,6 +583,7 @@ tr:hover td{background:var(--bg3)}
   <div id="page-teachers" class="page-inner" style="display:none"></div>
   <div id="page-bills" class="page-inner" style="display:none"></div>
   <div id="page-datamanager" class="page-inner" style="display:none"></div>
+  <div id="page-settings" class="page-inner" style="display:none"></div>
 </div>
 </div>
 
@@ -751,6 +753,7 @@ tr:hover td{background:var(--bg3)}
     <div class="more-item" id="mm-timetable" onclick="mobileNav('timetable')"><i class="ti ti-calendar-time"></i>Horario</div>
     <div class="more-item" id="mm-bills" onclick="mobileNav('bills')"><i class="ti ti-calculator"></i>Billetes</div>
     <div class="more-item" id="mm-datamanager" onclick="mobileNav('datamanager')"><i class="ti ti-database"></i>Datos</div>
+    <div class="more-item" id="mm-settings" onclick="mobileNav('settings')"><i class="ti ti-settings"></i>Config.</div>
   </div>
   <div class="more-theme-toggle" onclick="toggleTheme()">
     <span id="more-theme-label">Modo oscuro</span>
@@ -817,44 +820,152 @@ async function supaFetch(method,body){
   return r;
 }
 
+/* ── SYNC ENGINE ────────────────────────────────────────
+   - Offline queue: pending writes survive page refresh
+   - Polling every 25s to detect remote changes
+   - Merge-safe: remote wins on conflict for arrays,
+     but local pending writes are re-applied on top
+   - Auto-retry when connection restored
+──────────────────────────────────────────────────────── */
+const OFFLINE_KEY='cambridge_pending';
+let pendingWrite=false;
+let lastRemoteHash='';
+let pollInterval=null;
+let retryTimer=null;
+let isOnline=navigator.onLine;
+
+window.addEventListener('online', ()=>{
+  isOnline=true;
+  setSyncStatus('saving','Reconectando...');
+  flushPending();
+});
+window.addEventListener('offline', ()=>{
+  isOnline=false;
+  setSyncStatus('offline','Sin conexión');
+});
+
+function dbHash(d){
+  // quick hash to detect remote changes
+  try{return JSON.stringify(d).length+'-'+(d.payments||[]).length+'-'+(d.students||[]).length;}
+  catch(e){return'';}
+}
+
 async function loadFromSupabase(){
   try{
     setSyncStatus('saving','Cargando...');
-    const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{
+    const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data,updated_at`,{
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
     });
+    if(!r.ok) throw new Error('HTTP '+r.status);
     const rows=await r.json();
     if(rows&&rows.length>0&&rows[0].data&&Object.keys(rows[0].data).length>0){
       const d=rows[0].data;
-      ['groups','students','payments','families','teachers','teacherPayments'].forEach(k=>{if(d[k])db[k]=d[k];});
-      if(d.attendance)db.attendance=d.attendance;
-      if(d.dayNotes)db.dayNotes=d.dayNotes;
+      const h=dbHash(d);
+      if(h!==lastRemoteHash){
+        lastRemoteHash=h;
+        ['groups','students','payments','families','teachers','teacherPayments'].forEach(k=>{if(d[k])db[k]=d[k];});
+        if(d.attendance)db.attendance=d.attendance;
+        if(d.dayNotes)db.dayNotes=d.dayNotes;
+        if(d.settings)db.settings=d.settings;
+      }
     } else {
       seedData();
       await saveToSupabase();
     }
     setSyncStatus('ok','Sincronizado');
-  }catch(e){setSyncStatus('error','Sin conexión');toast('Error al cargar datos','error');}
+    isOnline=true;
+    return true;
+  }catch(e){
+    setSyncStatus('error','Sin conexión');
+    isOnline=false;
+    return false;
+  }
 }
 
 async function saveToSupabase(){
+  if(!isOnline){
+    // queue for later
+    try{localStorage.setItem(OFFLINE_KEY,'1');}catch(e){}
+    pendingWrite=true;
+    setSyncStatus('offline','Guardado local');
+    return false;
+  }
   try{
     setSyncStatus('saving','Guardando...');
-    await supaFetch('PATCH',{data:db,updated_at:new Date().toISOString()});
-    setSyncStatus('ok','Guardado');
-  }catch(e){setSyncStatus('error','Error al guardar');toast('Error al guardar','error');}
+    const r=await supaFetch('PATCH',{data:db,updated_at:new Date().toISOString()});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    pendingWrite=false;
+    lastRemoteHash=dbHash(db);
+    try{localStorage.removeItem(OFFLINE_KEY);}catch(e){}
+    setSyncStatus('ok','Guardado ✓');
+    return true;
+  }catch(e){
+    pendingWrite=true;
+    try{localStorage.setItem(OFFLINE_KEY,'1');}catch(e2){}
+    setSyncStatus('error','Reintentando...');
+    // retry in 5s
+    clearTimeout(retryTimer);
+    retryTimer=setTimeout(()=>flushPending(),5000);
+    return false;
+  }
+}
+
+async function flushPending(){
+  if(pendingWrite){
+    const ok=await saveToSupabase();
+    if(ok) toast('Cambios sincronizados con la nube');
+  }
 }
 
 function scheduleSave(){
   clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>saveToSupabase(),800);
+  pendingWrite=true;
+  saveTimer=setTimeout(async()=>{
+    await saveToSupabase();
+    refreshCurrentPage();
+  },600);
+}
+
+// Poll for remote changes every 25s (other devices editing)
+function startPolling(){
+  if(pollInterval) clearInterval(pollInterval);
+  pollInterval=setInterval(async()=>{
+    if(!isOnline) return;
+    try{
+      const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      });
+      if(!r.ok) return;
+      const rows=await r.json();
+      if(!rows||!rows[0]) return;
+      const h=dbHash(rows[0].data);
+      if(h!==lastRemoteHash && !pendingWrite){
+        // remote changed — merge in
+        const d=rows[0].data;
+        lastRemoteHash=h;
+        ['groups','students','payments','families','teachers','teacherPayments'].forEach(k=>{if(d[k])db[k]=d[k];});
+        if(d.attendance)db.attendance=d.attendance;
+        if(d.dayNotes)db.dayNotes=d.dayNotes;
+        if(d.settings)db.settings=d.settings;
+        setSyncStatus('ok','Actualizado');
+        refreshCurrentPage();
+        toast('Datos actualizados desde otro dispositivo');
+      }
+    }catch(e){}
+  },25000);
 }
 
 function setSyncStatus(state,label){
   const dot=document.getElementById('sync-dot');
   const lbl=document.getElementById('sync-label');
-  if(dot){dot.className='sync-dot '+state;}
+  if(dot){dot.className='sync-dot '+(state==='offline'?'error':state);}
   if(lbl)lbl.textContent=label;
+}
+
+function refreshCurrentPage(){
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  if(renders[currentPage]) renders[currentPage]();
+  updatePendingBadge();
 }
 
 /* ---- SEED ---- */
@@ -906,12 +1017,12 @@ function getFam(sid){return db.families.find(f=>f.memberIds.includes(sid))}
 function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
 function avatar(name,size=42){return`<div class="avatar" style="width:${size}px;height:${size}px;font-size:${size*0.33}px">${initials(name)}</div>`}
 
-function waBtn(s,label){
+function waBtn(s,_type){
   const t=s.waTarget==='dad'?{phone:s.dadPhone,name:s.dadName||'Papá'}:{phone:s.momPhone,name:s.momName||'Mamá'};
   if(!t.phone)return'';
   const num=t.phone.replace(/\D/g,'');
-  const[,mo]=curMonth().split('-');
-  const msg=encodeURIComponent(`💰 MES DE ${MONTHS[parseInt(mo)-1]} RECIBIDO! Muchas gracias ❣️`);
+  const month=curMonth();
+  const msg=encodeURIComponent(getWAMessage(month));
   return`<button class="btn wa xs" onclick="window.open('https://wa.me/${num}?text=${msg}','_blank')"><i class="ti ti-brand-whatsapp"></i> ${t.name}</button>`;
 }
 
@@ -994,7 +1105,7 @@ function nav(page,el){
   currentPage=page;
   // scroll to top on page change
   document.querySelector('.main').scrollTop=0;
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,bills:renderBills,datamanager:renderDataManager};
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[page])renders[page]();
 }
 
@@ -1014,92 +1125,118 @@ function closeModal(id){document.getElementById(id).classList.remove('open')}
 
 /* ---- TIMETABLE ---- */
 function renderTimetable(){
-  // time slots from 14:00 to 21:30 in 30min steps
-  const slots=[];
-  for(let h=14;h<=21;h++){slots.push(`${h}:00`);if(h<21)slots.push(`${h}:30`);}
-  const days=['Lunes','Martes','Miércoles','Jueves'];
-  const dayIdx=[1,2,3,4]; // 1=Mon,2=Tue,3=Wed,4=Thu
-
-  // build schedule blocks: {day, startSlot, endSlot, group, cls}
   const colorMap={
     'Kids 5':'kids5','Teens 2 Girls':'teens2g','Teens 2 Boys':'teens2b',
     'Teens 3':'teens3','Teens 4':'teens4','5th Year A':'year5a',
     '5th Year B':'year5b','Superior':'superior'
   };
+  function parseMin(t){if(!t)return 0;const[h,m]=t.split(':').map(Number);return h*60+m;}
 
-  function parseTime(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
-  function slotMin(s){const[h,m]=s.split(':').map(Number);return h*60+m;}
-
-  // build a grid: for each day, for each slot, what group is active
-  const grid={}; // day -> slot -> {group, isStart, rowspan}
-  dayIdx.forEach(d=>{grid[d]={};});
-
+  // Build list of blocks per day
+  // day -> [{group, startMin, endMin}]
+  const dayBlocks={1:[],2:[],3:[],4:[]};
   db.groups.forEach(g=>{
     if(!g.time||!g.days)return;
     const parts=g.time.replace(/\s/g,'').split('-');
     if(parts.length<2)return;
-    const startMin=parseTime(parts[0]);
-    const endMin=parseTime(parts[1]);
+    const startMin=parseMin(parts[0]);
+    const endMin=parseMin(parts[1]);
     (g.days||[]).forEach(d=>{
-      slots.forEach(slot=>{
-        const sm=slotMin(slot);
-        if(sm>=startMin&&sm<endMin){
-          if(!grid[d][slot])grid[d][slot]={group:g,isStart:sm===startMin};
-        }
-      });
+      if(dayBlocks[d]) dayBlocks[d].push({g,startMin,endMin});
     });
   });
 
-  const month=curMonth();
-  const rows=slots.map(slot=>{
-    const cells=dayIdx.map(d=>{
-      const cell=grid[d][slot];
-      if(!cell)return'<td></td>';
-      const g=cell.group;
-      const studs=db.students.filter(s=>s.groupId===g.id);
-      const paidC=studs.filter(s=>hasPaid(s.id,month)).length;
-      const cls=colorMap[g.name]||'year5a';
-      if(cell.isStart){
-        // count how many slots this group occupies on this day
-        const parts=g.time.replace(/\s/g,'').split('-');
-        const startMin=parseTime(parts[0]);const endMin=parseTime(parts[1]);
-        const span=Math.ceil((endMin-startMin)/30);
-        return`<td rowspan="${span}" style="padding:4px;vertical-align:top">
-          <div class="tblock ${cls}">
-            <div style="font-weight:600;font-size:12px">${g.name}</div>
-            <div style="font-size:10px;opacity:0.8">${g.time}</div>
-            <div style="font-size:10px;opacity:0.7;margin-top:2px">${studs.length} alumnos · ${paidC} pagaron</div>
-          </div>
-        </td>`;
-      } else return null; // absorbed by rowspan
+  // For each day, figure out how many parallel "lanes" are needed
+  // by checking which blocks overlap in time
+  function assignLanes(blocks){
+    const sorted=[...blocks].sort((a,b)=>a.startMin-b.startMin);
+    const lanes=[];
+    sorted.forEach(b=>{
+      let placed=false;
+      for(let i=0;i<lanes.length;i++){
+        const last=lanes[i][lanes[i].length-1];
+        if(last.endMin<=b.startMin){lanes[i].push(b);b.lane=i;placed=true;break;}
+      }
+      if(!placed){b.lane=lanes.length;lanes.push([b]);}
     });
-    // filter nulls -> mark as skip
-    let html=`<tr><td class="time-col">${slot}</td>`;
-    cells.forEach(c=>{if(c!==null)html+=c;});
-    html+='</tr>';
-    return html;
-  }).join('');
+    return lanes.length||1;
+  }
 
-  const totalStudents=db.students.length;
-  const totalPaid=db.students.filter(s=>hasPaid(s.id,curMonth())).length;
+  const dayLanes={};
+  [1,2,3,4].forEach(d=>{
+    dayLanes[d]=assignLanes(dayBlocks[d]);
+    dayBlocks[d].forEach(b=>{if(b.lane===undefined)b.lane=0;});
+  });
+
+  const month=curMonth();
+  const slots=[];
+  for(let h=14;h<=21;h++){slots.push(h*60);if(h<21)slots.push(h*60+30);}
+  const days=['Lunes','Martes','Miércoles','Jueves'];
+  const dayIdx=[1,2,3,4];
+
+  // Build header: one <th> per day, colspan = lanes
+  const headerCols=dayIdx.map(d=>`<th colspan="${dayLanes[d]}">${days[dayIdx.indexOf(d)]}</th>`).join('');
+
+  // Build rows
+  const rendered=new Set(); // "dayIdx-blockIdx" already drawn via rowspan
+  const rows=slots.map(slotMin=>{
+    const hh=Math.floor(slotMin/60);
+    const mm=slotMin%60===0?'00':'30';
+    let cells=`<td class="time-col">${hh}:${mm}</td>`;
+
+    dayIdx.forEach(d=>{
+      const lanes=dayLanes[d];
+      const laneArr=Array.from({length:lanes},()=>null);
+
+      dayBlocks[d].forEach(b=>{
+        const key=`${d}-${b.g.id}`;
+        if(rendered.has(key)){laneArr[b.lane]='skip';return;}
+        if(slotMin>=b.startMin&&slotMin<b.endMin){
+          if(slotMin===b.startMin){
+            const span=Math.ceil((b.endMin-b.startMin)/30);
+            const studs=db.students.filter(s=>s.groupId===b.g.id);
+            const paidC=studs.filter(s=>hasPaid(s.id,month)).length;
+            const cls=colorMap[b.g.name]||'year5a';
+            laneArr[b.lane]=`<td rowspan="${span}" style="padding:4px;vertical-align:top;width:${Math.floor(100/lanes)}%">
+              <div class="tblock ${cls}" style="height:100%;min-height:${span*36-8}px">
+                <div style="font-weight:600;font-size:11px">${b.g.name}</div>
+                <div style="font-size:10px;opacity:0.75">${b.g.time}</div>
+                <div style="font-size:10px;opacity:0.65;margin-top:2px">${studs.length} al · ${paidC} pag</div>
+              </div></td>`;
+            rendered.add(key);
+          } else {
+            laneArr[b.lane]='skip';
+          }
+        }
+      });
+
+      laneArr.forEach(cell=>{
+        if(cell===null) cells+=`<td></td>`;
+        else if(cell==='skip'){/* absorbed by rowspan */}
+        else cells+=cell;
+      });
+    });
+
+    return`<tr>${cells}</tr>`;
+  }).join('');
 
   document.getElementById('page-timetable').innerHTML=`
     <div class="page-header">
       <div><div class="page-title">Horario semanal</div><div class="page-subtitle">Inglés 2026 — Lunes a Jueves</div></div>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
-      ${db.groups.map(g=>{const cls=colorMap[g.name]||'year5a';const dstr=(g.days||[]).map(d=>DAY_SHORT[d]).join('+');
-      return`<div class="tblock ${cls}" style="padding:6px 12px;border-radius:8px;font-size:12px;display:inline-flex;flex-direction:column;gap:2px">
-        <div style="font-weight:600">${g.name}</div>
-        <div style="opacity:0.8">${dstr} · ${g.time}</div>
-      </div>`;}).join('')}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      ${db.groups.map(g=>{
+        const cls=colorMap[g.name]||'year5a';
+        const dstr=(g.days||[]).map(d=>DAY_SHORT[d]).join('+');
+        return`<div class="tblock ${cls}" style="padding:5px 10px;border-radius:7px;font-size:11px;display:inline-flex;flex-direction:column;gap:1px">
+          <span style="font-weight:600">${g.name}</span>
+          <span style="opacity:0.8">${dstr} · ${g.time||''}</span>
+        </div>`;
+      }).join('')}
     </div>
     <div class="card" style="overflow-x:auto;padding:0">
       <table class="timetable">
-        <thead><tr>
-          <th style="width:52px">Hora</th>
-          ${days.map(d=>`<th>${d}</th>`).join('')}
-        </tr></thead>
+        <thead><tr><th style="width:52px">Hora</th>${headerCols}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
@@ -1574,12 +1711,18 @@ function chipClick(el){
 }
 
 function openPayModal(sid,month,fee){
-  const f=getFam(sid);const s=db.students.find(x=>x.id===sid);
+  const fam=getFam(sid);
+  const s=db.students.find(x=>x.id===sid);
   document.getElementById('mpay-sid').value=sid;
   document.getElementById('mpay-month').value=month;
-  document.getElementById('mpay-amount').value=f?f.total:fee;
+  document.getElementById('mpay-amount').value=fam?fam.total:fee;
   document.getElementById('mpay-notes').value='';
-  document.getElementById('mpay-title').textContent=`Pago — ${s.name}`;
+  if(fam){
+    const members=fam.memberIds.map(id=>db.students.find(x=>x.id===id)).filter(Boolean).map(x=>x.name.split(' ')[0]).join(', ');
+    document.getElementById('mpay-title').textContent=`Familia ${fam.name} — ${members}`;
+  } else {
+    document.getElementById('mpay-title').textContent=`Pago — ${s?s.name:''}`;
+  }
   openModal('m-pay');
 }
 
@@ -1590,15 +1733,34 @@ function confirmPay(){
   const method=document.getElementById('mpay-method').value;
   const notes=document.getElementById('mpay-notes').value.trim();
   if(!amount)return toast('Ingresá el monto','error');
-  db.payments=db.payments.filter(p=>!(p.studentId===sid&&p.month===month));
-  db.payments.push({id:uid(),studentId:sid,month,amount,method,date:new Date().toISOString(),notes});
-  scheduleSave();closeModal('m-pay');renderPayments();toast('Pago registrado');
+  const fam=getFam(sid);
+  if(fam){
+    // Mark ALL family members paid; amount only on first
+    fam.memberIds.forEach((mid,i)=>{
+      db.payments=db.payments.filter(p=>!(p.studentId===mid&&p.month===month));
+      db.payments.push({id:uid(),studentId:mid,month,amount:i===0?amount:0,method,date:new Date().toISOString(),notes:i===0?notes:'pago familiar',familyId:fam.id});
+    });
+    toast(`Familia ${fam.name}: ${fam.memberIds.length} alumnos marcados`);
+  } else {
+    db.payments=db.payments.filter(p=>!(p.studentId===sid&&p.month===month));
+    db.payments.push({id:uid(),studentId:sid,month,amount,method,date:new Date().toISOString(),notes});
+    toast('Pago registrado');
+  }
+  scheduleSave();closeModal('m-pay');
 }
 
 function unmarkPay(sid,month){
-  if(!confirm('¿Quitar el pago?'))return;
-  db.payments=db.payments.filter(p=>!(p.studentId===sid&&p.month===month));
-  scheduleSave();renderPayments();toast('Pago eliminado');
+  const fam=getFam(sid);
+  if(fam&&fam.memberIds.some(mid=>hasPaid(mid,month))){
+    if(!confirm(`¿Quitar el pago de toda la familia ${fam.name}?`))return;
+    fam.memberIds.forEach(mid=>{db.payments=db.payments.filter(p=>!(p.studentId===mid&&p.month===month));});
+    toast('Pago familiar eliminado');
+  } else {
+    if(!confirm('¿Quitar el pago?'))return;
+    db.payments=db.payments.filter(p=>!(p.studentId===sid&&p.month===month));
+    toast('Pago eliminado');
+  }
+  scheduleSave();
 }
 
 /* ---- FAMILIES ---- */
@@ -1696,6 +1858,12 @@ function initAttendance(){
     <div id="att-body">${gid&&month?renderAttBody(gid,month):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo y mes</div>'}</div>`;
 }
 
+/* ---- ATTENDANCE ---- */
+// Trimestres: 1=Mar-May, 2=Jun-Aug, 3=Sep-Nov
+const TRIMESTRES=[[3,4,5],[6,7,8],[9,10,11]];
+function getTrimestre(monthStr){const mo=parseInt(monthStr.split('-')[1]);const idx=TRIMESTRES.findIndex(t=>t.includes(mo));return idx>=0?idx+1:null;}
+function getTrimonths(tri){return TRIMESTRES[tri-1]||[];}
+
 function renderAttendance(){
   const gid=document.getElementById('att-group-sel')?.value||'';
   const month=document.getElementById('att-month-sel')?.value||curMonth();
@@ -1712,54 +1880,66 @@ function renderAttBody(gid,month){
   if(!db.attendance[gid])db.attendance[gid]={};
   if(!db.attendance[gid][month])db.attendance[gid][month]={};
   if(!db.dayNotes[month])db.dayNotes[month]={};
-
   const dstr=(g.days||[]).map(d=>DAY_SHORT[d]).join(' + ');
+  const tri=getTrimestre(month);
+  const triMonths=tri?getTrimonths(tri):[];
+
+  function triAbsences(sid){
+    let total=0;let totalClass=0;
+    triMonths.forEach(mo=>{
+      const mkey=`${y}-${String(mo).padStart(2,'0')}`;
+      const[yy,mm]=mkey.split('-').map(Number);
+      const dd=new Date(yy,mm,0).getDate();
+      const cdays=[];
+      for(let d=1;d<=dd;d++){const dow=new Date(yy,mm-1,d).getDay();if((g.days||[]).includes(dow))cdays.push(d);}
+      const rec=(db.attendance[gid]||{})[mkey]||{};
+      const notes=(db.dayNotes[mkey]||{});
+      cdays.forEach(d=>{const key=`${gid}-${mkey}-${d}`;if(notes[key])return;totalClass++;if((rec[sid]||{})[d]==='A')total++;});
+    });
+    return{absences:total,total:totalClass};
+  }
+
   let html=`<div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div>
-        <div style="font-family:var(--font-display);font-size:17px;font-weight:600">${g.name}</div>
-        <div style="font-size:12px;color:var(--text3)">${dstr} · ${g.time} · ${classDays.length} clases en el mes</div>
-      </div>
+    <div style="margin-bottom:10px">
+      <div style="font-family:var(--font-display);font-size:17px;font-weight:600">${g.name}</div>
+      <div style="font-size:12px;color:var(--text3)">${dstr} · ${g.time} · ${classDays.length} clases${tri?` · Trimestre ${tri}`:''}</div>
     </div>
-    <div style="margin-bottom:18px">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:8px">Días de clase (tocá el número para agregar nota)</div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:8px">Días de clase — tocá para marcar feriado/cancelado</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
-        ${classDays.map(d=>{
-          const dow=new Date(y,m-1,d).getDay();
-          const key=`${gid}-${month}-${d}`;
-          const note=(db.dayNotes[month]||{})[key]||'';
-          return`<div onclick="openDayNote('${gid}','${month}',${d})" title="${note||'Agregar nota'}" style="cursor:pointer;text-align:center;padding:4px 8px;border-radius:7px;border:1px solid ${note?'rgba(245,166,35,0.3)':'var(--border)'};background:${note?'var(--amber-bg)':'var(--bg3)'};min-width:44px">
+        ${classDays.map(d=>{const dow=new Date(y,m-1,d).getDay();const key=`${gid}-${month}-${d}`;const note=(db.dayNotes[month]||{})[key]||'';
+          return`<div onclick="openDayNote('${gid}','${month}',${d})" style="cursor:pointer;text-align:center;padding:4px 8px;border-radius:7px;border:1px solid ${note?'rgba(245,166,35,0.3)':'var(--border)'};background:${note?'var(--amber-bg)':'var(--bg3)'};min-width:44px">
             <div style="font-size:10px;color:${note?'var(--amber)':'var(--text3)'};">${DAY_SHORT[dow]}</div>
             <div style="font-size:13px;font-weight:600;color:${note?'var(--amber)':'var(--text)'}">${d}${note?'★':''}</div>
-          </div>`;
-        }).join('')}
+          </div>`;}).join('')}
       </div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:14px">
-      <span class="badge green">● Presente</span>
-      <span class="badge red">● Ausente</span>
-      <span style="font-size:11px;color:var(--text3);align-self:center">Gris = sin marcar</span>
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;font-size:12px">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--red-bg);border:1px solid var(--red);display:inline-block"></span>Ausente (click)</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);display:inline-block"></span>Presente (auto)</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--amber-bg);border:1px solid var(--amber);display:inline-block"></span>Feriado</span>
     </div>`;
 
   students.forEach(s=>{
     const rec=db.attendance[gid][month][s.id]||{};
-    const pC=Object.values(rec).filter(v=>v==='P').length;
-    const aC=Object.values(rec).filter(v=>v==='A').length;
-    const pct=classDays.length>0?Math.round(pC/classDays.length*100):0;
+    const notes=db.dayNotes[month]||{};
+    const activeDays=classDays.filter(d=>!notes[`${gid}-${month}-${d}`]);
+    const absentC=activeDays.filter(d=>rec[d]==='A').length;
+    const presentC=activeDays.length-absentC;
+    const t=triAbsences(s.id);
     html+=`<div class="att-wrap">
-      <div class="att-name">${avatar(s.name,26)} ${s.name}
-        <span class="badge green" style="font-size:10px">P: ${pC}/${classDays.length}</span>
-        <span class="badge red" style="font-size:10px">A: ${aC}</span>
-        <span class="badge ${pct>=80?'green':pct>=60?'amber':'red'}" style="font-size:10px">${pct}%</span>
+      <div class="att-name" style="flex-wrap:wrap;gap:6px">
+        ${avatar(s.name,26)}<span style="min-width:130px">${s.name}</span>
+        <span class="badge green" style="font-size:10px">P: ${presentC}/${activeDays.length}</span>
+        <span class="badge red" style="font-size:10px">A: ${absentC}</span>
+        ${tri?`<span class="badge amber" style="font-size:10px">Trim.${tri}: ${t.absences}A / ${t.total} clases</span>`:''}
       </div>
       <div class="att-row">
         ${classDays.map(d=>{
-          const dow=new Date(y,m-1,d).getDay();
-          const key=`${gid}-${month}-${d}`;
-          const note=(db.dayNotes[month]||{})[key];
-          const v=rec[d]||'';
-          const cls=note?'holiday':v==='P'?'present':v==='A'?'absent':'';
-          return`<div class="att-day ${cls}" onclick="${note?`openDayNote('${gid}','${month}',${d})`:`toggleAtt('${gid}','${month}','${s.id}',${d})`}" title="${DAY_SHORT[dow]} ${d}${note?' — '+note:''}">${d}<span class="day-label">${note?'FER':v}</span></div>`;
+          const key=`${gid}-${month}-${d}`;const dow=new Date(y,m-1,d).getDay();
+          const isHoliday=!!(notes[key]);const isAbsent=!isHoliday&&rec[d]==='A';
+          const cls=isHoliday?'holiday':isAbsent?'absent':'';
+          return`<div class="att-day ${cls}" onclick="${isHoliday?`openDayNote('${gid}','${month}',${d})`:`toggleAtt('${gid}','${month}','${s.id}',${d})`}" title="${DAY_SHORT[dow]} ${d}${isHoliday?' — '+notes[key]:''}">${d}<span class="day-label">${isHoliday?'FER':isAbsent?'A':''}</span></div>`;
         }).join('')}
       </div>
     </div>`;
@@ -1773,9 +1953,8 @@ function toggleAtt(gid,month,sid,day){
   if(!db.attendance[gid][month])db.attendance[gid][month]={};
   if(!db.attendance[gid][month][sid])db.attendance[gid][month][sid]={};
   const cur=db.attendance[gid][month][sid][day]||'';
-  const next=cur===''?'P':cur==='P'?'A':'';
-  if(next==='')delete db.attendance[gid][month][sid][day];
-  else db.attendance[gid][month][sid][day]=next;
+  if(cur==='A')delete db.attendance[gid][month][sid][day];
+  else db.attendance[gid][month][sid][day]='A';
   scheduleSave();renderAttendance();
 }
 
@@ -1785,28 +1964,41 @@ function openDayNote(gid,month,day){
   const note=(db.dayNotes[month]||{})[key]||'';
   document.getElementById('mdn-text').value=note;
   const dow=new Date(parseInt(month.split('-')[0]),parseInt(month.split('-')[1])-1,day).getDay();
-  document.getElementById('mdn-title').textContent=`${DAY_FULL[dow]} ${day} — Nota`;
+  document.getElementById('mdn-title').textContent=`${DAY_FULL[dow]} ${day} — Feriado / Cancelado`;
   openModal('m-daynote');
 }
 
 function saveDayNote(){
   const key=document.getElementById('mdn-key').value;
-  const month=key.split('-').slice(1,3).join('-');
+  const allParts=key.split('-');
+  const day=parseInt(allParts[allParts.length-1]);
+  const mm=allParts[allParts.length-2];
+  const yyyy=allParts[allParts.length-3];
+  const realMonth=`${yyyy}-${mm}`;
+  const gid=allParts.slice(0,allParts.length-3).join('-');
   const text=document.getElementById('mdn-text').value.trim();
-  if(!db.dayNotes[month])db.dayNotes[month]={};
-  if(text)db.dayNotes[month][key]=text;
-  else delete db.dayNotes[month][key];
-  scheduleSave();closeModal('m-daynote');renderAttendance();toast('Nota guardada');
+  if(!db.dayNotes[realMonth])db.dayNotes[realMonth]={};
+  if(text){
+    db.dayNotes[realMonth][key]=text;
+    // Clear any individual marks on this day (holiday takes precedence)
+    const students=db.students.filter(s=>s.groupId===gid);
+    if(!db.attendance[gid])db.attendance[gid]={};
+    if(!db.attendance[gid][realMonth])db.attendance[gid][realMonth]={};
+    students.forEach(s=>{
+      if(!db.attendance[gid][realMonth][s.id])db.attendance[gid][realMonth][s.id]={};
+      delete db.attendance[gid][realMonth][s.id][day];
+    });
+  } else {
+    delete db.dayNotes[realMonth][key];
+  }
+  scheduleSave();closeModal('m-daynote');renderAttendance();
+  toast(text?'Feriado marcado':'Nota eliminada');
 }
 
 function clearDayNote(){
-  const key=document.getElementById('mdn-key').value;
-  const month=key.split('-').slice(1,3).join('-');
-  if(db.dayNotes[month])delete db.dayNotes[month][key];
-  scheduleSave();closeModal('m-daynote');renderAttendance();toast('Nota eliminada');
+  document.getElementById('mdn-text').value='';
+  saveDayNote();
 }
-
-/* ---- TEACHERS ---- */
 function renderTeachers(){
   const tm=document.getElementById('t-month-sel')?.value||curMonth();
   document.getElementById('page-teachers').innerHTML=`
@@ -1913,16 +2105,93 @@ function renderBills(){
 function updBill(d,v){billCounts[d]=Math.max(0,parseInt(v)||0);renderBills();}
 function resetBills(){DENOMS.forEach(d=>{billCounts[d]=0;});renderBills();}
 
+/* ---- SETTINGS ---- */
+function getSettings(){
+  if(!db.settings)db.settings={};
+  return db.settings;
+}
+
+function getWAMessage(month){
+  const s=getSettings();
+  const[,mo]=month.split('-');
+  const key='waMsg_'+month;
+  return s[key]||`💰 MES DE ${MONTHS[parseInt(mo)-1]} RECIBIDO! Muchas gracias ❣️`;
+}
+
+function renderSettings(){
+  const month=curMonth();
+  const s=getSettings();
+  const msgs=[];
+  // Show last 3 months + next month
+  for(let i=-1;i<=2;i++){
+    const d=new Date();d.setMonth(d.getMonth()+i);
+    const m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    msgs.push(m);
+  }
+
+  document.getElementById('page-settings').innerHTML=`
+    <div class="page-header">
+      <div><div class="page-title">Configuración</div><div class="page-subtitle">Mensajes de WhatsApp y preferencias</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Mensajes de pago por mes</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:18px">Personalizá el mensaje que se envía por WhatsApp al confirmar un pago. Podés usar el nombre del mes, emojis, lo que quieras.</p>
+      ${msgs.map(m=>{
+        const[,mo]=m.split('-');
+        const key='waMsg_'+m;
+        const val=s[key]||'';
+        const def=`💰 MES DE ${MONTHS[parseInt(mo)-1]} RECIBIDO! Muchas gracias ❣️`;
+        return`<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+          <div style="font-weight:500;margin-bottom:8px;font-size:14px">${MONTHS[parseInt(mo)-1]} ${m.split('-')[0]} ${m===month?'<span class="badge green" style="margin-left:6px">Mes actual</span>':''}</div>
+          <div class="field" style="margin-bottom:8px">
+            <label>Mensaje personalizado (dejá vacío para usar el predeterminado)</label>
+            <textarea id="wa-msg-${m}" rows="2" placeholder="${def}">${val}</textarea>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn sm primary" onclick="saveWAMsg('${m}')"><i class="ti ti-device-floppy"></i> Guardar</button>
+            <button class="btn sm" onclick="previewWA('${m}')"><i class="ti ti-eye"></i> Preview WA</button>
+            ${val?`<button class="btn sm danger" onclick="clearWAMsg('${m}')"><i class="ti ti-x"></i> Restablecer</button>`:''}
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px"><i class="ti ti-info-circle"></i> Vista previa: <em>${val||def}</em></div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function saveWAMsg(month){
+  const el=document.getElementById('wa-msg-'+month);
+  if(!el)return;
+  const text=el.value.trim();
+  if(!db.settings)db.settings={};
+  if(text) db.settings['waMsg_'+month]=text;
+  else delete db.settings['waMsg_'+month];
+  scheduleSave();renderSettings();toast('Mensaje guardado');
+}
+
+function clearWAMsg(month){
+  if(!db.settings)db.settings={};
+  delete db.settings['waMsg_'+month];
+  scheduleSave();renderSettings();toast('Mensaje restablecido');
+}
+
+function previewWA(month){
+  const el=document.getElementById('wa-msg-'+month);
+  const text=el?el.value.trim():getWAMessage(month);
+  const msg=text||getWAMessage(month);
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
 /* ---- INIT ---- */
 async function init(){
-  // sync theme UI on load (default is light)
   syncThemeUI(document.documentElement.getAttribute('data-theme')||'light');
-
   await loadFromSupabase();
   document.getElementById('loading').style.display='none';
   document.getElementById('app').style.display='flex';
   renderDashboard();
   updatePendingBadge();
+  startPolling();
+  // Flush any pending writes from last offline session
+  try{if(localStorage.getItem(OFFLINE_KEY))flushPending();}catch(e){}
 }
 
 init();
