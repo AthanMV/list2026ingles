@@ -1771,7 +1771,7 @@ function renderStudents(){
         const now2=new Date();
         let soonBday=false;
         if(s.dob){const dob=new Date(s.dob);const next=new Date(now2.getFullYear(),dob.getMonth(),dob.getDate());if(next<now2)next.setFullYear(now2.getFullYear()+1);soonBday=Math.ceil((next-now2)/86400000)<=7;}
-        return`<div class="student-card" style="${soonBday?'border-color:var(--accent-border);':''}" onclick="showProfile('${s.id}')">`
+        return`<div class="student-card" style="${soonBday?'border-color:var(--accent-border);':''}" onclick="showProfile('${s.id}')">
           <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
             ${avatar(s.name,38)}
             <div style="min-width:0">
