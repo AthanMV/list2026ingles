@@ -326,98 +326,98 @@ tr:hover td{background:var(--bg3)}
 
 /* ── MOBILE ─────────────────────────────────────────── */
 @media(max-width:768px){
-
-  /* Hide sidebar on mobile */
+  /* Layout */
   .sidebar{ display:none !important; }
+  .page-inner{ padding:14px 12px 80px; }
+  .page-header{ flex-direction:column; gap:10px; margin-bottom:16px; }
+  .page-title{ font-size:20px; }
 
-  /* Page padding */
-  .page-inner{ padding:14px 12px 80px; }   /* bottom pad for nav bar */
-
-  /* Page header stacks */
-  .page-header{ flex-direction:column; gap:10px; margin-bottom:18px; }
+  /* Actions */
   .page-actions{ width:100%; }
   .page-actions .btn{ width:100%; justify-content:center; }
-
-  /* Metrics 2-col on mobile */
-  .metric-grid{ grid-template-columns:1fr 1fr; gap:10px; }
-  .metric{ padding:12px 14px; }
-  .metric-value{ font-size:20px; }
-
-  /* Method row stacks */
-  .method-row{ flex-direction:column; gap:8px; }
-  .method-box{ flex:none; width:100%; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; }
-  .method-box .method-label{ margin-bottom:0; font-size:12px; }
-  .method-box .method-val{ font-size:18px; }
-
-  /* Cards full width */
-  .card{ padding:14px; border-radius:12px; }
-  .fam-card{ padding:14px; border-radius:12px; }
-
-  /* Tables → horizontal scroll */
-  .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  table{ min-width:500px; }
-
-  /* Hide less important table columns on mobile */
-  .td-hide-mobile{ display:none; }
-
-  /* Student grid → 1 col */
-  .student-grid{ grid-template-columns:1fr 1fr; gap:10px; }
-  .student-card{ padding:12px; }
-
-  /* Form grids → 1 col */
-  .form-grid.c2, .form-grid.c3{ grid-template-columns:1fr; }
-
-  /* Dashboard group breakdown grid → 1 col */
-  #page-dashboard [style*="grid-template-columns:1fr 1fr"]{ 
-    display:block !important; 
-  }
-  #page-dashboard [style*="grid-template-columns:1fr 1fr"] .card{
-    margin-bottom:12px;
-  }
-
-  /* Modal full-screen on mobile */
-  .overlay{ align-items:flex-end; padding:0; }
-  .modal{ 
-    border-radius:16px 16px 0 0; 
-    max-height:92vh; 
-    width:100%; 
-    max-width:100%; 
-    padding:20px 16px;
-    border-left:none; border-right:none; border-bottom:none;
-  }
-
-  /* Chips wrap nicely */
-  .chips{ gap:6px; }
-  .chip{ font-size:12px; padding:5px 11px; }
-
-  /* Search row stacks */
-  .search-row{ flex-direction:column; align-items:stretch; }
-  .search-input{ width:100%; min-width:0; }
-
-  /* Buttons smaller on mobile */
   .btn.primary{ padding:9px 14px; }
 
-  /* Attendance grid smaller cells */
-  .att-day{ width:30px; height:30px; font-size:10px; }
+  /* Metrics */
+  .metric-grid{ grid-template-columns:1fr 1fr; gap:8px; }
+  .metric{ padding:11px 12px; }
+  .metric-value{ font-size:18px; word-break:break-all; }
 
-  /* Timetable scrollable */
-  #page-timetable .card{ padding:0; }
-  .timetable{ min-width:480px; }
+  /* Method boxes */
+  .method-row{ flex-direction:column; gap:8px; }
+  .method-box{ flex:none; width:100%; display:flex; align-items:center; justify-content:space-between; padding:10px 14px; }
+  .method-box .method-label{ margin-bottom:0; }
+  .method-box .method-val{ font-size:17px; }
 
-  /* Bill rows */
-  .bill-row{ gap:8px; }
-  .bill-denom{ min-width:80px; font-size:13px; }
-  .bill-input{ width:64px !important; font-size:13px !important; }
-  .bill-sub{ min-width:80px; font-size:12px; }
-  .bill-total-display{ font-size:28px; }
+  /* Cards */
+  .card{ padding:13px; border-radius:11px; }
+  .fam-card{ padding:13px; border-radius:11px; }
+  .fam-total-row{ flex-wrap:wrap; gap:6px; }
 
-  /* Toast bottom offset for nav */
+  /* Tables — no forced min-width */
+  .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table{ min-width:0; width:100%; font-size:12px; }
+  th{ padding:7px 8px; font-size:10px; }
+  td{ padding:7px 8px; }
+
+  /* Hide less-critical columns */
+  .td-hide-mobile{ display:none; }
+  th.th-hide-mobile{ display:none; }
+  #page-payments th:nth-child(5),#page-payments th:nth-child(6),
+  #page-payments td:nth-child(5),#page-payments td:nth-child(6){ display:none; }
+  #page-groups th:nth-child(3),#page-groups td:nth-child(3){ display:none; }
+  #page-teachers th:nth-child(3),#page-teachers td:nth-child(3){ display:none; }
+
+  /* Modals */
+  .overlay{ align-items:flex-end; padding:0; }
+  .modal{ border-radius:16px 16px 0 0; max-height:92vh; width:100%; max-width:100%; padding:20px 16px; border-left:none; border-right:none; border-bottom:none; }
+
+  /* Forms */
+  .form-grid.c2,.form-grid.c3{ grid-template-columns:1fr; }
+
+  /* Search */
+  .search-row{ flex-direction:column; align-items:stretch; gap:8px; }
+  .search-input{ width:100%; min-width:0; box-sizing:border-box; }
+
+  /* Chips horizontal scroll */
+  .chips{ flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch; }
+  .chip{ flex-shrink:0; font-size:12px; padding:5px 11px; }
+
+  /* Students */
+  .student-grid{ grid-template-columns:1fr 1fr; gap:8px; }
+  .student-card{ padding:11px; }
+
+  /* Attendance */
+  .att-day{ width:28px; height:28px; font-size:10px; border-radius:5px; }
+  .att-row{ gap:3px; }
+  .att-name{ font-size:12px; flex-wrap:wrap; }
+  .att-wrap{ margin-bottom:14px; }
+
+  /* Bills */
+  .bill-row{ gap:6px; }
+  .bill-denom{ min-width:70px; font-size:13px; }
+  .bill-input{ width:60px !important; font-size:13px !important; }
+  .bill-sub{ min-width:70px; font-size:12px; }
+  .bill-total-display{ font-size:26px; }
+
+  /* Timetable: cards on mobile */
+  .timetable-grid{ display:none !important; }
+  .timetable-mobile{ display:block !important; }
+
+  /* Dashboard 2-col grid → single col */
+  #page-dashboard [style*="grid-template-columns:1fr 1fr"]{ display:block !important; }
+  #page-dashboard [style*="grid-template-columns:1fr 1fr"] .card{ margin-bottom:12px; }
+
+  /* Toasts */
   .toast-wrap{ bottom:80px; right:12px; left:12px; }
   .toast{ min-width:0; }
 
   /* Data manager */
   .data-actions{ flex-direction:column; }
 }
+
+/* TIMETABLE RESPONSIVE */
+.timetable-mobile{ display:none; }
+.timetable-grid{ display:block; overflow-x:auto; }
 
 /* ── MOBILE BOTTOM NAV ──────────────────────────────── */
 .mobile-nav{
@@ -559,6 +559,8 @@ tr:hover td{background:var(--bg3)}
     <div class="nav-item" onclick="nav('students',this)"><i class="ti ti-user nav-icon"></i> Alumnos</div>
     <div class="nav-section">Administración</div>
     <div class="nav-item" onclick="nav('teachers',this)"><i class="ti ti-award nav-icon"></i> Profesores</div>
+    <div class="nav-item" onclick="nav('classcalc',this)"><i class="ti ti-school nav-icon"></i> Calc. Clases</div>
+    <div class="nav-item" onclick="nav('grades',this)"><i class="ti ti-clipboard-list nav-icon"></i> Notas 2026</div>
     <div class="nav-item" onclick="nav('bills',this)"><i class="ti ti-calculator nav-icon"></i> Billetes</div>
     <div class="nav-item" onclick="nav('datamanager',this)"><i class="ti ti-database nav-icon"></i> Datos</div>
     <div class="nav-item" onclick="nav('settings',this)"><i class="ti ti-settings nav-icon"></i> Configuración</div>
@@ -581,6 +583,8 @@ tr:hover td{background:var(--bg3)}
   <div id="page-attendance" class="page-inner" style="display:none"></div>
   <div id="page-students" class="page-inner" style="display:none"></div>
   <div id="page-teachers" class="page-inner" style="display:none"></div>
+  <div id="page-classcalc" class="page-inner" style="display:none"></div>
+  <div id="page-grades" class="page-inner" style="display:none"></div>
   <div id="page-bills" class="page-inner" style="display:none"></div>
   <div id="page-datamanager" class="page-inner" style="display:none"></div>
   <div id="page-settings" class="page-inner" style="display:none"></div>
@@ -620,7 +624,10 @@ tr:hover td{background:var(--bg3)}
   </div>
   <div class="form-grid c2">
     <div class="field"><label>Fecha de nacimiento</label><input id="ms-dob" type="date"></div>
-    <div class="field"><label>Colegio</label><input id="ms-school"></div>
+    <div class="field"><label>Colegio</label>
+      <input id="ms-school" list="schools-datalist" placeholder="Escribí o elegí de la lista">
+      <datalist id="schools-datalist"></datalist>
+    </div>
   </div>
   <div class="section-divider">Contactos</div>
   <div class="form-grid c2">
@@ -741,6 +748,57 @@ tr:hover td{background:var(--bg3)}
 </div>
 </div>
 
+<!-- MODAL: Grade entry -->
+<div class="overlay" id="m-grade-entry">
+<div class="modal" style="max-width:400px">
+  <div class="modal-header"><div class="modal-title" id="ge-title">Agregar nota</div><button class="btn ghost sm" onclick="closeModal('m-grade-entry')"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="ge-gid"><input type="hidden" id="ge-sid"><input type="hidden" id="ge-tri"><input type="hidden" id="ge-subj">
+  <div class="form-grid c2">
+    <div class="field"><label>Nota (1-10 o A=Ausente)</label><input id="ge-score" placeholder="7 / A"></div>
+    <div class="field"><label>Descripción</label><input id="ge-desc" placeholder="Exam 1, TP..."></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('m-grade-entry')">Cancelar</button>
+    <button class="btn primary" onclick="saveGradeEntry()">Guardar</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Class type -->
+<div class="overlay" id="m-classtype">
+<div class="modal" style="max-width:400px">
+  <div class="modal-header"><div class="modal-title">Tipos de clase</div><button class="btn ghost sm" onclick="closeModal('m-classtype')"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="ct-id">
+  <div class="form-grid c2">
+    <div class="field"><label>Nombre</label><input id="ct-name" placeholder="Clase Cambridge..."></div>
+    <div class="field"><label>Precio ($)</label><input id="ct-price" type="number" placeholder="12000"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('m-classtype')">Cancelar</button>
+    <button class="btn primary" onclick="saveClassType()">Agregar</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Class log entry -->
+<div class="overlay" id="m-classlog">
+<div class="modal" style="max-width:400px">
+  <div class="modal-header"><div class="modal-title">Registrar clase</div><button class="btn ghost sm" onclick="closeModal('m-classlog')"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="cl-tid"><input type="hidden" id="cl-month">
+  <div class="form-grid">
+    <div class="field"><label>Tipo de clase</label><select id="cl-type"></select></div>
+  </div>
+  <div class="form-grid c2">
+    <div class="field"><label>Semana del (lunes)</label><input id="cl-week" type="date"></div>
+    <div class="field"><label>Nota (opcional)</label><input id="cl-note" placeholder="Clase extra, etc."></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('m-classlog')">Cancelar</button>
+    <button class="btn primary" onclick="saveClassLog()">Guardar</button>
+  </div>
+</div>
+</div>
+
 <!-- MORE OVERLAY -->
 <div class="more-overlay" id="more-overlay" onclick="closeMore()"></div>
 
@@ -750,6 +808,8 @@ tr:hover td{background:var(--bg3)}
     <div class="more-item" id="mm-families" onclick="mobileNav('families')"><i class="ti ti-home"></i>Familias</div>
     <div class="more-item" id="mm-attendance" onclick="mobileNav('attendance')"><i class="ti ti-calendar-check"></i>Asistencias</div>
     <div class="more-item" id="mm-teachers" onclick="mobileNav('teachers')"><i class="ti ti-award"></i>Profesores</div>
+    <div class="more-item" id="mm-classcalc" onclick="mobileNav('classcalc')"><i class="ti ti-school"></i>Calc.Clases</div>
+    <div class="more-item" id="mm-grades" onclick="mobileNav('grades')"><i class="ti ti-clipboard-list"></i>Notas</div>
     <div class="more-item" id="mm-timetable" onclick="mobileNav('timetable')"><i class="ti ti-calendar-time"></i>Horario</div>
     <div class="more-item" id="mm-bills" onclick="mobileNav('bills')"><i class="ti ti-calculator"></i>Billetes</div>
     <div class="more-item" id="mm-datamanager" onclick="mobileNav('datamanager')"><i class="ti ti-database"></i>Datos</div>
@@ -795,7 +855,13 @@ const MONTHS=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO',
 const DAY_SHORT=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const DAY_FULL=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 
-let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{}};
+let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{},settings:{},grades:{},cambridge2025:[],classTypes:[],classLogs:{},schools:[]};
+
+// Grade subjects — fixed 8, split into 2 categories
+const GRADE_SUBJECTS=[
+  {cat:'WRITTEN LANGUAGE WORK',items:['Grammar','Writing','Homework','Tests']},
+  {cat:'ORAL SKILL WORK',items:['Reading and Comprehension','Listening','Speaking','Pronunciation']},
+];
 let saveTimer=null;
 let currentPage='dashboard';
 let billCounts={20000:0,10000:0,2000:0,1000:0,500:0};
@@ -864,9 +930,16 @@ async function loadFromSupabase(){
       if(h!==lastRemoteHash){
         lastRemoteHash=h;
         ['groups','students','payments','families','teachers','teacherPayments'].forEach(k=>{if(d[k])db[k]=d[k];});
+        // Backfill missing schedule
+        db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days||!g.days.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
         if(d.attendance)db.attendance=d.attendance;
         if(d.dayNotes)db.dayNotes=d.dayNotes;
         if(d.settings)db.settings=d.settings;
+      if(d.grades)db.grades=d.grades;
+      if(d.cambridge2025)db.cambridge2025=d.cambridge2025;
+      if(d.classTypes)db.classTypes=d.classTypes;
+      if(d.schools)db.schools=d.schools;
+      if(d.classLogs)db.classLogs=d.classLogs;
       }
     } else {
       seedData();
@@ -947,6 +1020,11 @@ function startPolling(){
         if(d.attendance)db.attendance=d.attendance;
         if(d.dayNotes)db.dayNotes=d.dayNotes;
         if(d.settings)db.settings=d.settings;
+      if(d.grades)db.grades=d.grades;
+      if(d.cambridge2025)db.cambridge2025=d.cambridge2025;
+      if(d.classTypes)db.classTypes=d.classTypes;
+      if(d.schools)db.schools=d.schools;
+      if(d.classLogs)db.classLogs=d.classLogs;
         setSyncStatus('ok','Actualizado');
         refreshCurrentPage();
         toast('Datos actualizados desde otro dispositivo');
@@ -963,7 +1041,7 @@ function setSyncStatus(state,label){
 }
 
 function refreshCurrentPage(){
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[currentPage]) renders[currentPage]();
   updatePendingBadge();
 }
@@ -1001,6 +1079,58 @@ function seedData(){
     const sub=mids.reduce((a,sid)=>{const s=db.students.find(x=>x.id===sid);const g=getGroup(s?.groupId);return a+(g.fee||0);},0);
     db.families.push({id:uid(),name:f.name,discount:f.discount,memberIds:mids,total:sub-f.discount});
   });
+
+  // Schools
+  if(!db.schools||db.schools.length===0) db.schools=['Cambridge Institute','Colegio Nacional','Instituto San Martín','La Salle','San José'];
+
+  // Default class types
+  if(!db.classTypes||db.classTypes.length===0) db.classTypes=[
+    {id:uid(),name:'Clase Cambridge',price:12000},
+    {id:uid(),name:'Clase particular',price:15000},
+  ];
+
+  // Cambridge 2025 exam results
+  db.cambridge2025=[
+    {group:'Kids 5',name:'Theo Ruiz',written:9,oral:9,prom:9,conclusion:'salta a teens 2'},
+    {group:'Kids 5',name:'Tao Rius Morrison',written:9,oral:9,prom:9,conclusion:'salta a teens 2'},
+    {group:'Kids 5',name:'Isabella Leiva',written:6,oral:8,prom:7,conclusion:'pasaría a teens 1'},
+    {group:'Kids 5',name:'Catalina Spada',written:6,oral:8,prom:7,conclusion:'pasaría a teens 1'},
+    {group:'Kids 5',name:'Delfina Motowylo',written:9,oral:9,prom:9,conclusion:'salta a teens 2'},
+    {group:'Kids 5',name:'Matias Mariscal',written:9,oral:9,prom:9,conclusion:'salta a teens 2'},
+    {group:'Teens 1',name:'Santino Martinez',written:9,oral:9,prom:9,conclusion:''},
+    {group:'Teens 1',name:'Francisco Cabral',written:7,oral:8,prom:7,conclusion:''},
+    {group:'Teens 1',name:'Martina Gonzalez',written:9,oral:8,prom:8,conclusion:''},
+    {group:'Teens 2',name:'Juana Ponce',written:4,oral:8,prom:null,conclusion:'DESAPROBADO'},
+    {group:'Teens 2',name:'Lautaro Rey',written:4,oral:7,prom:null,conclusion:'DESAPROBADO'},
+    {group:'Teens 2',name:'Lautaro Politano',written:8,oral:9,prom:8,conclusion:''},
+    {group:'Teens 2',name:'Valentina Motowylo',written:5,oral:8,prom:6,conclusion:''},
+    {group:'Teens 2',name:'Juliana Logioia',written:6,oral:6,prom:6,conclusion:''},
+    {group:'Teens 2',name:'Pedro Salvi Ramos',written:5,oral:7,prom:6,conclusion:''},
+    {group:'Teens 2',name:'Zoe Goñi',written:7,oral:8,prom:7,conclusion:''},
+    {group:'Teens 3',name:'Victoria Zirilli',written:8,oral:6,prom:7,conclusion:''},
+    {group:'Teens 3',name:'Ludmila Delorenzo',written:7,oral:6,prom:6,conclusion:''},
+    {group:'Teens 3',name:'Ramiro Brea',written:6,oral:5,prom:5,conclusion:''},
+    {group:'Teens 3',name:'Fabricio Tourn',written:9,oral:7,prom:8,conclusion:''},
+    {group:'Teens 3',name:'Benjamin Stauber',written:9,oral:7,prom:8,conclusion:''},
+    {group:'Teens 4A',name:'Candela Moretti',written:5,oral:8,prom:6,conclusion:''},
+    {group:'Teens 4A',name:'Mora Valentino',written:7,oral:5,prom:6,conclusion:''},
+    {group:'Teens 4A',name:'Paulina Nuñez',written:8,oral:8,prom:8,conclusion:''},
+    {group:'Teens 4A',name:'Milagros Garaventa',written:6,oral:8,prom:7,conclusion:''},
+    {group:'Teens 4A',name:'Elian Albelo',written:6,oral:8,prom:7,conclusion:''},
+    {group:'Teens 4B',name:'Alma Rius Morrison',written:6,oral:9,prom:7,conclusion:''},
+    {group:'Teens 4B',name:'Mateo Mariscal',written:6,oral:7,prom:6,conclusion:''},
+    {group:'Teens 4B',name:'Mateo Fernandez',written:5,oral:7,prom:6,conclusion:''},
+    {group:'Teens 4B',name:'Micaela Politano',written:3,oral:2,prom:null,conclusion:'APLAZADA'},
+    {group:'Teens 4B',name:'Valentino Falabella',written:5,oral:5,prom:5,conclusion:''},
+    {group:'Teens 4B',name:'Victoria Carreras',written:6,oral:6,prom:6,conclusion:''},
+    {group:'Teens 4B',name:'Ines Carrizo',written:6,oral:6,prom:6,conclusion:''},
+    {group:'5th Year',name:'Carola Breglia',written:4,oral:7,prom:null,conclusion:'DESAPROBADO'},
+    {group:'5th Year',name:'Milena Baez',written:6,oral:8,prom:7,conclusion:''},
+    {group:'5th Year',name:'Geronimo Salvadori',written:9,oral:8,prom:8,conclusion:''},
+    {group:'5th Year',name:'Milena Romagnoli',written:8,oral:7,prom:7,conclusion:''},
+    {group:'5th Year',name:'Uma Cancio Giussani',written:8,oral:8,prom:8,conclusion:''},
+    {group:'5th Year',name:'Franco Torrilla',written:7,oral:7,prom:7,conclusion:''},
+  ];
 }
 
 /* ---- UTILS ---- */
@@ -1105,7 +1235,7 @@ function nav(page,el){
   currentPage=page;
   // scroll to top on page change
   document.querySelector('.main').scrollTop=0;
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[page])renders[page]();
 }
 
@@ -1131,9 +1261,13 @@ function renderTimetable(){
     '5th Year B':'year5b','Superior':'superior'
   };
   function parseMin(t){if(!t)return 0;const[h,m]=t.split(':').map(Number);return h*60+m;}
+  function fmtMin(m){return`${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`;}
 
-  // Build list of blocks per day
-  // day -> [{group, startMin, endMin}]
+  const dayNames=['Lunes','Martes','Miércoles','Jueves'];
+  const dayIdx=[1,2,3,4];
+  const month=curMonth();
+
+  // Build blocks per day
   const dayBlocks={1:[],2:[],3:[],4:[]};
   db.groups.forEach(g=>{
     if(!g.time||!g.days)return;
@@ -1141,21 +1275,17 @@ function renderTimetable(){
     if(parts.length<2)return;
     const startMin=parseMin(parts[0]);
     const endMin=parseMin(parts[1]);
-    (g.days||[]).forEach(d=>{
-      if(dayBlocks[d]) dayBlocks[d].push({g,startMin,endMin});
-    });
+    (g.days||[]).forEach(d=>{if(dayBlocks[d])dayBlocks[d].push({g,startMin,endMin});});
   });
 
-  // For each day, figure out how many parallel "lanes" are needed
-  // by checking which blocks overlap in time
+  // Lane assignment (for desktop grid overlap)
   function assignLanes(blocks){
     const sorted=[...blocks].sort((a,b)=>a.startMin-b.startMin);
     const lanes=[];
     sorted.forEach(b=>{
       let placed=false;
       for(let i=0;i<lanes.length;i++){
-        const last=lanes[i][lanes[i].length-1];
-        if(last.endMin<=b.startMin){lanes[i].push(b);b.lane=i;placed=true;break;}
+        if(lanes[i][lanes[i].length-1].endMin<=b.startMin){lanes[i].push(b);b.lane=i;placed=true;break;}
       }
       if(!placed){b.lane=lanes.length;lanes.push([b]);}
     });
@@ -1163,83 +1293,108 @@ function renderTimetable(){
   }
 
   const dayLanes={};
-  [1,2,3,4].forEach(d=>{
-    dayLanes[d]=assignLanes(dayBlocks[d]);
-    dayBlocks[d].forEach(b=>{if(b.lane===undefined)b.lane=0;});
-  });
+  dayIdx.forEach(d=>{dayLanes[d]=assignLanes(dayBlocks[d]);dayBlocks[d].forEach(b=>{if(b.lane===undefined)b.lane=0;});});
 
-  const month=curMonth();
-  const slots=[];
-  for(let h=14;h<=21;h++){slots.push(h*60);if(h<21)slots.push(h*60+30);}
-  const days=['Lunes','Martes','Miércoles','Jueves'];
-  const dayIdx=[1,2,3,4];
+  // ── DESKTOP: pixel-positioned blocks ──────────────────
+  const SLOT_H=40; // px per 30min slot
+  const START_H=14*60; // 14:00
+  const END_H=22*60;   // 22:00
+  const TIME_COL=50;
+  const DAY_COL_MIN=110;
 
-  // Build header: one <th> per day, colspan = lanes
-  const headerCols=dayIdx.map(d=>`<th colspan="${dayLanes[d]}">${days[dayIdx.indexOf(d)]}</th>`).join('');
+  // Time axis labels
+  const timeLabels=[];
+  for(let m=START_H;m<END_H;m+=30){
+    const top=((m-START_H)/30)*SLOT_H;
+    timeLabels.push(`<div style="position:absolute;top:${top}px;right:4px;font-size:10px;color:var(--text3);font-family:var(--font-mono);line-height:1">${fmtMin(m)}</div>`);
+  }
+  const gridH=((END_H-START_H)/30)*SLOT_H;
 
-  // Build rows
-  const rendered=new Set(); // "dayIdx-blockIdx" already drawn via rowspan
-  const rows=slots.map(slotMin=>{
-    const hh=Math.floor(slotMin/60);
-    const mm=slotMin%60===0?'00':'30';
-    let cells=`<td class="time-col">${hh}:${mm}</td>`;
+  // Horizontal grid lines
+  const gridLines=[];
+  for(let m=START_H;m<END_H;m+=30){
+    const top=((m-START_H)/30)*SLOT_H;
+    const isHour=m%60===0;
+    gridLines.push(`<div style="position:absolute;top:${top}px;left:0;right:0;border-top:1px solid ${isHour?'var(--border2)':'var(--border)'};opacity:${isHour?0.8:0.4}"></div>`);
+  }
 
-    dayIdx.forEach(d=>{
-      const lanes=dayLanes[d];
-      const laneArr=Array.from({length:lanes},()=>null);
+  const dayCols=dayIdx.map((d,di)=>{
+    const blocks=dayBlocks[d];
+    const lanes=dayLanes[d];
+    const blockHtml=blocks.map(b=>{
+      const top=((b.startMin-START_H)/30)*SLOT_H;
+      const height=((b.endMin-b.startMin)/30)*SLOT_H-3;
+      const w=Math.floor(100/lanes);
+      const left=b.lane*w;
+      const studs=db.students.filter(s=>s.groupId===b.g.id);
+      const paidC=studs.filter(s=>hasPaid(s.id,month)).length;
+      const cls=colorMap[b.g.name]||'year5a';
+      return`<div class="tblock ${cls}" style="position:absolute;top:${top}px;left:${left}%;width:calc(${w}% - 3px);height:${height}px;overflow:hidden;border-radius:7px;padding:5px 7px;font-size:11px">
+        <div style="font-weight:700;font-size:12px;line-height:1.2">${b.g.name}</div>
+        <div style="opacity:0.8;margin-top:2px">${b.g.time}</div>
+        <div style="opacity:0.6;margin-top:2px">${studs.length} al · ${paidC}✓</div>
+      </div>`;
+    }).join('');
+    return`<div style="flex:1;position:relative;min-width:${DAY_COL_MIN}px;border-left:1px solid var(--border)">
+      <div style="padding:6px 0 6px 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);border-bottom:1px solid var(--border2)">${dayNames[di]}</div>
+      <div style="position:relative;height:${gridH}px">
+        ${gridLines.join('')}
+        ${blockHtml}
+      </div>
+    </div>`;
+  }).join('');
 
-      dayBlocks[d].forEach(b=>{
-        const key=`${d}-${b.g.id}`;
-        if(rendered.has(key)){laneArr[b.lane]='skip';return;}
-        if(slotMin>=b.startMin&&slotMin<b.endMin){
-          if(slotMin===b.startMin){
-            const span=Math.ceil((b.endMin-b.startMin)/30);
-            const studs=db.students.filter(s=>s.groupId===b.g.id);
-            const paidC=studs.filter(s=>hasPaid(s.id,month)).length;
-            const cls=colorMap[b.g.name]||'year5a';
-            laneArr[b.lane]=`<td rowspan="${span}" style="padding:4px;vertical-align:top;width:${Math.floor(100/lanes)}%">
-              <div class="tblock ${cls}" style="height:100%;min-height:${span*36-8}px">
-                <div style="font-weight:600;font-size:11px">${b.g.name}</div>
-                <div style="font-size:10px;opacity:0.75">${b.g.time}</div>
-                <div style="font-size:10px;opacity:0.65;margin-top:2px">${studs.length} al · ${paidC} pag</div>
-              </div></td>`;
-            rendered.add(key);
-          } else {
-            laneArr[b.lane]='skip';
-          }
-        }
-      });
+  const desktopGrid=`
+    <div class="card timetable-grid" style="padding:0;overflow:hidden">
+      <div style="display:flex">
+        <div style="width:${TIME_COL}px;flex-shrink:0;border-right:1px solid var(--border)">
+          <div style="height:34px;border-bottom:1px solid var(--border2)"></div>
+          <div style="position:relative;height:${gridH}px">${timeLabels.join('')}</div>
+        </div>
+        <div style="display:flex;flex:1;overflow-x:auto">${dayCols}</div>
+      </div>
+    </div>`;
 
-      laneArr.forEach(cell=>{
-        if(cell===null) cells+=`<td></td>`;
-        else if(cell==='skip'){/* absorbed by rowspan */}
-        else cells+=cell;
-      });
-    });
+  // ── MOBILE: cards per day ──────────────────────────────
+  const mobileCards=dayIdx.map((d,di)=>{
+    const blocks=[...dayBlocks[d]].sort((a,b)=>a.startMin-b.startMin);
+    if(blocks.length===0)return'';
+    return`<div class="card" style="margin-bottom:10px;padding:14px">
+      <div style="font-weight:600;font-size:14px;margin-bottom:10px;color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:8px">${dayNames[di]}</div>
+      ${blocks.map(b=>{
+        const studs=db.students.filter(s=>s.groupId===b.g.id);
+        const paidC=studs.filter(s=>hasPaid(s.id,month)).length;
+        const cls=colorMap[b.g.name]||'year5a';
+        return`<div class="tblock ${cls}" style="border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div>
+            <div style="font-weight:700;font-size:14px">${b.g.name}</div>
+            <div style="font-size:12px;opacity:0.8;margin-top:2px">${b.g.time}</div>
+          </div>
+          <div style="text-align:right;font-size:12px;opacity:0.75;flex-shrink:0">
+            <div>${studs.length} alumnos</div>
+            <div>${paidC} pagaron</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
 
-    return`<tr>${cells}</tr>`;
+  const legendHtml=db.groups.map(g=>{
+    const cls=colorMap[g.name]||'year5a';
+    const dstr=(g.days||[]).map(d=>DAY_SHORT[d]).join('+');
+    return`<div class="tblock ${cls}" style="padding:5px 10px;border-radius:7px;font-size:11px;display:inline-flex;flex-direction:column;gap:1px;flex-shrink:0">
+      <span style="font-weight:600">${g.name}</span>
+      <span style="opacity:0.8">${dstr} · ${g.time||''}</span>
+    </div>`;
   }).join('');
 
   document.getElementById('page-timetable').innerHTML=`
     <div class="page-header">
-      <div><div class="page-title">Horario semanal</div><div class="page-subtitle">Inglés 2026 — Lunes a Jueves</div></div>
+      <div><div class="page-title">Horario</div><div class="page-subtitle">Inglés 2026 — Lunes a Jueves</div></div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-      ${db.groups.map(g=>{
-        const cls=colorMap[g.name]||'year5a';
-        const dstr=(g.days||[]).map(d=>DAY_SHORT[d]).join('+');
-        return`<div class="tblock ${cls}" style="padding:5px 10px;border-radius:7px;font-size:11px;display:inline-flex;flex-direction:column;gap:1px">
-          <span style="font-weight:600">${g.name}</span>
-          <span style="opacity:0.8">${dstr} · ${g.time||''}</span>
-        </div>`;
-      }).join('')}
-    </div>
-    <div class="card" style="overflow-x:auto;padding:0">
-      <table class="timetable">
-        <thead><tr><th style="width:52px">Hora</th>${headerCols}</tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;overflow-x:auto;padding-bottom:4px">${legendHtml}</div>
+    ${desktopGrid}
+    <div class="timetable-mobile">${mobileCards}</div>`;
 }
 
 /* ---- DATA MANAGER ---- */
@@ -1327,139 +1482,58 @@ function renderDashboard(){
   const pays=db.payments.filter(p=>p.month===month);
   const trans=pays.filter(p=>p.method==='Transferencia'&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
   const efect=pays.filter(p=>p.method==='Efectivo'&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
-  const otros=pays.filter(p=>p.method!=='Transferencia'&&p.method!=='Efectivo'&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
   const collected=pays.reduce((a,p)=>a+Number(p.amount),0);
   const expected=db.students.reduce((a,s)=>{const f=getFam(s.id);if(f)return a+f.total/f.memberIds.length;return a+(getGroup(s.groupId).fee||0);},0);
   const pct=total>0?Math.round(paidC/total*100):0;
-
   updatePendingBadge();
-
   const now=new Date();
-  const soon=db.students.filter(s=>{
-    if(!s.dob)return false;
-    const dob=new Date(s.dob);
-    const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
-    if(next<now)next.setFullYear(now.getFullYear()+1);
-    return Math.ceil((next-now)/86400000)<=14;
-  });
-
+  // Birthdays this month
+  const thisMonth=now.getMonth();
+  const bdaysThisMonth=db.students.filter(s=>{if(!s.dob)return false;return new Date(s.dob).getMonth()===thisMonth;});
+  const soon=db.students.filter(s=>{if(!s.dob)return false;const dob=new Date(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);return Math.ceil((next-now)/86400000)<=7;});
   const pendSt=db.students.filter(s=>!hasPaid(s.id,month));
-  const recent=[...db.payments].filter(p=>p.month===month&&p.amount>0).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
-
-  // Group breakdown
-  const groupBreakdown=db.groups.map(g=>{
-    const studs=db.students.filter(s=>s.groupId===g.id);
-    const gpaid=studs.filter(s=>hasPaid(s.id,month)).length;
-    const gpct=studs.length>0?Math.round(gpaid/studs.length*100):0;
-    const gcollected=pays.filter(p=>studs.some(s=>s.id===p.studentId)&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
-    return{g,studs,gpaid,gpct,gcollected};
-  });
 
   document.getElementById('page-dashboard').innerHTML=`
     <div class="page-header">
-      <div>
-        <div class="page-title">Dashboard</div>
-        <div class="page-subtitle">${monthName(month)} ${month.split('-')[0]} · Cambridge Institute</div>
-      </div>
-      <div class="page-actions">
-        <button class="btn sm" onclick="nav('timetable',document.querySelectorAll('.nav-item')[1])"><i class="ti ti-calendar-time"></i> Ver horario</button>
-      </div>
+      <div><div class="page-title">Cambridge Institute</div><div class="page-subtitle">${monthName(month)} ${month.split('-')[0]}</div></div>
     </div>
 
-    <div class="metric-grid">
-      <div class="metric gold">
-        <div class="metric-label">Alumnos</div>
-        <div class="metric-value gold">${total}</div>
-        <div class="metric-sub">${db.groups.length} grupos activos</div>
-      </div>
-      <div class="metric green">
-        <div class="metric-label">Pagaron</div>
-        <div class="metric-value green">${paidC}</div>
-        <div class="progress-bar" style="margin-top:10px"><div class="progress-fill green" style="width:${pct}%"></div></div>
-        <div class="metric-sub" style="margin-top:4px">${pct}% del total</div>
-      </div>
-      <div class="metric red">
-        <div class="metric-label">Pendientes</div>
-        <div class="metric-value red">${pending}</div>
-        <div class="metric-sub">${pending===0?'¡Todo al día!':'Por cobrar'}</div>
-      </div>
-      <div class="metric blue">
-        <div class="metric-label">Recaudado</div>
-        <div class="metric-value blue" style="font-size:17px">${fm(collected)}</div>
-        <div class="progress-bar" style="margin-top:10px"><div class="progress-fill gold" style="width:${expected>0?Math.min(100,Math.round(collected/expected*100)):0}%"></div></div>
-        <div class="metric-sub" style="margin-top:4px">de ${fm(Math.round(expected))}</div>
-      </div>
+    <div class="metric-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+      <div class="metric gold"><div class="metric-label">Alumnos</div><div class="metric-value gold">${total}</div><div class="metric-sub">${db.groups.length} grupos</div></div>
+      <div class="metric green"><div class="metric-label">Pagaron</div><div class="metric-value green">${paidC}</div>
+        <div class="progress-bar" style="margin-top:8px"><div class="progress-fill green" style="width:${pct}%"></div></div>
+        <div class="metric-sub" style="margin-top:4px">${pct}%</div></div>
+      <div class="metric red"><div class="metric-label">Pendientes</div><div class="metric-value red">${pending}</div></div>
+      <div class="metric blue"><div class="metric-label">Recaudado</div><div class="metric-value blue" style="font-size:16px">${fm(collected)}</div>
+        <div class="progress-bar" style="margin-top:8px"><div class="progress-fill gold" style="width:${expected>0?Math.min(100,Math.round(collected/expected*100)):0}%"></div></div>
+        <div class="metric-sub" style="margin-top:4px">de ${fm(Math.round(expected))}</div></div>
     </div>
 
-    <div class="method-row">
-      <div class="method-box">
-        <div class="method-label">Transferencia</div>
-        <div class="method-val" style="color:var(--blue)">${fm(trans)}</div>
-      </div>
-      <div class="method-box">
-        <div class="method-label">Efectivo</div>
-        <div class="method-val" style="color:var(--green)">${fm(efect)}</div>
-      </div>
-      ${otros>0?`<div class="method-box"><div class="method-label">Otros</div><div class="method-val" style="color:var(--amber)">${fm(otros)}</div></div>`:''}
-      <div class="method-box">
-        <div class="method-label">Falta cobrar</div>
-        <div class="method-val" style="color:var(--red)">${fm(Math.max(0,Math.round(expected)-collected))}</div>
-      </div>
+    <div class="method-row" style="margin-bottom:14px">
+      <div class="method-box"><div class="method-label">Transferencia</div><div class="method-val" style="color:var(--blue)">${fm(trans)}</div></div>
+      <div class="method-box"><div class="method-label">Efectivo</div><div class="method-val" style="color:var(--green)">${fm(efect)}</div></div>
+      <div class="method-box"><div class="method-label">Falta cobrar</div><div class="method-val" style="color:var(--red)">${fm(Math.max(0,Math.round(expected)-collected))}</div></div>
     </div>
 
-    ${soon.length?`<div class="card" style="margin-bottom:16px">
-      <div class="card-title">Próximos cumpleaños</div>
-      ${soon.map(s=>{const dob=new Date(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);const diff=Math.ceil((next-now)/86400000);return`<div class="bday-item"><i class="ti ti-cake"></i><div><strong>${s.name}</strong> · ${next.toLocaleDateString('es-AR')} · <span style="color:var(--accent)">en ${diff} días</span> <span class="badge gold" style="margin-left:4px">${getGroup(s.groupId).name}</span></div></div>`;}).join('')}
+    ${soon.length?`<div class="card" style="margin-bottom:14px;border-color:var(--accent-border)">
+      <div class="card-title">🎂 Cumpleaños próximos (7 días)</div>
+      ${soon.map(s=>{const dob=new Date(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);const diff=Math.ceil((next-now)/86400000);return`<div class="bday-item"><i class="ti ti-cake"></i><strong>${s.name}</strong> — ${next.toLocaleDateString('es-AR')} <span style="color:var(--accent)">en ${diff} días</span> <span class="badge gold">${getGroup(s.groupId).name}</span></div>`;}).join('')}
     </div>`:''}
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card">
-        <div class="card-title">Cobro por grupo</div>
-        ${groupBreakdown.map(({g,studs,gpaid,gpct,gcollected})=>`
-          <div style="margin-bottom:12px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <span style="font-size:13px;font-weight:500">${g.name}</span>
-              <span style="font-size:12px;color:var(--text3)">${gpaid}/${studs.length}</span>
-            </div>
-            <div class="progress-bar" style="margin-top:0">
-              <div class="progress-fill ${gpct===100?'green':gpct>=50?'gold':'red'}" style="width:${gpct}%"></div>
-            </div>
-          </div>`).join('')}
-      </div>
-      <div class="card">
-        <div class="card-title">Recaudación por grupo</div>
-        ${groupBreakdown.map(({g,gcollected})=>`
-          <div class="stat-row" style="padding:6px 0">
-            <span class="stat-label" style="font-size:12px">${g.name}</span>
-            <span class="stat-val" style="font-size:12px">${fm(gcollected)}</span>
-          </div>`).join('')}
-      </div>
-    </div>
-
-    <div class="card">
+    ${pendSt.length?`<div class="card">
       <div class="card-title">Pagos pendientes</div>
-      ${pendSt.length===0?`<div class="empty"><i class="ti ti-circle-check"></i>¡Todos pagaron este mes!</div>`:`
-      <div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Grupo</th><th>A cobrar</th><th>Aviso</th></tr></thead><tbody>
-      ${pendSt.map(s=>{const g=getGroup(s.groupId);const f=getFam(s.id);return`<tr>
-        <td><div style="display:flex;align-items:center;gap:8px">${avatar(s.name,30)}<span>${s.name}</span></div></td>
+      <div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Grupo</th><th>Monto</th><th></th></tr></thead><tbody>
+      ${pendSt.slice(0,10).map(s=>{const g=getGroup(s.groupId);const f=getFam(s.id);return`<tr>
+        <td><div style="display:flex;align-items:center;gap:7px">${avatar(s.name,26)}<span>${s.name}</span></div></td>
         <td><span class="badge gold">${g.name}</span></td>
-        <td style="font-family:var(--font-mono);font-size:12px">${f?fm(f.total)+' <span class="badge gray" style="font-size:10px">fam</span>':fm(g.fee)}</td>
+        <td style="font-family:var(--font-mono);font-size:12px">${f?fm(f.total)+' fam':fm(g.fee)}</td>
         <td>${waBtn(s)}</td></tr>`;}).join('')}
-      </tbody></table></div>`}
-    </div>
-
-    <div class="card">
-      <div class="card-title">Últimos pagos</div>
-      ${recent.length===0?`<div class="empty"><i class="ti ti-receipt"></i>Sin pagos registrados</div>`:`
-      <div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Monto</th><th>Método</th><th>Fecha</th></tr></thead><tbody>
-      ${recent.map(p=>{const s=getStudent(p.studentId);return`<tr>
-        <td><div style="display:flex;align-items:center;gap:8px">${avatar(s.name,28)}<span>${s.name}</span></div></td>
-        <td style="font-family:var(--font-mono)">${fm(p.amount)}</td>
-        <td><span class="badge ${p.method==='Transferencia'?'blue':p.method==='Efectivo'?'green':'amber'}">${p.method}</span></td>
-        <td style="color:var(--text3);font-size:12px">${fdate(p.date)}</td></tr>`;}).join('')}
-      </tbody></table></div>`}
-    </div>`;
+      </tbody></table></div>
+      ${pendSt.length>10?`<div style="font-size:12px;color:var(--text3);margin-top:8px">+ ${pendSt.length-10} más...</div>`:''}
+    </div>`:`<div class="card"><div class="empty"><i class="ti ti-circle-check"></i>¡Todos pagaron este mes! 🎉</div></div>`}`;
 }
+
+  updatePendingBadge();
 
 /* ---- GROUPS ---- */
 function renderGroups(){
@@ -1544,6 +1618,9 @@ function openAddStudent(groupId){
   sel.innerHTML=db.groups.map(g=>`<option value="${g.id}"${g.id===groupId?' selected':''}>${g.name}</option>`).join('');
   document.getElementById('ms-wa-target').value='dad';
   document.getElementById('ms-title').textContent='Nuevo alumno';
+  // Populate schools datalist
+  const dl=document.getElementById('schools-datalist');
+  if(dl)dl.innerHTML=(db.schools||[]).map(s=>`<option value="${s}">`).join('');
   openModal('m-student');
 }
 
@@ -1562,6 +1639,8 @@ function editStudent(id){
   const sel=document.getElementById('ms-group');
   sel.innerHTML=db.groups.map(g=>`<option value="${g.id}"${g.id===s.groupId?' selected':''}>${g.name}</option>`).join('');
   document.getElementById('ms-title').textContent='Editar alumno';
+  const dl2=document.getElementById('schools-datalist');
+  if(dl2)dl2.innerHTML=(db.schools||[]).map(s=>`<option value="${s}">`).join('');
   openModal('m-student');
 }
 
@@ -1569,7 +1648,13 @@ function saveStudent(){
   const id=document.getElementById('ms-id').value;
   const name=document.getElementById('ms-name').value.trim();
   if(!name)return toast('Ingresá el nombre','error');
-  const data={name,groupId:document.getElementById('ms-group').value,dob:document.getElementById('ms-dob').value,school:document.getElementById('ms-school').value.trim(),dadPhone:document.getElementById('ms-dad-phone').value.trim(),dadName:document.getElementById('ms-dad-name').value.trim(),momPhone:document.getElementById('ms-mom-phone').value.trim(),momName:document.getElementById('ms-mom-name').value.trim(),waTarget:document.getElementById('ms-wa-target').value,notes:document.getElementById('ms-notes').value.trim()};
+  const school=document.getElementById('ms-school').value.trim();
+  // Auto-add school to list if new
+  if(school&&!(db.schools||[]).includes(school)){
+    if(!db.schools)db.schools=[];
+    db.schools.push(school);
+  }
+  const data={name,groupId:document.getElementById('ms-group').value,dob:document.getElementById('ms-dob').value,school,dadPhone:document.getElementById('ms-dad-phone').value.trim(),dadName:document.getElementById('ms-dad-name').value.trim(),momPhone:document.getElementById('ms-mom-phone').value.trim(),momName:document.getElementById('ms-mom-name').value.trim(),waTarget:document.getElementById('ms-wa-target').value,notes:document.getElementById('ms-notes').value.trim()};
   if(id)Object.assign(db.students.find(x=>x.id===id),data);
   else db.students.push({id:uid(),...data});
   scheduleSave();closeModal('m-student');
@@ -1632,30 +1717,71 @@ function showProfile(id){
 function renderStudents(){
   const search=document.getElementById('s-search')?.value||'';
   const gf=document.getElementById('s-gf')?.value||'';
+  const sf=document.getElementById('s-sf')?.value||'';
   const month=curMonth();
-  const filtered=db.students.filter(s=>s.name.toLowerCase().includes(search.toLowerCase())&&(!gf||s.groupId===gf));
+  const now=new Date();
+  const thisMonth=now.getMonth();
+
+  const filtered=db.students.filter(s=>{
+    const matchName=s.name.toLowerCase().includes(search.toLowerCase());
+    const matchGroup=!gf||s.groupId===gf;
+    const matchSchool=!sf||s.school===sf;
+    return matchName&&matchGroup&&matchSchool;
+  });
+
+  // Birthdays this month
+  const bdaysThisMonth=filtered.filter(s=>{
+    if(!s.dob)return false;
+    return new Date(s.dob).getMonth()===thisMonth;
+  });
+
+  const schools=[...new Set(db.students.map(s=>s.school).filter(Boolean))].sort();
+
   document.getElementById('page-students').innerHTML=`
     <div class="page-header">
-      <div><div class="page-title">Alumnos</div><div class="page-subtitle">${db.students.length} alumnos en total</div></div>
+      <div><div class="page-title">Alumnos</div><div class="page-subtitle">${filtered.length} de ${db.students.length} alumnos</div></div>
+      <div class="page-actions"><button class="btn primary sm" onclick="openAddStudent('')"><i class="ti ti-user-plus"></i> Nuevo</button></div>
     </div>
-    <div class="search-row">
-      <input class="search-input" id="s-search" placeholder="Buscar alumno..." value="${search}" oninput="renderStudents()">
-      <select class="search-input" id="s-gf" onchange="renderStudents()" style="min-width:0;width:auto">
+
+    ${bdaysThisMonth.length?`<div class="card" style="margin-bottom:14px;border-color:var(--accent-border);padding:12px 16px">
+      <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px">🎂 Cumpleaños este mes</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${bdaysThisMonth.map(s=>{const d=new Date(s.dob);return`<span style="background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:20px;padding:4px 12px;font-size:12px"><strong>${s.name.split(' ')[0]}</strong> — ${d.getDate()}/${d.getMonth()+1}</span>`;}).join('')}
+      </div>
+    </div>`:''}
+
+    <div class="search-row" style="flex-wrap:wrap">
+      <input class="search-input" id="s-search" placeholder="🔍 Buscar..." value="${search}" oninput="renderStudents()" style="flex:1;min-width:140px">
+      <select class="search-input" id="s-gf" onchange="renderStudents()" style="flex:1;min-width:130px">
         <option value="">Todos los grupos</option>
         ${db.groups.map(g=>`<option value="${g.id}"${g.id===gf?' selected':''}>${g.name}</option>`).join('')}
       </select>
+      <select class="search-input" id="s-sf" onchange="renderStudents()" style="flex:1;min-width:130px">
+        <option value="">Todos los colegios</option>
+        ${schools.map(s=>`<option value="${s}"${s===sf?' selected':''}>${s}</option>`).join('')}
+      </select>
     </div>
+
     <div class="student-grid">
       ${filtered.map(s=>{
-        const g=getGroup(s.groupId);const paid=hasPaid(s.id,month);const f=getFam(s.id);
-        return`<div class="student-card" onclick="showProfile('${s.id}')">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-            ${avatar(s.name,40)}
-            <div><div style="font-weight:500;font-size:13px">${s.name}</div><div style="font-size:11px;color:var(--text3)">${g.name}</div></div>
+        const g=getGroup(s.groupId);
+        const paid=hasPaid(s.id,month);
+        const f=getFam(s.id);
+        const isBday=s.dob&&new Date(s.dob).getMonth()===thisMonth;
+        const now2=new Date();
+        let soonBday=false;
+        if(s.dob){const dob=new Date(s.dob);const next=new Date(now2.getFullYear(),dob.getMonth(),dob.getDate());if(next<now2)next.setFullYear(now2.getFullYear()+1);soonBday=Math.ceil((next-now2)/86400000)<=7;}
+        return`<div class="student-card" style="${soonBday?'border-color:var(--accent-border);':''}" onclick="showProfile('${s.id}')">`
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+            ${avatar(s.name,38)}
+            <div style="min-width:0">
+              <div style="font-weight:500;font-size:13px;display:flex;align-items:center;gap:4px">${s.name.split(' ').slice(0,2).join(' ')}${isBday?' 🎂':''}</div>
+              <div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.name}${s.school?' · '+s.school:''}</div>
+            </div>
           </div>
-          <div style="display:flex;gap:5px;flex-wrap:wrap">
-            <span class="badge ${paid?'green':'red'}">${paid?'Pagó':'Pendiente'}</span>
-            ${f?`<span class="badge gold">${f.name}</span>`:''}
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <span class="badge ${paid?'green':'red'}" style="font-size:10px">${paid?'Pagó':'Pendiente'}</span>
+            ${f?`<span class="badge gold" style="font-size:10px">${f.name}</span>`:''}
           </div>
         </div>`;
       }).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-user-search"></i>Sin resultados</div>'}
@@ -1844,32 +1970,118 @@ function deleteFamily(id){
 function initAttendance(){
   const sel=document.getElementById('att-group-sel');
   const am=document.getElementById('att-month-sel');
+  const vm=document.getElementById('att-view-mode');
   const gid=sel?sel.value:'';
   const month=am?am.value||curMonth():curMonth();
+  const viewMode=vm?vm.value:'month';
+  const selTri=document.getElementById('att-tri-sel')?.value||'1';
   document.getElementById('page-attendance').innerHTML=`
-    <div class="page-header"><div><div class="page-title">Asistencias</div></div></div>
+    <div class="page-header"><div><div class="page-title">Asistencias</div><div class="page-subtitle">Solo se marcan inasistencias. Presente es automático.</div></div></div>
     <div class="search-row">
-      <select class="search-input" id="att-group-sel" onchange="renderAttendance()" style="width:auto">
+      <select class="search-input" id="att-group-sel" onchange="initAttendance()" style="flex:1;min-width:140px">
         <option value="">Seleccionar grupo...</option>
         ${db.groups.map(g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${g.name}</option>`).join('')}
       </select>
-      <input type="month" id="att-month-sel" value="${month}" onchange="renderAttendance()" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none">
+      <select class="search-input" id="att-view-mode" onchange="initAttendance()" style="flex:1;min-width:130px">
+        <option value="month"${viewMode==='month'?' selected':''}>Por mes</option>
+        <option value="trimester"${viewMode==='trimester'?' selected':''}>Por trimestre</option>
+      </select>
+      ${viewMode==='trimester'
+        ?`<select class="search-input" id="att-tri-sel" onchange="initAttendance()" style="flex:1;min-width:140px">
+            <option value="1"${selTri==='1'?' selected':''}>1° Trim (Mar-May)</option>
+            <option value="2"${selTri==='2'?' selected':''}>2° Trim (Jun-Ago)</option>
+            <option value="3"${selTri==='3'?' selected':''}>3° Trim (Sep-Dic)</option>
+          </select>`
+        :`<input type="month" id="att-month-sel" value="${month}" onchange="initAttendance()" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;flex:1;min-width:130px">`}
     </div>
-    <div id="att-body">${gid&&month?renderAttBody(gid,month):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo y mes</div>'}</div>`;
+    <div id="att-body">${gid
+      ?(viewMode==='trimester'?renderTrimesterAtt(gid,parseInt(selTri)):renderAttBody(gid,month))
+      :'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>'}
+    </div>`;
+}
+
+function renderAttendance(){initAttendance();}
+
+function renderTrimesterAtt(gid,tri){
+  const g=getGroup(gid);
+  const students=db.students.filter(s=>s.groupId===gid);
+  const triMonths=getTrimonths(tri);
+  const now=new Date();
+  const year=now.getFullYear();
+  const dstr=(g.days||[]).map(d=>DAY_SHORT[d]).join(' + ');
+
+  // For each student, compute total classes and absences across all trimester months
+  function studentTriStats(s){
+    let totalClasses=0;let absences=0;
+    triMonths.forEach(mo=>{
+      const mkey=`${year}-${String(mo).padStart(2,'0')}`;
+      const[yy,mm]=mkey.split('-').map(Number);
+      const dim=new Date(yy,mm,0).getDate();
+      const cdays=[];
+      for(let d=1;d<=dim;d++){const dow=new Date(yy,mm-1,d).getDay();if((g.days||[]).includes(dow))cdays.push(d);}
+      const rec=(db.attendance[gid]||{})[mkey]?.[s.id]||{};
+      const notes=db.dayNotes[mkey]||{};
+      cdays.forEach(d=>{
+        const key=`${gid}-${mkey}-${d}`;
+        if(notes[key])return;
+        totalClasses++;
+        if(rec[d]==='A')absences++;
+      });
+    });
+    return{totalClasses,absences,presences:totalClasses-absences};
+  }
+
+  const triNames=['','1° Trimestre (Mar-May)','2° Trimestre (Jun-Ago)','3° Trimestre (Sep-Dic)'];
+
+  let html=`<div class="card">
+    <div style="margin-bottom:14px">
+      <div style="font-family:var(--font-display);font-size:17px;font-weight:600">${g.name}</div>
+      <div style="font-size:12px;color:var(--text3)">${dstr} · ${g.time} · ${triNames[tri]}</div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Alumno</th>
+        ${triMonths.map(mo=>`<th>${MONTHS[mo-1].slice(0,3)}</th>`).join('')}
+        <th>Total clases</th><th>Ausencias</th><th>Presencias</th><th>%</th>
+      </tr></thead><tbody>
+      ${students.map(s=>{
+        const stats=studentTriStats(s);
+        const pct=stats.totalClasses?Math.round(stats.presences/stats.totalClasses*100):100;
+        // Per-month absences
+        const monthCols=triMonths.map(mo=>{
+          const mkey=`${year}-${String(mo).padStart(2,'0')}`;
+          const[yy,mm]=mkey.split('-').map(Number);
+          const dim=new Date(yy,mm,0).getDate();
+          let a=0;let t=0;
+          for(let d=1;d<=dim;d++){
+            const dow=new Date(yy,mm-1,d).getDay();
+            if(!(g.days||[]).includes(dow))continue;
+            const key=`${gid}-${mkey}-${d}`;
+            if((db.dayNotes[mkey]||{})[key])continue;
+            t++;
+            if((db.attendance[gid]?.[mkey]?.[s.id]||{})[d]==='A')a++;
+          }
+          return`<td style="text-align:center"><span class="${a>0?'badge red':'badge green'}" style="font-size:11px">${a===0?'✓':a+'A'}</span></td>`;
+        }).join('');
+        return`<tr>
+          <td><div style="display:flex;align-items:center;gap:7px">${avatar(s.name,26)}<span>${s.name}</span></div></td>
+          ${monthCols}
+          <td style="text-align:center;font-weight:500">${stats.totalClasses}</td>
+          <td style="text-align:center"><span class="badge ${stats.absences===0?'green':stats.absences<=2?'amber':'red'}">${stats.absences}</span></td>
+          <td style="text-align:center">${stats.presences}</td>
+          <td style="text-align:center"><span class="badge ${pct>=80?'green':pct>=60?'amber':'red'}">${pct}%</span></td>
+        </tr>`;
+      }).join('')}
+      </tbody></table></div>
+    <div style="margin-top:14px;font-size:12px;color:var(--text3)">Para marcar ausencias individuales, cambiá a "Vista por mes"</div>
+  </div>`;
+  return html;
 }
 
 /* ---- ATTENDANCE ---- */
-// Trimestres: 1=Mar-May, 2=Jun-Aug, 3=Sep-Nov
-const TRIMESTRES=[[3,4,5],[6,7,8],[9,10,11]];
+// Trimestres: 1=Mar-May, 2=Jun-Aug, 3=Sep-Nov+Dec
+const TRIMESTRES=[[3,4,5],[6,7,8],[9,10,11,12]];
 function getTrimestre(monthStr){const mo=parseInt(monthStr.split('-')[1]);const idx=TRIMESTRES.findIndex(t=>t.includes(mo));return idx>=0?idx+1:null;}
 function getTrimonths(tri){return TRIMESTRES[tri-1]||[];}
-
-function renderAttendance(){
-  const gid=document.getElementById('att-group-sel')?.value||'';
-  const month=document.getElementById('att-month-sel')?.value||curMonth();
-  const body=document.getElementById('att-body');
-  if(body)body.innerHTML=gid&&month?renderAttBody(gid,month):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo y mes</div>';
-}
 
 function renderAttBody(gid,month){
   const g=getGroup(gid);const students=db.students.filter(s=>s.groupId===gid);
@@ -2115,47 +2327,104 @@ function getWAMessage(month){
   const s=getSettings();
   const[,mo]=month.split('-');
   const key='waMsg_'+month;
-  return s[key]||`💰 MES DE ${MONTHS[parseInt(mo)-1]} RECIBIDO! Muchas gracias ❣️`;
+  if(s[key])return s[key];
+  const def=s['waMsg_default']||`💰 MES DE {MES} RECIBIDO! Muchas gracias ❣️`;
+  return def.replace('{MES}',MONTHS[parseInt(mo)-1]);
 }
 
 function renderSettings(){
   const month=curMonth();
   const s=getSettings();
-  const msgs=[];
-  // Show last 3 months + next month
-  for(let i=-1;i<=2;i++){
-    const d=new Date();d.setMonth(d.getMonth()+i);
-    const m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    msgs.push(m);
-  }
+  const[,mo]=month.split('-');
+  const key='waMsg_'+month;
+  const customMsg=s[key]||'';
+  const defaultMsg=s['waMsg_default']||`💰 MES DE {MES} RECIBIDO! Muchas gracias ❣️`;
+  const activeMsg=customMsg||(defaultMsg.replace('{MES}',MONTHS[parseInt(mo)-1]));
 
   document.getElementById('page-settings').innerHTML=`
     <div class="page-header">
-      <div><div class="page-title">Configuración</div><div class="page-subtitle">Mensajes de WhatsApp y preferencias</div></div>
+      <div><div class="page-title">Configuración</div></div>
     </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Mensaje de WhatsApp — ${MONTHS[parseInt(mo)-1]} ${month.split('-')[0]}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Se usa al enviar el aviso de pago. Dejá en blanco para usar el predeterminado.</div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Mensaje de este mes (opcional)</label>
+        <textarea id="wa-msg-${month}" rows="2" placeholder="${activeMsg}">${customMsg}</textarea>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text2);margin-bottom:10px">
+        <span style="font-size:11px;color:var(--text3)">Vista previa:</span><br>${customMsg||activeMsg}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary sm" onclick="saveWAMsg('${month}')"><i class="ti ti-device-floppy"></i> Guardar</button>
+        <button class="btn sm" onclick="previewWA('${month}')"><i class="ti ti-brand-whatsapp"></i> Probar en WA</button>
+        ${customMsg?`<button class="btn sm danger" onclick="clearWAMsg('${month}')"><i class="ti ti-x"></i> Quitar personalización</button>`:''}
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Mensaje predeterminado</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Usá <code style="background:var(--bg4);padding:1px 5px;border-radius:4px">{MES}</code> para insertar el nombre del mes automáticamente.</div>
+      <div class="field" style="margin-bottom:10px">
+        <textarea id="wa-default-msg" rows="2">${s['waMsg_default']||''}</textarea>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Predeterminado actual: <em>${defaultMsg}</em></div>
+      <button class="btn primary sm" onclick="saveDefaultWAMsg()"><i class="ti ti-device-floppy"></i> Guardar predeterminado</button>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Colegios</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Lista para filtrar alumnos y autocompletar en fichas.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+        ${(db.schools||[]).map(sc=>`<span style="display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px">
+          ${sc}
+          <button onclick="deleteSchool('${sc.replace(/'/g,"\\'")}')" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:11px;padding:0;line-height:1">×</button>
+        </span>`).join('')||'<span style="color:var(--text3);font-size:13px">Sin colegios</span>'}
+      </div>
+      <div style="display:flex;gap:8px">
+        <input id="new-school-input" class="search-input" placeholder="Nombre del colegio" style="flex:1" onkeydown="if(event.key==='Enter')addSchool()">
+        <button class="btn primary sm" onclick="addSchool()"><i class="ti ti-plus"></i> Agregar</button>
+      </div>
+    </div>
+
     <div class="card">
-      <div class="card-title">Mensajes de pago por mes</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:18px">Personalizá el mensaje que se envía por WhatsApp al confirmar un pago. Podés usar el nombre del mes, emojis, lo que quieras.</p>
-      ${msgs.map(m=>{
-        const[,mo]=m.split('-');
-        const key='waMsg_'+m;
-        const val=s[key]||'';
-        const def=`💰 MES DE ${MONTHS[parseInt(mo)-1]} RECIBIDO! Muchas gracias ❣️`;
-        return`<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
-          <div style="font-weight:500;margin-bottom:8px;font-size:14px">${MONTHS[parseInt(mo)-1]} ${m.split('-')[0]} ${m===month?'<span class="badge green" style="margin-left:6px">Mes actual</span>':''}</div>
-          <div class="field" style="margin-bottom:8px">
-            <label>Mensaje personalizado (dejá vacío para usar el predeterminado)</label>
-            <textarea id="wa-msg-${m}" rows="2" placeholder="${def}">${val}</textarea>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <button class="btn sm primary" onclick="saveWAMsg('${m}')"><i class="ti ti-device-floppy"></i> Guardar</button>
-            <button class="btn sm" onclick="previewWA('${m}')"><i class="ti ti-eye"></i> Preview WA</button>
-            ${val?`<button class="btn sm danger" onclick="clearWAMsg('${m}')"><i class="ti ti-x"></i> Restablecer</button>`:''}
-          </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:8px"><i class="ti ti-info-circle"></i> Vista previa: <em>${val||def}</em></div>
-        </div>`;
-      }).join('')}
+      <div class="card-title">Acerca del sistema</div>
+      <div class="stat-row"><span class="stat-label">Alumnos</span><span class="stat-val">${db.students.length}</span></div>
+      <div class="stat-row"><span class="stat-label">Grupos</span><span class="stat-val">${db.groups.length}</span></div>
+      <div class="stat-row"><span class="stat-label">Pagos registrados</span><span class="stat-val">${db.payments.length}</span></div>
+      <div class="stat-row"><span class="stat-label">Familias</span><span class="stat-val">${db.families.length}</span></div>
+      <div class="stat-row"><span class="stat-label">Notas cargadas</span><span class="stat-val">${Object.keys(db.grades||{}).length} grupos con notas</span></div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm" onclick="exportData()"><i class="ti ti-download"></i> Backup</button>
+        <button class="btn sm" onclick="loadFromSupabase().then(()=>{renderSettings();toast('Actualizado')})"><i class="ti ti-cloud-download"></i> Forzar sync</button>
+      </div>
     </div>`;
+}
+
+function saveDefaultWAMsg(){
+  const text=document.getElementById('wa-default-msg').value.trim();
+  if(!db.settings)db.settings={};
+  if(text)db.settings['waMsg_default']=text;
+  else delete db.settings['waMsg_default'];
+  scheduleSave();renderSettings();toast('Predeterminado guardado');
+}
+
+function addSchool(){
+  const el=document.getElementById('new-school-input');
+  const name=el?el.value.trim():'';
+  if(!name)return;
+  if(!(db.schools||[]).includes(name)){
+    if(!db.schools)db.schools=[];
+    db.schools.push(name);
+    scheduleSave();
+  }
+  renderSettings();
+}
+
+function deleteSchool(name){
+  db.schools=(db.schools||[]).filter(s=>s!==name);
+  scheduleSave();renderSettings();
 }
 
 function saveWAMsg(month){
@@ -2179,6 +2448,319 @@ function previewWA(month){
   const text=el?el.value.trim():getWAMessage(month);
   const msg=text||getWAMessage(month);
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+/* ---- GRADES 2026 ---- */
+// grades[groupId][studentId][trimestre][subject] = [{desc, score|'A'}]
+function getGrades(){if(!db.grades)db.grades={};return db.grades;}
+
+function renderGrades(){
+  const g=db.groups;
+  const selGid=document.getElementById('gr-gid')?.value||'';
+  const selTri=document.getElementById('gr-tri')?.value||'1';
+  const selSid=document.getElementById('gr-sid')?.value||'';
+
+  document.getElementById('page-grades').innerHTML=`
+    <div class="page-header">
+      <div><div class="page-title">Notas 2026</div><div class="page-subtitle">Boletín trimestral por alumno</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="field"><label>Grupo</label>
+        <select id="gr-gid" onchange="renderGrades()">
+          <option value="">Seleccionar...</option>
+          ${db.groups.map(g=>`<option value="${g.id}"${g.id===selGid?' selected':''}>${g.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Trimestre</label>
+        <select id="gr-tri" onchange="renderGrades()">
+          <option value="1"${selTri==='1'?' selected':''}>1° Trimestre (Mar-May)</option>
+          <option value="2"${selTri==='2'?' selected':''}>2° Trimestre (Jun-Ago)</option>
+          <option value="3"${selTri==='3'?' selected':''}>3° Trimestre (Sep-Dic)</option>
+        </select>
+      </div>
+      <div class="field"><label>Alumno (opcional)</label>
+        <select id="gr-sid" onchange="renderGrades()">
+          <option value="">Todos</option>
+          ${selGid?db.students.filter(s=>s.groupId===selGid).map(s=>`<option value="${s.id}"${s.id===selSid?' selected':''}>${s.name}</option>`).join(''):''}
+        </select>
+      </div>
+    </div>
+    ${!selGid?'<div class="empty"><i class="ti ti-clipboard-list"></i>Seleccioná un grupo para ver las notas</div>':renderGradesContent(selGid,selTri,selSid)}
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">📋 Cambridge 2025 — Referencia examen final</div>
+      ${renderCambridge2025Table(selGid)}
+    </div>`;
+}
+
+function renderGradesContent(gid,tri,filterSid){
+  const students=db.students.filter(s=>s.groupId===gid&&(!filterSid||s.id===filterSid));
+  const grades=getGrades();
+  if(students.length===0) return'<div class="empty">Sin alumnos en este grupo</div>';
+
+  return students.map(s=>{
+    const sGrades=grades[gid]?.[s.id]?.[tri]||{};
+    // Compute averages
+    const written=GRADE_SUBJECTS[0].items;
+    const oral=GRADE_SUBJECTS[1].items;
+    function subjectAvg(subj){
+      const entries=(sGrades[subj]||[]).filter(e=>e.score!=='A');
+      if(!entries.length)return null;
+      return(entries.reduce((a,e)=>a+Number(e.score),0)/entries.length).toFixed(1);
+    }
+    function catAvg(items){
+      const avgs=items.map(subjectAvg).filter(v=>v!==null).map(Number);
+      if(!avgs.length)return null;
+      return(avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1);
+    }
+    const wAvg=catAvg(written);
+    const oAvg=catAvg(oral);
+    const total=wAvg&&oAvg?((Number(wAvg)+Number(oAvg))/2).toFixed(1):wAvg||oAvg||null;
+
+    return`<div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          ${avatar(s.name,38)}
+          <div>
+            <div style="font-weight:600;font-size:15px">${s.name}</div>
+            <div style="font-size:12px;color:var(--text3)">${getGroup(s.groupId).name} · Trimestre ${tri}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${wAvg?`<span class="badge blue">Written: ${wAvg}</span>`:''}
+          ${oAvg?`<span class="badge green">Oral: ${oAvg}</span>`:''}
+          ${total?`<span class="badge ${Number(total)>=7?'green':Number(total)>=4?'amber':'red'}" style="font-size:14px;padding:4px 12px">Prom: ${total}</span>`:''}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        ${GRADE_SUBJECTS.map(cat=>`
+          <div>
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:8px">${cat.cat}</div>
+            ${cat.items.map(subj=>{
+              const entries=sGrades[subj]||[];
+              const avg=subjectAvg(subj);
+              return`<div style="margin-bottom:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+                  <span style="font-size:13px;font-weight:500">${subj}</span>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    ${avg!==null?`<span class="badge ${Number(avg)>=7?'green':Number(avg)>=4?'amber':'red'}">${avg}</span>`:'<span style="font-size:11px;color:var(--text3)">—</span>'}
+                    <button class="btn xs" onclick="openGradeEntry('${gid}','${s.id}','${tri}','${subj}')"><i class="ti ti-plus"></i></button>
+                  </div>
+                </div>
+                ${entries.length?`<div style="display:flex;flex-wrap:wrap;gap:4px">
+                  ${entries.map((e,i)=>`<span style="background:${e.score==='A'?'var(--amber-bg)':'var(--bg3)'};border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:12px;display:inline-flex;align-items:center;gap:4px">
+                    ${e.score==='A'?'Ausente':e.score}${e.desc?` <span style="color:var(--text3);font-size:10px">${e.desc}</span>`:''}
+                    <span onclick="deleteGradeEntry('${gid}','${s.id}','${tri}','${subj}',${i})" style="cursor:pointer;color:var(--red);font-size:10px;margin-left:2px">×</span>
+                  </span>`).join('')}
+                </div>`:''}
+              </div>`;
+            }).join('')}
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCambridge2025Table(gid){
+  const grpName=gid?db.groups.find(g=>g.id===gid)?.name||'':'';
+  const rows=db.cambridge2025||[];
+  const filtered=grpName?rows.filter(r=>r.group.toLowerCase().includes(grpName.toLowerCase().split(' ')[0])):rows;
+  if(!filtered.length) return'<div style="font-size:13px;color:var(--text3)">Sin datos para este grupo</div>';
+  const byGroup={};
+  filtered.forEach(r=>{if(!byGroup[r.group])byGroup[r.group]=[];byGroup[r.group].push(r);});
+  return Object.entries(byGroup).map(([grp,rs])=>`
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;text-transform:uppercase">${grp}</div>
+      <div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Escrito</th><th>Oral</th><th>Promedio</th><th>Conclusión</th></tr></thead><tbody>
+      ${rs.map(r=>`<tr>
+        <td>${r.name}</td>
+        <td><span class="badge ${r.written>=7?'green':r.written>=4?'amber':'red'}">${r.written}</span></td>
+        <td><span class="badge ${r.oral>=7?'green':r.oral>=4?'amber':'red'}">${r.oral}</span></td>
+        <td>${r.prom!==null?`<span class="badge ${Number(r.prom)>=7?'green':Number(r.prom)>=4?'amber':'red'}">${r.prom}</span>`:`<span class="badge red">${r.conclusion}</span>`}</td>
+        <td style="font-size:12px;color:var(--text3)">${r.conclusion||'—'}</td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>`).join('');
+}
+
+function openGradeEntry(gid,sid,tri,subj){
+  document.getElementById('ge-gid').value=gid;
+  document.getElementById('ge-sid').value=sid;
+  document.getElementById('ge-tri').value=tri;
+  document.getElementById('ge-subj').value=subj;
+  document.getElementById('ge-score').value='';
+  document.getElementById('ge-desc').value='';
+  document.getElementById('ge-title').textContent=`${subj} — Trim.${tri}`;
+  openModal('m-grade-entry');
+}
+
+function saveGradeEntry(){
+  const gid=document.getElementById('ge-gid').value;
+  const sid=document.getElementById('ge-sid').value;
+  const tri=document.getElementById('ge-tri').value;
+  const subj=document.getElementById('ge-subj').value;
+  const score=document.getElementById('ge-score').value.trim();
+  const desc=document.getElementById('ge-desc').value.trim();
+  if(!score)return toast('Ingresá nota o A (Ausente)','error');
+  const isAbsent=score.toUpperCase()==='A';
+  const numScore=isAbsent?'A':parseFloat(score);
+  if(!isAbsent&&(isNaN(numScore)||numScore<1||numScore>10))return toast('La nota debe ser del 1 al 10 o A','error');
+  if(!db.grades)db.grades={};
+  if(!db.grades[gid])db.grades[gid]={};
+  if(!db.grades[gid][sid])db.grades[gid][sid]={};
+  if(!db.grades[gid][sid][tri])db.grades[gid][sid][tri]={};
+  if(!db.grades[gid][sid][tri][subj])db.grades[gid][sid][tri][subj]=[];
+  db.grades[gid][sid][tri][subj].push({score:isAbsent?'A':numScore,desc});
+  scheduleSave();closeModal('m-grade-entry');renderGrades();toast('Nota guardada');
+}
+
+function deleteGradeEntry(gid,sid,tri,subj,idx){
+  if(!db.grades?.[gid]?.[sid]?.[tri]?.[subj])return;
+  db.grades[gid][sid][tri][subj].splice(idx,1);
+  scheduleSave();renderGrades();
+}
+
+/* ---- CLASS CALCULATOR ---- */
+function renderClassCalc(){
+  const selTid=document.getElementById('cc-tid')?.value||'';
+  const selWeek=document.getElementById('cc-week')?.value||today().slice(0,8)+'01';
+
+  document.getElementById('page-classcalc').innerHTML=`
+    <div class="page-header">
+      <div><div class="page-title">Calculadora de Clases</div><div class="page-subtitle">Para profesores que cobran por clase</div></div>
+      <div class="page-actions"><button class="btn sm" onclick="openModal('m-classtype')"><i class="ti ti-settings"></i> Tipos de clase</button></div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Tipos de clase configurados</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        ${(db.classTypes||[]).map(ct=>`<div style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;font-size:13px">
+          <span style="font-weight:500">${ct.name}</span>
+          <span style="color:var(--accent);font-family:var(--font-mono)">${fm(ct.price)}</span>
+          <button class="btn ghost xs danger" onclick="deleteClassType('${ct.id}')"><i class="ti ti-trash"></i></button>
+        </div>`).join('')||'<span style="color:var(--text3);font-size:13px">Sin tipos configurados</span>'}
+      </div>
+      <button class="btn sm primary" onclick="openAddClassType()"><i class="ti ti-plus"></i> Agregar tipo</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Registro de clases</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div class="field"><label>Profesor</label>
+          <select id="cc-tid" onchange="renderClassCalc()">
+            <option value="">Seleccionar...</option>
+            ${db.teachers.map(t=>`<option value="${t.id}"${t.id===selTid?' selected':''}>${t.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Mes</label>
+          <input type="month" id="cc-week" value="${curMonth()}" onchange="renderClassCalc()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-size:13px;outline:none;width:100%">
+        </div>
+      </div>
+      ${selTid?renderClassCalcEntries(selTid,curMonth()):'<div class="empty"><i class="ti ti-school"></i>Seleccioná un profesor</div>'}
+    </div>`;
+}
+
+function renderClassCalcEntries(tid,month){
+  if(!db.classLogs)db.classLogs={};
+  const logs=(db.classLogs[tid]||[]).filter(l=>l.month===month);
+  const types=db.classTypes||[];
+
+  // Group by week
+  const total=logs.reduce((a,l)=>{const t=types.find(x=>x.id===l.typeId);return a+(t?t.price:0);},0);
+  const byWeek={};
+  logs.forEach(l=>{const w=l.week||'Sin semana';if(!byWeek[w])byWeek[w]=[];byWeek[w].push(l);});
+
+  return`<div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:13px;color:var(--text2)">${logs.length} clases registradas</div>
+      <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--accent)">${fm(total)}</div>
+    </div>
+    <button class="btn primary sm" onclick="openAddClassLog('${tid}','${month}')" style="margin-bottom:14px"><i class="ti ti-plus"></i> Agregar clase</button>
+    ${Object.keys(byWeek).length===0?'<div class="empty" style="padding:14px">Sin clases registradas este mes</div>':
+    Object.entries(byWeek).sort().map(([w,wlogs])=>{
+      const wTotal=wlogs.reduce((a,l)=>{const t=types.find(x=>x.id===l.typeId);return a+(t?t.price:0);},0);
+      return`<div style="margin-bottom:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:flex;justify-content:space-between">
+          <span>Semana del ${w}</span><span style="color:var(--accent)">${fm(wTotal)}</span>
+        </div>
+        ${wlogs.map(l=>{
+          const t=types.find(x=>x.id===l.typeId);
+          return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg3);border-radius:var(--radius);margin-bottom:4px;font-size:13px">
+            <div>
+              <span style="font-weight:500">${t?t.name:'?'}</span>
+              ${l.note?`<span style="color:var(--text3);margin-left:6px;font-size:12px">${l.note}</span>`:''}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:var(--font-mono);color:var(--accent)">${t?fm(t.price):'—'}</span>
+              <button class="btn ghost xs danger" onclick="deleteClassLog('${tid}','${month}',${logs.indexOf(l)})"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function openAddClassLog(tid,month){
+  document.getElementById('cl-tid').value=tid;
+  document.getElementById('cl-month').value=month;
+  document.getElementById('cl-note').value='';
+  const types=db.classTypes||[];
+  document.getElementById('cl-type').innerHTML=types.map(t=>`<option value="${t.id}">${t.name} — ${fm(t.price)}</option>`).join('');
+  // Default week = this Monday
+  const now=new Date();
+  const day=now.getDay();
+  const monday=new Date(now);monday.setDate(now.getDate()-(day===0?6:day-1));
+  document.getElementById('cl-week').value=monday.toISOString().slice(0,10);
+  openModal('m-classlog');
+}
+
+function saveClassLog(){
+  const tid=document.getElementById('cl-tid').value;
+  const month=document.getElementById('cl-month').value;
+  const typeId=document.getElementById('cl-type').value;
+  const week=document.getElementById('cl-week').value;
+  const note=document.getElementById('cl-note').value.trim();
+  if(!typeId)return toast('Elegí tipo de clase','error');
+  if(!db.classLogs)db.classLogs={};
+  if(!db.classLogs[tid])db.classLogs[tid]=[];
+  db.classLogs[tid].push({month,typeId,week,note,date:new Date().toISOString()});
+  scheduleSave();closeModal('m-classlog');renderClassCalc();toast('Clase registrada');
+}
+
+function deleteClassLog(tid,month,idx){
+  if(!db.classLogs?.[tid])return;
+  const logs=db.classLogs[tid].filter(l=>l.month===month);
+  const allLogs=db.classLogs[tid];
+  const item=logs[idx];
+  const realIdx=allLogs.indexOf(item);
+  if(realIdx>=0)allLogs.splice(realIdx,1);
+  scheduleSave();renderClassCalc();
+}
+
+function openAddClassType(){
+  document.getElementById('ct-id').value='';
+  document.getElementById('ct-name').value='';
+  document.getElementById('ct-price').value='';
+  openModal('m-classtype');
+}
+
+function deleteClassType(id){
+  if(!confirm('¿Eliminar tipo de clase?'))return;
+  db.classTypes=(db.classTypes||[]).filter(t=>t.id!==id);
+  scheduleSave();renderClassCalc();
+}
+
+function saveClassType(){
+  const id=document.getElementById('ct-id').value;
+  const name=document.getElementById('ct-name').value.trim();
+  const price=Number(document.getElementById('ct-price').value);
+  if(!name||!price)return toast('Completá nombre y precio','error');
+  if(!db.classTypes)db.classTypes=[];
+  if(id){const t=db.classTypes.find(x=>x.id===id);if(t){t.name=name;t.price=price;}}
+  else db.classTypes.push({id:uid(),name,price});
+  document.getElementById('ct-id').value='';
+  scheduleSave();closeModal('m-classtype');renderClassCalc();toast('Tipo guardado');
 }
 
 /* ---- INIT ---- */
