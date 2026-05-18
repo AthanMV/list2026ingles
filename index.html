@@ -1542,16 +1542,37 @@ function renderDashboard(){
   const paidC=db.students.filter(s=>hasPaid(s.id,month)).length;
   const pending=total-paidC;
   const pays=db.payments.filter(p=>p.month===month);
+
+  // --- EXPECTED: sum family.total once per family + individual fee for non-family students ---
+  const countedFamilies=new Set();
+  let expected=0;
+  db.students.forEach(s=>{
+    const f=getFam(s.id);
+    if(f){
+      if(!countedFamilies.has(f.id)){
+        countedFamilies.add(f.id);
+        expected+=f.total; // total ya tiene el descuento aplicado
+      }
+    } else {
+      expected+=getGroup(s.groupId).fee||0;
+    }
+  });
+
+  // --- COLLECTED: sum only payments with amount > 0 (skip $0 secondary family members) ---
+  const collected=pays.filter(p=>p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
+
+  // --- BY METHOD: same filter, only amount > 0 ---
   const trans=pays.filter(p=>p.method==='Transferencia'&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
   const efect=pays.filter(p=>p.method==='Efectivo'&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
-  const collected=pays.reduce((a,p)=>a+Number(p.amount),0);
-  const expected=db.students.reduce((a,s)=>{const f=getFam(s.id);if(f)return a+f.total/f.memberIds.length;return a+(getGroup(s.groupId).fee||0);},0);
+  const otros=pays.filter(p=>p.method!=='Transferencia'&&p.method!=='Efectivo'&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
+
+  // --- FALTA COBRAR: expected minus what's actually been collected ---
+  const falta=Math.max(0,expected-collected);
+
   const pct=total>0?Math.round(paidC/total*100):0;
   updatePendingBadge();
   const now=new Date();
-  // Birthdays this month
   const thisMonth=now.getMonth();
-  const bdaysThisMonth=db.students.filter(s=>{if(!s.dob)return false;return new Date(s.dob).getMonth()===thisMonth;});
   const soon=db.students.filter(s=>{if(!s.dob)return false;const dob=new Date(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);return Math.ceil((next-now)/86400000)<=7;});
   const pendSt=db.students.filter(s=>!hasPaid(s.id,month));
 
@@ -1568,13 +1589,14 @@ function renderDashboard(){
       <div class="metric red"><div class="metric-label">Pendientes</div><div class="metric-value red">${pending}</div></div>
       <div class="metric blue"><div class="metric-label">Recaudado</div><div class="metric-value blue" style="font-size:16px">${fm(collected)}</div>
         <div class="progress-bar" style="margin-top:8px"><div class="progress-fill gold" style="width:${expected>0?Math.min(100,Math.round(collected/expected*100)):0}%"></div></div>
-        <div class="metric-sub" style="margin-top:4px">de ${fm(Math.round(expected))}</div></div>
+        <div class="metric-sub" style="margin-top:4px">de ${fm(expected)}</div></div>
     </div>
 
     <div class="method-row" style="margin-bottom:14px">
       <div class="method-box"><div class="method-label">Transferencia</div><div class="method-val" style="color:var(--blue)">${fm(trans)}</div></div>
       <div class="method-box"><div class="method-label">Efectivo</div><div class="method-val" style="color:var(--green)">${fm(efect)}</div></div>
-      <div class="method-box"><div class="method-label">Falta cobrar</div><div class="method-val" style="color:var(--red)">${fm(Math.max(0,Math.round(expected)-collected))}</div></div>
+      ${otros>0?`<div class="method-box"><div class="method-label">Otros</div><div class="method-val" style="color:var(--amber)">${fm(otros)}</div></div>`:''}
+      <div class="method-box"><div class="method-label">Falta cobrar</div><div class="method-val" style="color:var(--red)">${fm(falta)}</div></div>
     </div>
 
     ${soon.length?`<div class="card" style="margin-bottom:14px;border-color:var(--accent-border)">
@@ -1594,8 +1616,6 @@ function renderDashboard(){
       ${pendSt.length>10?`<div style="font-size:12px;color:var(--text3);margin-top:8px">+ ${pendSt.length-10} más...</div>`:''}
     </div>`:`<div class="card"><div class="empty"><i class="ti ti-circle-check"></i>¡Todos pagaron este mes! 🎉</div></div>`}`;
 }
-
-  updatePendingBadge();
 
 /* ---- GROUPS ---- */
 function renderGroups(){
