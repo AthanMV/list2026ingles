@@ -995,6 +995,7 @@ async function loadFromSupabase(){
       seedData();
       await saveToSupabase();
     }
+    normalizePayments();
     setSyncStatus('ok','Sincronizado');
     isOnline=true;
     return true;
@@ -1099,6 +1100,38 @@ function refreshCurrentPage(){
   const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[currentPage]) renders[currentPage]();
   updatePendingBadge();
+}
+
+/* ---- PAYMENT NORMALIZATION ----
+   Fixes legacy records where family payments were stored as individual amounts per member
+   instead of total on first member + $0 on rest.
+   Safe to run multiple times (idempotent). */
+function normalizePayments(){
+  if(!db.families||!db.payments)return;
+  db.families.forEach(fam=>{
+    // Get all months where any member has a payment
+    const months=[...new Set(db.payments.filter(p=>fam.memberIds.includes(p.studentId)).map(p=>p.month))];
+    months.forEach(month=>{
+      const famPays=db.payments.filter(p=>fam.memberIds.includes(p.studentId)&&p.month===month);
+      if(famPays.length===0)return;
+      // Check if this looks like a legacy record (multiple members each with amount>0)
+      const withAmount=famPays.filter(p=>p.amount>0);
+      if(withAmount.length>1){
+        // Legacy: multiple members each paid individually — consolidate
+        const totalPaid=withAmount.reduce((a,p)=>a+Number(p.amount),0);
+        const method=withAmount[0].method;
+        const date=withAmount[0].date;
+        // Mark first member with total, rest with 0
+        fam.memberIds.forEach((mid,i)=>{
+          db.payments=db.payments.filter(p=>!(p.studentId===mid&&p.month===month));
+          db.payments.push({id:uid(),studentId:mid,month,amount:i===0?totalPaid:0,method,date,notes:i===0?'':'pago familiar',familyId:fam.id});
+        });
+      } else {
+        // Already normalized — just ensure all have familyId set
+        famPays.forEach(p=>{if(!p.familyId)p.familyId=fam.id;});
+      }
+    });
+  });
 }
 
 /* ---- SEED ---- */
@@ -1543,36 +1576,48 @@ function renderDashboard(){
   const pending=total-paidC;
   const pays=db.payments.filter(p=>p.month===month);
 
-  // --- EXPECTED: sum family.total once per family + individual fee for non-family students ---
+  // --- EXPECTED: family.total once per family + individual fee ---
   const countedFamilies=new Set();
   let expected=0;
   db.students.forEach(s=>{
     const f=getFam(s.id);
     if(f){
-      if(!countedFamilies.has(f.id)){
-        countedFamilies.add(f.id);
-        expected+=f.total; // total ya tiene el descuento aplicado
-      }
+      if(!countedFamilies.has(f.id)){countedFamilies.add(f.id);expected+=f.total;}
     } else {
       expected+=getGroup(s.groupId).fee||0;
     }
   });
 
-  // --- COLLECTED: sum only payments with amount > 0 (skip $0 secondary family members) ---
-  const collected=pays.filter(p=>p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
+  // --- COLLECTED / BY METHOD ---
+  // For family payments: the real amount is on the record where amount>0 (primary member)
+  // For individual payments: just their amount
+  // We deduplicate families: only count one record per familyId per month
+  const countedFamPays=new Set();
+  let collected=0,trans=0,efect=0,otros=0;
+  pays.forEach(p=>{
+    if(p.familyId){
+      // Only process the primary (amount>0) record for each family
+      if(p.amount>0&&!countedFamPays.has(p.familyId)){
+        countedFamPays.add(p.familyId);
+        const amt=Number(p.amount);
+        collected+=amt;
+        if(p.method==='Transferencia')trans+=amt;
+        else if(p.method==='Efectivo')efect+=amt;
+        else otros+=amt;
+      }
+    } else if(p.amount>0){
+      const amt=Number(p.amount);
+      collected+=amt;
+      if(p.method==='Transferencia')trans+=amt;
+      else if(p.method==='Efectivo')efect+=amt;
+      else otros+=amt;
+    }
+  });
 
-  // --- BY METHOD: same filter, only amount > 0 ---
-  const trans=pays.filter(p=>p.method==='Transferencia'&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
-  const efect=pays.filter(p=>p.method==='Efectivo'&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
-  const otros=pays.filter(p=>p.method!=='Transferencia'&&p.method!=='Efectivo'&&p.amount>0).reduce((a,p)=>a+Number(p.amount),0);
-
-  // --- FALTA COBRAR: expected minus what's actually been collected ---
   const falta=Math.max(0,expected-collected);
-
   const pct=total>0?Math.round(paidC/total*100):0;
   updatePendingBadge();
   const now=new Date();
-  const thisMonth=now.getMonth();
   const soon=db.students.filter(s=>{if(!s.dob)return false;const dob=new Date(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);return Math.ceil((next-now)/86400000)<=7;});
   const pendSt=db.students.filter(s=>!hasPaid(s.id,month));
 
@@ -1877,25 +1922,47 @@ function renderStudents(){
 function renderPayments(){
   const pm=document.getElementById('pay-month-input');
   const month=pm?pm.value||curMonth():curMonth();
-  const activeChip=document.querySelector('#pay-chips .chip.active');
-  const gid=activeChip?activeChip.dataset.gid:'';
-  const students=gid?db.students.filter(s=>s.groupId===gid):db.students;
+  const activeGroupChip=document.querySelector('#pay-chips .chip.active');
+  const gid=activeGroupChip?activeGroupChip.dataset.gid:'';
+  const activeMethodChip=document.querySelector('#pay-method-chips .chip.active');
+  const methodFilter=activeMethodChip?activeMethodChip.dataset.method:'';
 
-  const paidC=students.filter(s=>hasPaid(s.id,month)).length;
-  const pending=students.length-paidC;
+  let students=gid?db.students.filter(s=>s.groupId===gid):db.students;
+
+  // Apply method filter
+  if(methodFilter==='pending'){
+    students=students.filter(s=>!hasPaid(s.id,month));
+  } else if(methodFilter){
+    students=students.filter(s=>{
+      const pay=db.payments.find(p=>p.studentId===s.id&&p.month===month);
+      return pay&&pay.method===methodFilter;
+    });
+  }
+
+  const allStudents=gid?db.students.filter(s=>s.groupId===gid):db.students;
+  const paidC=allStudents.filter(s=>hasPaid(s.id,month)).length;
+  const pending=allStudents.length-paidC;
 
   document.getElementById('page-payments').innerHTML=`
     <div class="page-header">
-      <div><div class="page-title">Pagos</div><div class="page-subtitle">${paidC} pagados · ${pending} pendientes</div></div>
+      <div><div class="page-title">Pagos</div><div class="page-subtitle">${paidC} pagados · ${pending} pendientes · ${students.length} mostrados</div></div>
       <div class="page-actions"><input type="month" id="pay-month-input" value="${month}" onchange="renderPayments()" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none"></div>
     </div>
-    <div class="chips" id="pay-chips">
-      <span class="chip ${!gid?'active':''}" data-gid="" onclick="chipClick(this);renderPayments()">Todos</span>
-      ${db.groups.map(g=>`<span class="chip ${g.id===gid?'active':''}" data-gid="${g.id}" onclick="chipClick(this);renderPayments()">${g.name}</span>`).join('')}
+    <div class="chips" id="pay-chips" style="margin-bottom:6px">
+      <span class="chip ${!gid?'active':''}" data-gid="" onclick="groupChipClick(this)">Todos los grupos</span>
+      ${db.groups.map(g=>`<span class="chip ${g.id===gid?'active':''}" data-gid="${g.id}" onclick="groupChipClick(this)">${g.name}</span>`).join('')}
+    </div>
+    <div class="chips" id="pay-method-chips" style="margin-bottom:12px">
+      <span class="chip ${!methodFilter?'active':''}" data-method="" onclick="methodChipClick(this)">Todos</span>
+      <span class="chip ${methodFilter==='Transferencia'?'active':''}" data-method="Transferencia" onclick="methodChipClick(this)"><span class="badge blue" style="font-size:10px">T</span> Transferencia</span>
+      <span class="chip ${methodFilter==='Efectivo'?'active':''}" data-method="Efectivo" onclick="methodChipClick(this)"><span class="badge green" style="font-size:10px">E</span> Efectivo</span>
+      <span class="chip ${methodFilter==='Expensas'?'active':''}" data-method="Expensas" onclick="methodChipClick(this)"><span class="badge amber" style="font-size:10px">X</span> Expensas</span>
+      <span class="chip ${methodFilter==='pending'?'active':''}" data-method="pending" onclick="methodChipClick(this)"><span class="badge red" style="font-size:10px">!</span> Sin pagar</span>
     </div>
     <div class="table-wrap">
     <table><thead><tr><th>Alumno</th><th>Grupo</th><th>Arancel</th><th>Estado</th><th>Método</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody>
-    ${students.map(s=>{
+    ${students.length===0?`<tr><td colspan="7"><div class="empty">Sin resultados para este filtro</div></td></tr>`:
+    students.map(s=>{
       const g=getGroup(s.groupId);
       const pay=db.payments.find(p=>p.studentId===s.id&&p.month===month);
       const paid=!!pay;const f=getFam(s.id);
@@ -1914,6 +1981,18 @@ function renderPayments(){
       </tr>`;
     }).join('')}
     </tbody></table></div>`;
+}
+
+function groupChipClick(el){
+  document.querySelectorAll('#pay-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderPayments();
+}
+
+function methodChipClick(el){
+  document.querySelectorAll('#pay-method-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderPayments();
 }
 
 function chipClick(el){
