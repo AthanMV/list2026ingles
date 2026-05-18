@@ -1724,7 +1724,8 @@ function saveStudent(){
   scheduleSave();closeModal('m-student');
   if(currentPage==='groups')renderGroups();
   else if(currentPage==='students')renderStudents();
-  toast('Alumno guardado');
+  else if(currentPage==='dashboard')renderDashboard();
+  updatePendingBadge();toast('Alumno guardado');
 }
 
 function deleteStudent(id){
@@ -1732,7 +1733,7 @@ function deleteStudent(id){
   db.students=db.students.filter(s=>s.id!==id);
   db.payments=db.payments.filter(p=>p.studentId!==id);
   db.families.forEach(f=>{f.memberIds=f.memberIds.filter(x=>x!==id);});
-  scheduleSave();renderGroups();toast('Alumno eliminado');
+  scheduleSave();if(currentPage==='students')renderStudents();else renderGroups();updatePendingBadge();toast('Alumno eliminado');
 }
 
 function showProfile(id){
@@ -1936,7 +1937,7 @@ function confirmPay(){
     db.payments.push({id:uid(),studentId:sid,month,amount,method,date:new Date().toISOString(),notes});
     toast('Pago registrado');
   }
-  scheduleSave();closeModal('m-pay');
+  scheduleSave();closeModal('m-pay');refreshCurrentPage();
 }
 
 function unmarkPay(sid,month){
@@ -1950,7 +1951,7 @@ function unmarkPay(sid,month){
     db.payments=db.payments.filter(p=>!(p.studentId===sid&&p.month===month));
     toast('Pago eliminado');
   }
-  scheduleSave();
+  scheduleSave();refreshCurrentPage();
 }
 
 /* ---- FAMILIES ---- */
