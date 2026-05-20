@@ -1233,6 +1233,13 @@ function getStudent(id){return db.students.find(s=>s.id===id)||{name:'—'}}
 function hasPaid(sid,month){return db.payments.some(p=>p.studentId===sid&&p.month===month)}
 function getFam(sid){return db.families.find(f=>f.memberIds.includes(sid))}
 function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+// Parse date string as LOCAL date (avoids UTC timezone shift)
+function parseDOB(dob){
+  if(!dob)return null;
+  const[y,m,d]=dob.split('-').map(Number);
+  return new Date(y,m-1,d); // month is 0-indexed, no timezone conversion
+}
+
 function avatar(name,size=42,gender=''){
   const ini=initials(name);
   let bg,color,border;
@@ -1618,7 +1625,7 @@ function renderDashboard(){
   const pct=total>0?Math.round(paidC/total*100):0;
   updatePendingBadge();
   const now=new Date();
-  const soon=db.students.filter(s=>{if(!s.dob)return false;const dob=new Date(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);return Math.ceil((next-now)/86400000)<=7;});
+  const soon=db.students.filter(s=>{if(!s.dob)return false;const dob=parseDOB(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);return Math.ceil((next-now)/86400000)<=7;});
   const pendSt=db.students.filter(s=>!hasPaid(s.id,month));
 
   document.getElementById('page-dashboard').innerHTML=`
@@ -1646,7 +1653,7 @@ function renderDashboard(){
 
     ${soon.length?`<div class="card" style="margin-bottom:14px;border-color:var(--accent-border)">
       <div class="card-title">🎂 Cumpleaños próximos (7 días)</div>
-      ${soon.map(s=>{const dob=new Date(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);const diff=Math.ceil((next-now)/86400000);return`<div class="bday-item"><i class="ti ti-cake"></i><strong>${s.name}</strong> — ${next.toLocaleDateString('es-AR')} <span style="color:var(--accent)">en ${diff} días</span> <span class="badge gold">${getGroup(s.groupId).name}</span></div>`;}).join('')}
+      ${soon.map(s=>{const dob=parseDOB(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);const diff=Math.ceil((next-now)/86400000);return`<div class="bday-item"><i class="ti ti-cake"></i><strong>${s.name}</strong> — ${next.toLocaleDateString('es-AR')} <span style="color:var(--accent)">en ${diff} días</span> <span class="badge gold">${getGroup(s.groupId).name}</span></div>`;}).join('')}
     </div>`:''}
 
     ${pendSt.length?`<div class="card">
@@ -1811,7 +1818,7 @@ function showProfile(id){
   const now=new Date();
   let bdayHtml='';
   if(s.dob){
-    const dob=new Date(s.dob);
+    const dob=parseDOB(s.dob);
     const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
     if(next<now)next.setFullYear(now.getFullYear()+1);
     const diff=Math.ceil((next-now)/86400000);
@@ -1862,7 +1869,7 @@ function renderStudents(){
   // Birthdays this month
   const bdaysThisMonth=filtered.filter(s=>{
     if(!s.dob)return false;
-    return new Date(s.dob).getMonth()===thisMonth;
+    return parseDOB(s.dob).getMonth()===thisMonth;
   });
 
   const schools=[...new Set(db.students.map(s=>s.school).filter(Boolean))].sort();
@@ -1876,7 +1883,7 @@ function renderStudents(){
     ${bdaysThisMonth.length?`<div class="card" style="margin-bottom:14px;border-color:var(--accent-border);padding:12px 16px">
       <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px">🎂 Cumpleaños este mes</div>
       <div style="display:flex;flex-wrap:wrap;gap:8px">
-        ${bdaysThisMonth.map(s=>{const d=new Date(s.dob);return`<span style="background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:20px;padding:4px 12px;font-size:12px"><strong>${s.name.split(' ')[0]}</strong> — ${d.getDate()}/${d.getMonth()+1}</span>`;}).join('')}
+        ${bdaysThisMonth.map(s=>{const d=parseDOB(s.dob);return`<span style="background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:20px;padding:4px 12px;font-size:12px"><strong>${s.name.split(' ')[0]}</strong> — ${d.getDate()}/${d.getMonth()+1}</span>`;}).join('')}
       </div>
     </div>`:''}
 
@@ -1897,10 +1904,10 @@ function renderStudents(){
         const g=getGroup(s.groupId);
         const paid=hasPaid(s.id,month);
         const f=getFam(s.id);
-        const isBday=s.dob&&new Date(s.dob).getMonth()===thisMonth;
+        const isBday=s.dob&&parseDOB(s.dob).getMonth()===thisMonth;
         const now2=new Date();
         let soonBday=false;
-        if(s.dob){const dob=new Date(s.dob);const next=new Date(now2.getFullYear(),dob.getMonth(),dob.getDate());if(next<now2)next.setFullYear(now2.getFullYear()+1);soonBday=Math.ceil((next-now2)/86400000)<=7;}
+        if(s.dob){const dob=parseDOB(s.dob);const next=new Date(now2.getFullYear(),dob.getMonth(),dob.getDate());if(next<now2)next.setFullYear(now2.getFullYear()+1);soonBday=Math.ceil((next-now2)/86400000)<=7;}
         return`<div class="student-card" style="${soonBday?'border-color:var(--accent-border);':''}" onclick="showProfile('${s.id}')">
           <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
             ${avatar(s.name,38,s.gender||'')}
