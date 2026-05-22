@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cambridge Institute — Profesora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;font-size:14px}
+:root{
+  --bg:#f4f2ec;--bg2:#fff;--bg3:#f9f8f4;--bg4:#eeece4;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.12);
+  --text:#1a1818;--text2:#5a5650;--text3:#9a9690;
+  --accent:#9a6e1a;--accent2:#b8820f;--accent-bg:rgba(154,110,26,0.08);--accent-border:rgba(154,110,26,0.2);
+  --blue:#1a6fd4;--blue-bg:rgba(26,111,212,0.08);
+  --green:#1a7a40;--green-bg:rgba(26,122,64,0.08);
+  --red:#c0392b;--red-bg:rgba(192,57,43,0.08);
+  --amber:#b8620a;--amber-bg:rgba(184,98,10,0.08);
+  --purple:#6d3fc0;--purple-bg:rgba(109,63,192,0.08);
+  --radius:10px;--radius-lg:14px;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --shadow:0 4px 24px rgba(0,0,0,0.1);
+}
+[data-theme="dark"]{
+  --bg:#0f0f13;--bg2:#16161d;--bg3:#1e1e28;--bg4:#252533;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#f0efe8;--text2:#9896a0;--text3:#5a5868;
+  --accent:#c9a84c;--accent2:#e8c96a;--accent-bg:rgba(201,168,76,0.1);--accent-border:rgba(201,168,76,0.25);
+  --blue:#4a9eff;--blue-bg:rgba(74,158,255,0.1);
+  --green:#52c97a;--green-bg:rgba(82,201,122,0.1);
+  --red:#ff6b6b;--red-bg:rgba(255,107,107,0.1);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,0.1);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.1);
+}
+body{background:var(--bg);color:var(--text);transition:background 0.3s,color 0.3s}
+
+/* APP */
+.app{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--accent)}
+.topbar-sub{font-size:11px;color:var(--text3)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);display:inline-block}
+.sync-dot.ok{background:var(--green)}
+.sync-dot.saving{background:var(--amber);animation:pulse 1s infinite}
+.sync-dot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* TABS */
+.tabs-bar{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;padding:0 16px}
+.tab-btn{padding:12px 18px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* MAIN */
+.main-content{flex:1;padding:20px;max-width:1100px;width:100%;margin:0 auto}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px}
+.card-title{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);font-weight:500;margin-bottom:12px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.green{background:var(--green-bg);color:var(--green)}
+.badge.red{background:var(--red-bg);color:var(--red)}
+.badge.amber{background:var(--amber-bg);color:var(--amber)}
+.badge.blue{background:var(--blue-bg);color:var(--blue)}
+.badge.gold{background:var(--accent-bg);color:var(--accent)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;font-family:var(--font-body);font-weight:500;transition:all 0.15s}
+.btn:hover{background:var(--bg4)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{background:var(--accent2)}
+.btn.sm{padding:4px 10px;font-size:12px;border-radius:7px}
+.btn.xs{padding:3px 8px;font-size:11px;border-radius:6px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--text2)}
+
+/* FORM */
+.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:5px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.form-grid{display:grid;gap:12px;margin-bottom:14px}
+.form-grid.c2{grid-template-columns:1fr 1fr}
+.form-grid.c3{grid-template-columns:1fr 1fr 1fr}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-title{font-family:var(--font-display);font-size:18px;font-weight:600}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:9px 12px;text-align:left;font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--text3);font-weight:500;border-bottom:1px solid var(--border);background:var(--bg3)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+
+/* SEARCH */
+.search-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.search-input{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;flex:1;min-width:130px}
+.search-input:focus{border-color:var(--accent)}
+
+/* ATTENDANCE SPECIFIC */
+.att-day{border:1px solid var(--border);background:var(--bg3);color:var(--text3);line-height:1}
+.att-day.absent{background:var(--red-bg);border-color:rgba(192,57,43,0.3);color:var(--red)}
+.att-day.holiday{background:var(--amber-bg);border-color:rgba(184,98,10,0.3);color:var(--amber)}
+.att-row{display:flex;flex-wrap:wrap;gap:4px}
+.att-wrap{margin-bottom:16px}
+.att-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;margin-bottom:6px;flex-wrap:wrap}
+.day-label{font-size:8px;line-height:1;margin-top:1px}
+
+/* GRADES */
+.progress-bar{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:3px}
+.progress-fill.green{background:var(--green)}
+.progress-fill.amber{background:var(--amber)}
+.progress-fill.red{background:var(--red)}
+
+/* MISC */
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+.empty i{font-size:28px;display:block;margin-bottom:8px;opacity:0.4}
+.sep{height:1px;background:var(--border);margin:12px 0}
+.section-divider{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.section-divider::after{content:'';flex:1;height:1px;background:var(--accent-border)}
+
+@media(max-width:640px){
+  .form-grid.c2,.form-grid.c3{grid-template-columns:1fr}
+  .overlay{align-items:flex-end;padding:0}
+  .modal{border-radius:16px 16px 0 0;max-height:90vh;border-left:none;border-right:none;border-bottom:none}
+  .tabs-bar{overflow-x:auto}
+  .tab-btn{white-space:nowrap}
+}
+</style>
+</head>
+<body>
+
+<!-- APP -->
+<div class="app" id="app" style="display:flex;flex-direction:column">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Cambridge Institute</div>
+      <div class="topbar-sub">Vista Profesora</div>
+    </div>
+    <div class="topbar-right">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span id="sync-label" style="font-size:12px;color:var(--text3)">Conectando...</span>
+      <button class="btn sm ghost" onclick="toggleTheme()" title="Cambiar tema"><i class="ti ti-sun"></i></button>
+    </div>
+  </div>
+
+  <div class="tabs-bar">
+    <div class="tab-btn active" id="tab-att" onclick="showTab('att')"><i class="ti ti-calendar-check"></i> Asistencias</div>
+    <div class="tab-btn" id="tab-grades" onclick="showTab('grades')"><i class="ti ti-clipboard-list"></i> Notas 2026</div>
+  </div>
+
+  <div class="main-content">
+    <div id="view-att"></div>
+    <div id="view-grades" style="display:none"></div>
+  </div>
+</div>
+
+
+<script>
+// ── CONFIG ─────────────────────────────────────────
+const SUPA_URL='https://hnusoslzobzuplhdephe.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhudXNvc2x6b2J6dXBsaGRlcGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzEwNjQsImV4cCI6MjA5NDMwNzA2NH0.HTSM4lp4Dpl_voNAPYlWcNqvUQaaXDH1OTgjkUrWAI8';
+// ⚠️  CAMBIÁ ESTA CONTRASEÑA antes de compartir el link
+
+// ── CONSTANTS ────────────────────────────────────────
+const MONTHS=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+const DAY_SHORT=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const DAY_FULL=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const GRADE_SUBJECTS=[
+  {cat:'WRITTEN LANGUAGE WORK',items:['Grammar','Writing','Homework','Tests']},
+  {cat:'ORAL SKILL WORK',items:['Reading and Comprehension','Listening','Speaking','Pronunciation']},
+];
+const TRIMESTRES=[[3,4,5],[6,7,8],[9,10,11,12]];
+
+// ── DB ──────────────────────────────────────────────
+let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{},settings:{},grades:{},cambridge2025:[],classTypes:[],classLogs:{},schools:[]};
+let saveTimer=null;
+let pollInterval=null;
+let lastHash='';
+let currentTab='att';
+
+// ── LOGIN ────────────────────────────────────────────
+// ── SUPABASE ─────────────────────────────────────────
+function dbHash(d){try{return JSON.stringify(d).length+'-'+(d.payments||[]).length+'-'+(d.students||[]).length;}catch(e){return '';}}
+
+async function loadData(){
+  setSyncStatus('saving','Cargando...');
+  try{
+    const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    const rows=await r.json();
+    if(rows&&rows[0]&&rows[0].data){
+      const d=rows[0].data;
+      const h=dbHash(d);
+      if(h!==lastHash){
+        lastHash=h;
+        ['groups','students','payments','families','teachers','teacherPayments'].forEach(k=>{if(d[k])db[k]=d[k];});
+        if(d.attendance)db.attendance=d.attendance;
+        if(d.dayNotes)db.dayNotes=d.dayNotes;
+        if(d.grades)db.grades=d.grades;
+        if(d.cambridge2025)db.cambridge2025=d.cambridge2025;
+        if(d.schools)db.schools=d.schools;
+        // Backfill schedule
+        const GS={'Kids 5':{days:[2,4],time:'16:00-17:30'},'Teens 2 Girls':{days:[2,4],time:'20:00-21:30'},'Teens 2 Boys':{days:[2,4],time:'18:30-20:00'},'Teens 3':{days:[1,3],time:'20:00-21:30'},'Teens 4':{days:[1,3],time:'18:30-20:00'},'5th Year A':{days:[2,4],time:'17:00-18:30'},'5th Year B':{days:[2,4],time:'18:30-20:00'},'Superior':{days:[2,4],time:'20:00-21:30'}};
+        db.groups.forEach(g=>{const sc=GS[g.name];if(sc){if(!g.days||!g.days.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
+      }
+    }
+    setSyncStatus('ok','Sincronizado');
+    return true;
+  }catch(e){setSyncStatus('error','Sin conexión');return false;}
+}
+
+async 
+
+function setSyncStatus(state,label){
+  const dot=document.getElementById('sync-dot');
+  const lbl=document.getElementById('sync-label');
+  if(dot)dot.className='sync-dot '+(state==='offline'?'error':state);
+  if(lbl)lbl.textContent=label;
+}
+
+function startPolling(){
+  if(pollInterval)clearInterval(pollInterval);
+  pollInterval=setInterval(async()=>{
+    const anyModalOpen=document.querySelector('.overlay.open');
+    if(anyModalOpen)return;
+    try{
+      const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+      const rows=await r.json();
+      if(!rows||!rows[0])return;
+      const h=dbHash(rows[0].data);
+      if(h!==lastHash){
+        const d=rows[0].data;lastHash=h;
+        ['groups','students','payments','families'].forEach(k=>{if(d[k])db[k]=d[k];});
+        if(d.attendance)db.attendance=d.attendance;
+        if(d.dayNotes)db.dayNotes=d.dayNotes;
+        if(d.grades)db.grades=d.grades;
+        setSyncStatus('ok','Actualizado');
+        if(currentTab==='att')renderAtt();
+        else renderGrades();
+      }
+    }catch(e){}
+  },25000);
+}
+
+// ── UTILS ────────────────────────────────────────────
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function fm(n){return '$'+Number(n).toLocaleString('es-AR')}
+function fdate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('es-AR')}
+function today(){return new Date().toISOString().slice(0,10)}
+function curMonth(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')}
+function monthName(m){const[,mo]=m.split('-');return MONTHS[parseInt(mo)-1]}
+function getGroup(id){return db.groups.find(g=>g.id===id)||{name:'—',fee:0,days:[],time:''}}
+function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+function parseDOB(dob){if(!dob)return null;const[y,m,d]=dob.split('-').map(Number);return new Date(y,m-1,d);}
+function getTrimestre(monthStr){const mo=parseInt(monthStr.split('-')[1]);const idx=TRIMESTRES.findIndex(t=>t.includes(mo));return idx>=0?idx+1:null;}
+function getTrimonths(tri){return TRIMESTRES[tri-1]||[];}
+
+function avatar(name,size=36,gender=''){
+  const ini=initials(name);
+  let bg,color,border;
+  if(gender==='m'){bg='rgba(74,158,255,0.15)';color='var(--blue)';border='rgba(74,158,255,0.3)';}
+  else if(gender==='f'){bg='rgba(255,100,150,0.15)';color='#e0507a';border='rgba(255,100,150,0.3)';}
+  else{bg='var(--accent-bg)';color='var(--accent)';border='var(--accent-border)';}
+  return`<div style="width:${size}px;height:${size}px;min-width:${size}px;border-radius:50%;background:${bg};border:1px solid ${border};display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:${Math.round(size*0.33)}px;font-weight:700;color:${color};flex-shrink:0">${ini}</div>`;
+}
+
+
+function toggleTheme(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme',isDark?'light':'dark');
+}
+
+// ── TABS ──────────────────────────────────────────────
+function showTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('view-att').style.display=tab==='att'?'':'none';
+  document.getElementById('view-grades').style.display=tab==='grades'?'':'none';
+  if(tab==='att')renderAtt();
+  else renderGrades();
+}
+
+// ── ATTENDANCE ────────────────────────────────────────
+function renderAtt(){
+  const vm=document.getElementById('att-view')?.value||'week';
+  const gid=document.getElementById('att-gid')?.value||'';
+  const month=document.getElementById('att-month')?.value||curMonth();
+  const tri=document.getElementById('att-tri')?.value||'1';
+
+  document.getElementById('view-att').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div style="font-family:var(--font-display);font-size:20px;font-weight:600">Asistencias</div>
+      <div style="font-size:12px;color:var(--text3)">Vista de lectura</div>
+    </div>
+    <div class="search-row">
+      <select class="search-input" id="att-view" onchange="renderAtt()" style="flex:0 0 auto;min-width:160px">
+        <option value="week"${vm==='week'?' selected':''}>Esta semana</option>
+        <option value="month"${vm==='month'?' selected':''}>Por mes</option>
+        <option value="trimester"${vm==='trimester'?' selected':''}>Por trimestre</option>
+      </select>
+      ${vm!=='week'?`<select class="search-input" id="att-gid" onchange="renderAtt()" style="flex:1;min-width:140px">
+        <option value="">Todos los grupos</option>
+        ${db.groups.map(g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${g.name}</option>`).join('')}
+      </select>`:''}
+      ${vm==='month'?`<input type="month" class="search-input" id="att-month" value="${month}" onchange="renderAtt()" style="flex:0 0 auto;min-width:140px">`:''}
+      ${vm==='trimester'?`<select class="search-input" id="att-tri" onchange="renderAtt()" style="flex:0 0 auto;min-width:160px">
+        <option value="1"${tri==='1'?' selected':''}>1° Trim (Mar-May)</option>
+        <option value="2"${tri==='2'?' selected':''}>2° Trim (Jun-Ago)</option>
+        <option value="3"${tri==='3'?' selected':''}>3° Trim (Sep-Dic)</option>
+      </select>`:''}
+    </div>
+    <div id="att-body">
+      ${vm==='week'?renderWeekView():vm==='trimester'?(gid?renderTrimesterAtt(gid,parseInt(tri)):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>'):(gid?renderAttBody(gid,month):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>')}
+    </div>`;
+}
+
+function renderWeekView(){
+  const now=new Date();
+  const dow=now.getDay();
+  const monday=new Date(now);monday.setDate(now.getDate()-(dow===0?6:dow-1));monday.setHours(0,0,0,0);
+  const classDaysMap={};
+  for(let d=0;d<7;d++){
+    const date=new Date(monday);date.setDate(monday.getDate()+d);
+    const dayNum=date.getDate(),mo=date.getMonth()+1,yr=date.getFullYear();
+    const monthKey=`${yr}-${String(mo).padStart(2,'0')}`;
+    const dateKey=`${yr}-${String(mo).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+    db.groups.forEach(g=>{
+      if(!(g.days||[]).includes(date.getDay()))return;
+      if(!classDaysMap[dateKey])classDaysMap[dateKey]={date:new Date(date),groups:[]};
+      classDaysMap[dateKey].groups.push({g,dayNum,monthKey});
+    });
+  }
+  const sortedDays=Object.entries(classDaysMap).sort(([a],[b])=>a.localeCompare(b));
+  if(!sortedDays.length)return'<div class="empty"><i class="ti ti-calendar-off"></i>Sin clases programadas esta semana</div>';
+
+  let totalAbs=0;
+  sortedDays.forEach(([,{groups}])=>{groups.forEach(({g,dayNum,monthKey})=>{
+    const noteKey=`${g.id}-${monthKey}-${dayNum}`;
+    if((db.dayNotes[monthKey]||{})[noteKey])return;
+    db.students.filter(s=>s.groupId===g.id).forEach(s=>{if((db.attendance[g.id]||{})[monthKey]?.[s.id]?.[dayNum]==='A')totalAbs++;});
+  });});
+
+  const weekEnd=new Date(monday);weekEnd.setDate(monday.getDate()+6);
+  const fmt=d=>d.toLocaleDateString('es-AR',{day:'numeric',month:'long'});
+
+  return`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div style="font-size:13px;color:var(--text2)">Semana del <strong>${fmt(monday)}</strong> al <strong>${fmt(weekEnd)}</strong></div>
+    <span class="badge ${totalAbs===0?'green':'red'}">${totalAbs===0?'Sin ausencias':totalAbs+' ausencias'}</span>
+  </div>
+  ${sortedDays.map(([,{date,groups}])=>{
+    const isToday=date.toDateString()===now.toDateString();
+    const dateLabel=date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+    return`<div class="card" style="margin-bottom:10px;${isToday?'border-color:var(--accent-border);':''}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        ${isToday?'<span class="badge gold">HOY</span>':''}
+        <div style="font-size:14px;font-weight:600;text-transform:capitalize">${dateLabel}</div>
+      </div>
+      ${groups.map(({g,dayNum,monthKey})=>{
+        const students=db.students.filter(s=>s.groupId===g.id);
+        const noteKey=`${g.id}-${monthKey}-${dayNum}`;
+        const holiday=(db.dayNotes[monthKey]||{})[noteKey];
+        const absent=students.filter(s=>!holiday&&(db.attendance[g.id]||{})[monthKey]?.[s.id]?.[dayNum]==='A');
+        const present=holiday?[]:students.filter(s=>(db.attendance[g.id]||{})[monthKey]?.[s.id]?.[dayNum]!=='A');
+        return`<div style="margin-bottom:8px;padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border:1px solid ${holiday?'rgba(184,98,10,0.3)':'var(--border)'}">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+            <div><span style="font-size:13px;font-weight:600">${g.name}</span><span style="font-size:11px;color:var(--text3);margin-left:6px">${g.time||''}</span></div>
+            <div style="display:flex;gap:5px;align-items:center">
+              ${holiday?`<span class="badge amber">🚫 ${holiday}</span>`:`<span class="badge green" style="font-size:10px">✓ ${present.length}</span>${absent.length?`<span class="badge red" style="font-size:10px">A ${absent.length}</span>`:''}`}
+              <button class="btn xs ghost" title="Feriado/cancelado"><i class="ti ti-calendar-off"></i></button>
+            </div>
+          </div>
+          ${holiday?'':`<div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${students.map(s=>{
+              const isA=(db.attendance[g.id]||{})[monthKey]?.[s.id]?.[dayNum]==='A';
+              return`<div 
+                style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;cursor:default;font-size:12px;font-weight:500;border:1px solid ${isA?'rgba(192,57,43,0.3)':'var(--border)'};background:${isA?'var(--red-bg)':'var(--bg2)'};color:${isA?'var(--red)':'var(--text2)'}">
+                ${avatar(s.name,18,s.gender||'')} ${s.name.split(' ')[0]}${isA?' A':''}
+              </div>`;
+            }).join('')}
+          </div>`}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('')}`;
+}
+
+
+function renderAttBody(gid,month){
+  const g=getGroup(gid);const students=db.students.filter(s=>s.groupId===gid);
+  const[y,m]=month.split('-').map(Number);const dim=new Date(y,m,0).getDate();
+  const classDays=[];
+  for(let d=1;d<=dim;d++){const dow=new Date(y,m-1,d).getDay();if((g.days||[]).includes(dow))classDays.push(d);}
+  if(!db.attendance[gid])db.attendance[gid]={};
+  if(!db.attendance[gid][month])db.attendance[gid][month]={};
+  if(!db.dayNotes[month])db.dayNotes[month]={};
+  const tri=getTrimestre(month);
+
+  let html=`<div class="card">
+    <div style="margin-bottom:10px"><div style="font-size:16px;font-weight:600">${g.name}</div>
+    <div style="font-size:12px;color:var(--text3)">${(g.days||[]).map(d=>DAY_SHORT[d]).join('+')} · ${g.time} · ${classDays.length} clases${tri?` · Trim ${tri}`:''}</div></div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Días de clase — tocá para feriado</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${classDays.map(d=>{
+        const dow=new Date(y,m-1,d).getDay();const key=`${gid}-${month}-${d}`;const note=(db.dayNotes[month]||{})[key]||'';
+        return`<div  style="cursor:pointer;text-align:center;padding:4px 8px;border-radius:7px;border:1px solid ${note?'rgba(184,98,10,0.3)':'var(--border)'};background:${note?'var(--amber-bg)':'var(--bg3)'};min-width:42px">
+          <div style="font-size:10px;color:${note?'var(--amber)':'var(--text3)'}">${DAY_SHORT[dow]}</div>
+          <div style="font-size:12px;font-weight:600;color:${note?'var(--amber)':'var(--text)'}">${d}${note?'★':''}</div>
+        </div>`;
+      }).join('')}</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;font-size:12px">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--red-bg);border:1px solid var(--red);display:inline-block"></span>Ausente (click)</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);display:inline-block"></span>Presente (auto)</span>
+    </div>`;
+
+  students.forEach(s=>{
+    const rec=db.attendance[gid][month][s.id]||{};
+    const notes=db.dayNotes[month]||{};
+    const activeDays=classDays.filter(d=>!notes[`${gid}-${month}-${d}`]);
+    const absentC=activeDays.filter(d=>rec[d]==='A').length;
+    const presentC=activeDays.length-absentC;
+    html+=`<div class="att-wrap">
+      <div class="att-name">${avatar(s.name,26,s.gender||'')} ${s.name}
+        <span class="badge green" style="font-size:10px">P: ${presentC}/${activeDays.length}</span>
+        <span class="badge red" style="font-size:10px">A: ${absentC}</span>
+      </div>
+      <div class="att-row">${classDays.map(d=>{
+        const key=`${gid}-${month}-${d}`;const isHol=!!(notes[key]);const isA=!isHol&&rec[d]==='A';
+        return`<div class="att-day ${isHol?'holiday':isA?'absent':''}"  title="${DAY_SHORT[new Date(y,m-1,d).getDay()]} ${d}${isHol?' — '+notes[key]:''}">${d}<span class="day-label">${isHol?'FER':isA?'A':''}</span></div>`;
+      }).join('')}</div>
+    </div>`;
+  });
+  html+='</div>';return html;
+}
+
+function renderTrimesterAtt(gid,tri){
+  const g=getGroup(gid);const students=db.students.filter(s=>s.groupId===gid);
+  const triMonths=getTrimonths(tri);const now=new Date();const year=now.getFullYear();
+  const dstr=(g.days||[]).map(d=>DAY_SHORT[d]).join('+');
+  const triNames=['','1° Trimestre (Mar-May)','2° Trimestre (Jun-Ago)','3° Trimestre (Sep-Dic)'];
+  function studentTriStats(s){
+    let totalClasses=0,absences=0;
+    triMonths.forEach(mo=>{
+      const mkey=`${year}-${String(mo).padStart(2,'0')}`;
+      const[yy,mm]=mkey.split('-').map(Number);const dim=new Date(yy,mm,0).getDate();const cdays=[];
+      for(let d=1;d<=dim;d++){const dow=new Date(yy,mm-1,d).getDay();if((g.days||[]).includes(dow))cdays.push(d);}
+      const rec=(db.attendance[gid]||{})[mkey]?.[s.id]||{};const notes=db.dayNotes[mkey]||{};
+      cdays.forEach(d=>{const key=`${gid}-${mkey}-${d}`;if(notes[key])return;totalClasses++;if(rec[d]==='A')absences++;});
+    });
+    return{totalClasses,absences,presences:totalClasses-absences};
+  }
+  return`<div class="card">
+    <div style="margin-bottom:12px"><div style="font-size:16px;font-weight:600">${g.name}</div>
+    <div style="font-size:12px;color:var(--text3)">${dstr} · ${g.time} · ${triNames[tri]}</div></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Alumno</th>${triMonths.map(mo=>`<th>${MONTHS[mo-1].slice(0,3)}</th>`).join('')}<th>Total</th><th>Ausencias</th><th>%</th></tr></thead>
+      <tbody>${students.map(s=>{
+        const st=studentTriStats(s);const pct=st.totalClasses?Math.round(st.presences/st.totalClasses*100):100;
+        const mCols=triMonths.map(mo=>{
+          const mkey=`${year}-${String(mo).padStart(2,'0')}`;const[yy,mm]=mkey.split('-').map(Number);const dim=new Date(yy,mm,0).getDate();let a=0;
+          for(let d=1;d<=dim;d++){const dow=new Date(yy,mm-1,d).getDay();if(!(g.days||[]).includes(dow))continue;const key=`${gid}-${mkey}-${d}`;if((db.dayNotes[mkey]||{})[key])continue;if((db.attendance[gid]?.[mkey]?.[s.id]||{})[d]==='A')a++;}
+          return`<td style="text-align:center"><span class="${a>0?'badge red':'badge green'}" style="font-size:10px">${a===0?'✓':a+'A'}</span></td>`;
+        }).join('');
+        return`<tr><td><div style="display:flex;align-items:center;gap:6px">${avatar(s.name,24,s.gender||'')}<span>${s.name}</span></div></td>${mCols}<td style="text-align:center">${st.totalClasses}</td><td style="text-align:center"><span class="badge ${st.absences===0?'green':st.absences<=2?'amber':'red'}">${st.absences}</span></td><td style="text-align:center"><span class="badge ${pct>=80?'green':pct>=60?'amber':'red'}">${pct}%</span></td></tr>`;
+      }).join('')}</tbody>
+    </table></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--text3)">Para marcar ausencias individuales, cambiá a "Por mes"</div>
+  </div>`;
+}
+
+
+
+
+
+function renderGradesContent(gid,tri,filterSid){
+  const students=db.students.filter(s=>s.groupId===gid&&(!filterSid||s.id===filterSid));
+  if(!students.length)return'<div class="empty">Sin alumnos en este grupo</div>';
+  const grades=db.grades||{};
+
+  return students.map(s=>{
+    const sGrades=grades[gid]?.[s.id]?.[tri]||{};
+    function subjectAvg(subj){const e=(sGrades[subj]||[]).filter(x=>x.score!=='A');if(!e.length)return null;return(e.reduce((a,x)=>a+Number(x.score),0)/e.length).toFixed(1);}
+    function catAvg(items){const avgs=items.map(subjectAvg).filter(v=>v!==null).map(Number);if(!avgs.length)return null;return(avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1);}
+    const wAvg=catAvg(GRADE_SUBJECTS[0].items);const oAvg=catAvg(GRADE_SUBJECTS[1].items);
+    const total=wAvg&&oAvg?((Number(wAvg)+Number(oAvg))/2).toFixed(1):wAvg||oAvg||null;
+
+    return`<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:9px">${avatar(s.name,34,s.gender||'')}
+          <div><div style="font-weight:600;font-size:14px">${s.name}</div><div style="font-size:11px;color:var(--text3)">Trim. ${tri}</div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${wAvg?`<span class="badge blue">Written: ${wAvg}</span>`:''}
+          ${oAvg?`<span class="badge green">Oral: ${oAvg}</span>`:''}
+          ${total?`<span class="badge ${Number(total)>=7?'green':Number(total)>=4?'amber':'red'}" style="font-size:13px;padding:4px 10px">Prom: ${total}</span>`:''}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${GRADE_SUBJECTS.map(cat=>`<div>
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:6px">${cat.cat}</div>
+          ${cat.items.map(subj=>{
+            const entries=sGrades[subj]||[];const avg=subjectAvg(subj);
+            return`<div style="margin-bottom:7px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:12px;font-weight:500">${subj}</span>
+                <div style="display:flex;align-items:center;gap:4px">
+                  ${avg!==null?`<span class="badge ${Number(avg)>=7?'green':Number(avg)>=4?'amber':'red'}" style="font-size:10px">${avg}</span>`:'<span style="font-size:10px;color:var(--text3)">—</span>'}
+                  
+                </div>
+              </div>
+              ${entries.length?`<div style="display:flex;flex-wrap:wrap;gap:3px">${entries.map((e,i)=>`<span style="background:${e.score==='A'?'var(--amber-bg)':'var(--bg3)'};border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:11px;display:inline-flex;align-items:center;gap:3px">${e.score==='A'?'A':e.score}${e.desc?` <span style="color:var(--text3);font-size:10px">${e.desc}</span>`:''}</span>`).join('')}</div>`:''}
+            </div>`;
+          }).join('')}
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCambridge2025Table(gid){
+  const grpName=gid?db.groups.find(g=>g.id===gid)?.name||'':'';
+  const rows=db.cambridge2025||[];
+  const filtered=grpName?rows.filter(r=>r.group.toLowerCase().includes(grpName.toLowerCase().split(' ')[0])):rows;
+  if(!filtered.length)return'<div style="font-size:13px;color:var(--text3)">Sin datos para este grupo</div>';
+  const byGroup={};
+  filtered.forEach(r=>{if(!byGroup[r.group])byGroup[r.group]=[];byGroup[r.group].push(r);});
+  return Object.entries(byGroup).map(([grp,rs])=>`
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;text-transform:uppercase">${grp}</div>
+      <div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Escrito</th><th>Oral</th><th>Promedio</th><th>Conclusión</th></tr></thead><tbody>
+      ${rs.map(r=>`<tr><td>${r.name}</td>
+        <td><span class="badge ${r.written>=7?'green':r.written>=4?'amber':'red'}">${r.written}</span></td>
+        <td><span class="badge ${r.oral>=7?'green':r.oral>=4?'amber':'red'}">${r.oral}</span></td>
+        <td>${r.prom!==null?`<span class="badge ${Number(r.prom)>=7?'green':Number(r.prom)>=4?'amber':'red'}">${r.prom}</span>`:`<span class="badge red">${r.conclusion}</span>`}</td>
+        <td style="font-size:12px;color:var(--text3)">${r.conclusion||'—'}</td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>`).join('');
+}
+
+
+
+
+
+
+// ── INIT ──────────────────────────────────────────────
+async function init(){
+  await loadData();
+  renderAtt();
+  startPolling();
+}
+
+// Auto-init on page load
+init();
+
+document.addEventListener("DOMContentLoaded", ()=>{});
+</script>
+</body>
+</html>
