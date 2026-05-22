@@ -2215,34 +2215,182 @@ function initAttendance(){
   const vm=document.getElementById('att-view-mode');
   const gid=sel?sel.value:'';
   const month=am?am.value||curMonth():curMonth();
-  const viewMode=vm?vm.value:'month';
+  const viewMode=vm?vm.value:'week';
   const selTri=document.getElementById('att-tri-sel')?.value||'1';
+
   document.getElementById('page-attendance').innerHTML=`
-    <div class="page-header"><div><div class="page-title">Asistencias</div><div class="page-subtitle">Solo se marcan inasistencias. Presente es automático.</div></div></div>
-    <div class="search-row">
-      <select class="search-input" id="att-group-sel" onchange="initAttendance()" style="flex:1;min-width:140px">
-        <option value="">Seleccionar grupo...</option>
-        ${db.groups.map(g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${g.name}</option>`).join('')}
-      </select>
-      <select class="search-input" id="att-view-mode" onchange="initAttendance()" style="flex:1;min-width:130px">
+    <div class="page-header"><div>
+      <div class="page-title">Asistencias</div>
+      <div class="page-subtitle">Solo se marcan inasistencias · Presente es automático</div>
+    </div></div>
+
+    <div class="search-row" style="margin-bottom:12px">
+      <select class="search-input" id="att-view-mode" onchange="initAttendance()" style="flex:1;min-width:160px">
+        <option value="week"${viewMode==='week'?' selected':''}>Esta semana</option>
         <option value="month"${viewMode==='month'?' selected':''}>Por mes</option>
         <option value="trimester"${viewMode==='trimester'?' selected':''}>Por trimestre</option>
       </select>
-      ${viewMode==='trimester'
-        ?`<select class="search-input" id="att-tri-sel" onchange="initAttendance()" style="flex:1;min-width:140px">
-            <option value="1"${selTri==='1'?' selected':''}>1° Trim (Mar-May)</option>
-            <option value="2"${selTri==='2'?' selected':''}>2° Trim (Jun-Ago)</option>
-            <option value="3"${selTri==='3'?' selected':''}>3° Trim (Sep-Dic)</option>
-          </select>`
-        :`<input type="month" id="att-month-sel" value="${month}" onchange="initAttendance()" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;flex:1;min-width:130px">`}
+
+      ${viewMode!=='week'?`
+        <select class="search-input" id="att-group-sel" onchange="initAttendance()" style="flex:1;min-width:150px">
+          <option value="">Todos los grupos</option>
+          ${db.groups.map(g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${g.name}</option>`).join('')}
+        </select>`:''}
+
+      ${viewMode==='month'?`
+        <input type="month" id="att-month-sel" value="${month}" onchange="initAttendance()"
+          style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;flex:1;min-width:130px">
+      `:''}
+
+      ${viewMode==='trimester'?`
+        <select class="search-input" id="att-tri-sel" onchange="initAttendance()" style="flex:1;min-width:160px">
+          <option value="1"${selTri==='1'?' selected':''}>1° Trim (Mar-May)</option>
+          <option value="2"${selTri==='2'?' selected':''}>2° Trim (Jun-Ago)</option>
+          <option value="3"${selTri==='3'?' selected':''}>3° Trim (Sep-Dic)</option>
+        </select>`:''}
     </div>
-    <div id="att-body">${gid
-      ?(viewMode==='trimester'?renderTrimesterAtt(gid,parseInt(selTri)):renderAttBody(gid,month))
-      :'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>'}
+
+    <div id="att-body">
+      ${viewMode==='week'
+        ? renderWeekView()
+        : viewMode==='trimester'
+          ? (gid?renderTrimesterAtt(gid,parseInt(selTri)):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>')
+          : (gid?renderAttBody(gid,month):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>')}
     </div>`;
 }
 
 function renderAttendance(){initAttendance();}
+
+/* ---- WEEK VIEW: all groups, organized by class day ---- */
+function renderWeekView(){
+  const now=new Date();
+  const dayOfWeek=now.getDay(); // 0=Sun
+  const monday=new Date(now);
+  monday.setDate(now.getDate()-(dayOfWeek===0?6:dayOfWeek-1));
+  monday.setHours(0,0,0,0);
+
+  // Build list of class days this week across all groups
+  const classDaysMap={}; // "YYYY-MM-DD" -> [{group, dayNum, monthKey}]
+  for(let d=0;d<7;d++){
+    const date=new Date(monday);date.setDate(monday.getDate()+d);
+    const dow=date.getDay();
+    const dayNum=date.getDate();
+    const mo=date.getMonth()+1;
+    const yr=date.getFullYear();
+    const monthKey=`${yr}-${String(mo).padStart(2,'0')}`;
+    const dateKey=`${yr}-${String(mo).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+    const dateLabel=date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+
+    db.groups.forEach(g=>{
+      if(!(g.days||[]).includes(dow))return;
+      if(!classDaysMap[dateKey])classDaysMap[dateKey]={dateLabel,date:new Date(date),groups:[]};
+      classDaysMap[dateKey].groups.push({g,dayNum,monthKey});
+    });
+  }
+
+  const sortedDays=Object.entries(classDaysMap).sort(([a],[b])=>a.localeCompare(b));
+
+  if(sortedDays.length===0){
+    return`<div class="empty"><i class="ti ti-calendar-off"></i>No hay clases programadas esta semana</div>`;
+  }
+
+  // Summary: total absences this week
+  let totalAbsences=0;
+  sortedDays.forEach(([,{groups}])=>{
+    groups.forEach(({g,dayNum,monthKey})=>{
+      const noteKey=`${g.id}-${monthKey}-${dayNum}`;
+      if((db.dayNotes[monthKey]||{})[noteKey])return;
+      const students=db.students.filter(s=>s.groupId===g.id);
+      students.forEach(s=>{
+        const rec=(db.attendance[g.id]||{})[monthKey]?.[s.id]||{};
+        if(rec[dayNum]==='A')totalAbsences++;
+      });
+    });
+  });
+
+  const weekStart=monday.toLocaleDateString('es-AR',{day:'numeric',month:'long'});
+  const weekEnd=new Date(monday);weekEnd.setDate(monday.getDate()+6);
+  const weekEndStr=weekEnd.toLocaleDateString('es-AR',{day:'numeric',month:'long'});
+
+  return`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:13px;color:var(--text2)">Semana del <strong>${weekStart}</strong> al <strong>${weekEndStr}</strong></div>
+      <span class="badge ${totalAbsences===0?'green':'red'}">${totalAbsences===0?'Sin ausencias':totalAbsences+' ausencia'+(totalAbsences!==1?'s':'')}</span>
+    </div>
+
+    ${sortedDays.map(([dateKey,{dateLabel,date,groups}])=>{
+      const isToday=date.toDateString()===now.toDateString();
+
+      const dayHtml=groups.map(({g,dayNum,monthKey})=>{
+        const students=db.students.filter(s=>s.groupId===g.id);
+        const noteKey=`${g.id}-${monthKey}-${dayNum}`;
+        const holiday=(db.dayNotes[monthKey]||{})[noteKey];
+
+        const absent=students.filter(s=>{
+          if(holiday)return false;
+          const rec=(db.attendance[g.id]||{})[monthKey]?.[s.id]||{};
+          return rec[dayNum]==='A';
+        });
+        const present=holiday?[]:students.filter(s=>{
+          const rec=(db.attendance[g.id]||{})[monthKey]?.[s.id]||{};
+          return rec[dayNum]!=='A';
+        });
+
+        return`<div style="margin-bottom:10px;padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border:1px solid ${holiday?'rgba(245,166,35,0.3)':'var(--border)'}">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+            <div>
+              <span style="font-size:13px;font-weight:600">${g.name}</span>
+              <span style="font-size:11px;color:var(--text3);margin-left:6px">${g.time||''}</span>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              ${holiday
+                ?`<span class="badge amber">🚫 ${holiday}</span>`
+                :`<span class="badge green" style="font-size:10px">✓ ${present.length}</span>
+                  ${absent.length?`<span class="badge red" style="font-size:10px">A ${absent.length}</span>`:''}`}
+              <button class="btn xs" onclick="openDayNote('${g.id}','${monthKey}',${dayNum})" title="${holiday?'Editar feriado':'Marcar feriado/cancelado'}">
+                <i class="ti ti-${holiday?'edit':'calendar-off'}"></i>
+              </button>
+            </div>
+          </div>
+          ${holiday?'':`
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${students.map(s=>{
+                const rec=(db.attendance[g.id]||{})[monthKey]?.[s.id]||{};
+                const isAbsent=rec[dayNum]==='A';
+                return`<div onclick="toggleAttWeek('${g.id}','${monthKey}','${s.id}',${dayNum})"
+                  style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;border:1px solid ${isAbsent?'rgba(255,107,107,0.3)':'var(--border)'};background:${isAbsent?'var(--red-bg)':'var(--bg2)'};color:${isAbsent?'var(--red)':'var(--text2)'};transition:all 0.1s"
+                  title="${isAbsent?'Marcar presente':'Marcar ausente'}">
+                  ${avatar(s.name,18,s.gender||'')}
+                  ${s.name.split(' ')[0]}
+                  ${isAbsent?'<span style="font-size:10px;font-weight:700">A</span>':''}
+                </div>`;
+              }).join('')}
+            </div>`}
+        </div>`;
+      }).join('');
+
+      return`<div class="card" style="margin-bottom:12px;${isToday?'border-color:var(--accent-border);':''}" >
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          ${isToday?'<span class="badge gold">HOY</span>':''}
+          <div style="font-size:14px;font-weight:600;text-transform:capitalize">${dateLabel}</div>
+        </div>
+        ${dayHtml}
+      </div>`;
+    }).join('')}`;
+}
+
+function toggleAttWeek(gid,monthKey,sid,day){
+  if(!db.attendance[gid])db.attendance[gid]={};
+  if(!db.attendance[gid][monthKey])db.attendance[gid][monthKey]={};
+  if(!db.attendance[gid][monthKey][sid])db.attendance[gid][monthKey][sid]={};
+  const cur=db.attendance[gid][monthKey][sid][day]||'';
+  if(cur==='A')delete db.attendance[gid][monthKey][sid][day];
+  else db.attendance[gid][monthKey][sid][day]='A';
+  scheduleSave();
+  // Re-render only the body, not full page
+  const body=document.getElementById('att-body');
+  if(body)body.innerHTML=renderWeekView();
+}
 
 function renderTrimesterAtt(gid,tri){
   const g=getGroup(gid);
