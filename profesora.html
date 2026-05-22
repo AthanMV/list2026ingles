@@ -225,8 +225,6 @@ async function loadData(){
   }catch(e){setSyncStatus('error','Sin conexión');return false;}
 }
 
-async 
-
 function setSyncStatus(state,label){
   const dot=document.getElementById('sync-dot');
   const lbl=document.getElementById('sync-label');
@@ -567,10 +565,8 @@ async function init(){
   startPolling();
 }
 
-// Auto-init on page load
-init();
-
-document.addEventListener("DOMContentLoaded", ()=>{});
+// Auto-init
+document.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
 </html>
