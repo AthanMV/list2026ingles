@@ -1576,6 +1576,31 @@ function importData(input){
   reader.readAsText(file);
 }
 
+// Returns students who were absent this week (Mon-Sun) across all groups
+function getWeeklyAbsences(){
+  const now=new Date();
+  const day=now.getDay();
+  const monday=new Date(now);monday.setDate(now.getDate()-(day===0?6:day-1));monday.setHours(0,0,0,0);
+  const results=[];
+  db.groups.forEach(g=>{
+    const students=db.students.filter(s=>s.groupId===g.id);
+    if(!students.length||!g.days||!g.days.length)return;
+    for(let d=0;d<7;d++){
+      const date=new Date(monday);date.setDate(monday.getDate()+d);
+      if(!(g.days||[]).includes(date.getDay()))continue;
+      const dayN=date.getDate(),mo=date.getMonth()+1,yr=date.getFullYear();
+      const monthKey=`${yr}-${String(mo).padStart(2,'0')}`;
+      const noteKey=`${g.id}-${monthKey}-${dayN}`;
+      if((db.dayNotes[monthKey]||{})[noteKey])continue;
+      students.forEach(s=>{
+        const rec=(db.attendance[g.id]||{})[monthKey]?.[s.id]||{};
+        if(rec[dayN]==='A')results.push({student:s,group:g,day:dayN,month:mo,year:yr});
+      });
+    }
+  });
+  return results;
+}
+
 function renderDashboard(){
   const month=curMonth();
   const total=db.students.length;
@@ -1583,54 +1608,55 @@ function renderDashboard(){
   const pending=total-paidC;
   const pays=db.payments.filter(p=>p.month===month);
 
-  // --- EXPECTED: family.total once per family + individual fee ---
   const countedFamilies=new Set();
   let expected=0;
   db.students.forEach(s=>{
     const f=getFam(s.id);
-    if(f){
-      if(!countedFamilies.has(f.id)){countedFamilies.add(f.id);expected+=f.total;}
-    } else {
-      expected+=getGroup(s.groupId).fee||0;
-    }
+    if(f){if(!countedFamilies.has(f.id)){countedFamilies.add(f.id);expected+=f.total;}}
+    else{expected+=getGroup(s.groupId).fee||0;}
   });
 
-  // --- COLLECTED / BY METHOD ---
-  // For family payments: the real amount is on the record where amount>0 (primary member)
-  // For individual payments: just their amount
-  // We deduplicate families: only count one record per familyId per month
   const countedFamPays=new Set();
   let collected=0,trans=0,efect=0,otros=0;
   pays.forEach(p=>{
     if(p.familyId){
-      // Only process the primary (amount>0) record for each family
       if(p.amount>0&&!countedFamPays.has(p.familyId)){
         countedFamPays.add(p.familyId);
-        const amt=Number(p.amount);
-        collected+=amt;
+        const amt=Number(p.amount);collected+=amt;
         if(p.method==='Transferencia')trans+=amt;
         else if(p.method==='Efectivo')efect+=amt;
         else otros+=amt;
       }
     } else if(p.amount>0){
-      const amt=Number(p.amount);
-      collected+=amt;
+      const amt=Number(p.amount);collected+=amt;
       if(p.method==='Transferencia')trans+=amt;
       else if(p.method==='Efectivo')efect+=amt;
       else otros+=amt;
     }
   });
-
   const falta=Math.max(0,expected-collected);
   const pct=total>0?Math.round(paidC/total*100):0;
   updatePendingBadge();
   const now=new Date();
-  const soon=db.students.filter(s=>{if(!s.dob)return false;const dob=parseDOB(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);return Math.ceil((next-now)/86400000)<=7;});
+  const soon=db.students.filter(s=>{
+    if(!s.dob)return false;
+    const dob=parseDOB(s.dob);
+    const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
+    if(next<now)next.setFullYear(now.getFullYear()+1);
+    return Math.ceil((next-now)/86400000)<=7;
+  });
   const pendSt=db.students.filter(s=>!hasPaid(s.id,month));
+  const weekAbsences=getWeeklyAbsences();
+  const groupProgress=db.groups.map(g=>{
+    const studs=db.students.filter(s=>s.groupId===g.id);
+    const gpaid=studs.filter(s=>hasPaid(s.id,month)).length;
+    return{g,studs,gpaid,pct:studs.length?Math.round(gpaid/studs.length*100):0};
+  }).sort((a,b)=>a.pct-b.pct);
 
   document.getElementById('page-dashboard').innerHTML=`
     <div class="page-header">
-      <div><div class="page-title">Cambridge Institute</div><div class="page-subtitle">${monthName(month)} ${month.split('-')[0]}</div></div>
+      <div><div class="page-title">Cambridge Institute</div>
+      <div class="page-subtitle">${monthName(month)} ${month.split('-')[0]}</div></div>
     </div>
 
     <div class="metric-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
@@ -1644,20 +1670,61 @@ function renderDashboard(){
         <div class="metric-sub" style="margin-top:4px">de ${fm(expected)}</div></div>
     </div>
 
-    <div class="method-row" style="margin-bottom:14px">
+    <div class="method-row" style="margin-bottom:16px">
       <div class="method-box"><div class="method-label">Transferencia</div><div class="method-val" style="color:var(--blue)">${fm(trans)}</div></div>
       <div class="method-box"><div class="method-label">Efectivo</div><div class="method-val" style="color:var(--green)">${fm(efect)}</div></div>
       ${otros>0?`<div class="method-box"><div class="method-label">Otros</div><div class="method-val" style="color:var(--amber)">${fm(otros)}</div></div>`:''}
       <div class="method-box"><div class="method-label">Falta cobrar</div><div class="method-val" style="color:var(--red)">${fm(falta)}</div></div>
     </div>
 
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="card">
+        <div class="card-title">📋 Ausencias esta semana</div>
+        ${weekAbsences.length===0
+          ?'<div class="empty" style="padding:12px"><i class="ti ti-calendar-check"></i><br>Sin ausencias esta semana</div>'
+          :`<div style="display:flex;flex-direction:column;gap:4px">
+            ${weekAbsences.slice(0,8).map(({student:s,group:g,day,month:mo})=>`
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+                ${avatar(s.name,26,s.gender||'')}
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div>
+                  <div style="font-size:11px;color:var(--text3)">${g.name} · ${day}/${mo}</div>
+                </div>
+                <span class="badge red" style="font-size:10px">A</span>
+              </div>`).join('')}
+            ${weekAbsences.length>8?`<div style="font-size:11px;color:var(--text3);text-align:center;padding-top:4px">+${weekAbsences.length-8} más — ver Asistencias</div>`:''}
+          </div>`}
+      </div>
+
+      <div class="card">
+        <div class="card-title">💳 Cobro por grupo</div>
+        ${groupProgress.map(({g,studs,gpaid,pct:gp})=>`
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+              <span style="font-weight:500">${g.name}</span>
+              <span style="color:${gp===100?'var(--green)':gp>=50?'var(--amber)':'var(--red)'}">${gpaid}/${studs.length} · ${gp}%</span>
+            </div>
+            <div class="progress-bar" style="margin-top:0"><div class="progress-fill ${gp===100?'green':gp>=50?'gold':'red'}" style="width:${gp}%"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+
     ${soon.length?`<div class="card" style="margin-bottom:14px;border-color:var(--accent-border)">
       <div class="card-title">🎂 Cumpleaños próximos (7 días)</div>
-      ${soon.map(s=>{const dob=parseDOB(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);const diff=Math.ceil((next-now)/86400000);return`<div class="bday-item"><i class="ti ti-cake"></i><strong>${s.name}</strong> — ${next.toLocaleDateString('es-AR')} <span style="color:var(--accent)">en ${diff} días</span> <span class="badge gold">${getGroup(s.groupId).name}</span></div>`;}).join('')}
+      ${soon.map(s=>{
+        const dob=parseDOB(s.dob);
+        const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
+        if(next<now)next.setFullYear(now.getFullYear()+1);
+        const diff=Math.ceil((next-now)/86400000);
+        let age=now.getFullYear()-dob.getFullYear();
+        const hadBday=now.getMonth()>dob.getMonth()||(now.getMonth()===dob.getMonth()&&now.getDate()>=dob.getDate());
+        if(!hadBday)age--;
+        return`<div class="bday-item">${avatar(s.name,28,s.gender||'')}<div><strong>${s.name}</strong> — ${next.toLocaleDateString('es-AR')} · cumple <strong>${age+1} años</strong> · en <span style="color:var(--accent)">${diff} días</span> <span class="badge gold">${getGroup(s.groupId).name}</span></div></div>`;
+      }).join('')}
     </div>`:''}
 
     ${pendSt.length?`<div class="card">
-      <div class="card-title">Pagos pendientes</div>
+      <div class="card-title">⏳ Pagos pendientes</div>
       <div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Grupo</th><th>Monto</th><th></th></tr></thead><tbody>
       ${pendSt.slice(0,10).map(s=>{const g=getGroup(s.groupId);const f=getFam(s.id);return`<tr>
         <td><div style="display:flex;align-items:center;gap:7px">${avatar(s.name,26,s.gender||'')}<span>${s.name}</span></div></td>
@@ -1665,7 +1732,7 @@ function renderDashboard(){
         <td style="font-family:var(--font-mono);font-size:12px">${f?fm(f.total)+' fam':fm(g.fee)}</td>
         <td>${waBtn(s)}</td></tr>`;}).join('')}
       </tbody></table></div>
-      ${pendSt.length>10?`<div style="font-size:12px;color:var(--text3);margin-top:8px">+ ${pendSt.length-10} más...</div>`:''}
+      ${pendSt.length>10?`<div style="font-size:12px;color:var(--text3);margin-top:8px;text-align:center">+${pendSt.length-10} más — ver en Pagos</div>`:''}
     </div>`:`<div class="card"><div class="empty"><i class="ti ti-circle-check"></i>¡Todos pagaron este mes! 🎉</div></div>`}`;
 }
 
@@ -1822,7 +1889,11 @@ function showProfile(id){
     const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
     if(next<now)next.setFullYear(now.getFullYear()+1);
     const diff=Math.ceil((next-now)/86400000);
-    bdayHtml=`<span class="badge ${diff<=14?'amber':'gray'}">Cumple ${next.toLocaleDateString('es-AR')} · en ${diff} días</span>`;
+    // Calculate exact age
+    let age=now.getFullYear()-dob.getFullYear();
+    const hadBday=now.getMonth()>dob.getMonth()||(now.getMonth()===dob.getMonth()&&now.getDate()>=dob.getDate());
+    if(!hadBday)age--;
+    bdayHtml=`<span class="badge ${diff<=14?'amber':'gray'}">${age} años · Cumple ${next.toLocaleDateString('es-AR')} · en ${diff} días</span>`;
   }
   document.getElementById('profile-content').innerHTML=`
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
@@ -2985,42 +3056,42 @@ function deleteGradeEntry(gid,sid,tri,subj,idx){
 
 /* ---- CLASS CALCULATOR ---- */
 function renderClassCalc(){
-  const selTid=document.getElementById('cc-tid')?.value||'';
-  const selWeek=document.getElementById('cc-week')?.value||today().slice(0,8)+'01';
-
   document.getElementById('page-classcalc').innerHTML=`
     <div class="page-header">
-      <div><div class="page-title">Calculadora de Clases</div><div class="page-subtitle">Para profesores que cobran por clase</div></div>
-      <div class="page-actions"><button class="btn sm" onclick="openModal('m-classtype')"><i class="ti ti-settings"></i> Tipos de clase</button></div>
+      <div><div class="page-title">Tipos de clase</div><div class="page-subtitle">Configurá los tipos y precios. El registro de clases está en Profesores.</div></div>
     </div>
-
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-title">Tipos de clase configurados</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-        ${(db.classTypes||[]).map(ct=>`<div style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;font-size:13px">
-          <span style="font-weight:500">${ct.name}</span>
-          <span style="color:var(--accent);font-family:var(--font-mono)">${fm(ct.price)}</span>
-          <button class="btn ghost xs danger" onclick="deleteClassType('${ct.id}')"><i class="ti ti-trash"></i></button>
-        </div>`).join('')||'<span style="color:var(--text3);font-size:13px">Sin tipos configurados</span>'}
-      </div>
-      <button class="btn sm primary" onclick="openAddClassType()"><i class="ti ti-plus"></i> Agregar tipo</button>
-    </div>
-
     <div class="card">
-      <div class="card-title">Registro de clases</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        <div class="field"><label>Profesor</label>
-          <select id="cc-tid" onchange="renderClassCalc()">
-            <option value="">Seleccionar...</option>
-            ${db.teachers.map(t=>`<option value="${t.id}"${t.id===selTid?' selected':''}>${t.name}</option>`).join('')}
-          </select>
-        </div>
-        <div class="field"><label>Mes</label>
-          <input type="month" id="cc-week" value="${curMonth()}" onchange="renderClassCalc()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-size:13px;outline:none;width:100%">
-        </div>
+      <div class="card-title">Tipos de clase configurados</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+        ${(db.classTypes||[]).map(ct=>`
+          <div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px">
+            <div>
+              <div style="font-size:13px;font-weight:600">${ct.name}</div>
+              <div style="font-size:12px;color:var(--accent);font-family:var(--font-mono)">${fm(ct.price)} por clase</div>
+            </div>
+            <button class="btn ghost xs" onclick="editClassType('${ct.id}')"><i class="ti ti-edit"></i></button>
+            <button class="btn ghost xs danger" onclick="deleteClassType('${ct.id}')"><i class="ti ti-trash"></i></button>
+          </div>`).join('')||'<div style="color:var(--text3);font-size:13px">Sin tipos configurados aún</div>'}
       </div>
-      ${selTid?renderClassCalcEntries(selTid,curMonth()):'<div class="empty"><i class="ti ti-school"></i>Seleccioná un profesor</div>'}
+      <button class="btn primary" onclick="openAddClassType()"><i class="ti ti-plus"></i> Agregar tipo de clase</button>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">¿Cómo funciona?</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.8">
+        <div>1. Configurá acá los tipos de clase con su precio (ej: <em>Clase Cambridge — $12.000</em>)</div>
+        <div>2. En <strong>Profesores</strong>, al registrar un pago semanal podés elegir cuántas clases de cada tipo dio</div>
+        <div>3. El sistema calcula el total automáticamente y lo suma al historial del mes</div>
+      </div>
     </div>`;
+}
+
+function editClassType(id){
+  const t=(db.classTypes||[]).find(x=>x.id===id);
+  if(!t)return;
+  document.getElementById('ct-id').value=id;
+  document.getElementById('ct-name').value=t.name;
+  document.getElementById('ct-price').value=t.price;
+  openModal('m-classtype');
 }
 
 function renderClassCalcEntries(tid,month){
@@ -3098,7 +3169,7 @@ function deleteClassLog(tid,month,idx){
   const item=logs[idx];
   const realIdx=allLogs.indexOf(item);
   if(realIdx>=0)allLogs.splice(realIdx,1);
-  scheduleSave();renderClassCalc();
+  scheduleSave();if(currentPage==='classcalc')renderClassCalc();else renderTeachers();
 }
 
 function openAddClassType(){
@@ -3111,7 +3182,7 @@ function openAddClassType(){
 function deleteClassType(id){
   if(!confirm('¿Eliminar tipo de clase?'))return;
   db.classTypes=(db.classTypes||[]).filter(t=>t.id!==id);
-  scheduleSave();renderClassCalc();
+  scheduleSave();if(currentPage==='classcalc')renderClassCalc();else renderTeachers();
 }
 
 function saveClassType(){
