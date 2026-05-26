@@ -1047,6 +1047,7 @@ async function loadFromSupabase(){
       if(d.classTypes)db.classTypes=d.classTypes;
       if(d.schools)db.schools=d.schools;
       if(d.classLogs)db.classLogs=d.classLogs;
+      if(d.journal)db.journal=d.journal;
       }
     } else {
       seedData();
@@ -1138,7 +1139,7 @@ function startPolling(){
       if(d.classTypes)db.classTypes=d.classTypes;
       if(d.schools)db.schools=d.schools;
       if(d.classLogs)db.classLogs=d.classLogs;
-        setSyncStatus('ok','Actualizado');
+      if(d.journal)db.journal=d.journal;
         refreshCurrentPage();
         toast('Datos actualizados desde otro dispositivo');
       }
