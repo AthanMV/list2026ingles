@@ -275,6 +275,9 @@ tr:hover td{background:var(--bg3)}
 
 /* PROGRESS BAR */
 .progress-bar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:8px}
+.jrn-row{cursor:pointer;border-bottom:1px solid var(--border);display:flex;-webkit-tap-highlight-color:rgba(0,0,0,0.05);user-select:none}
+.jrn-row:hover{background:var(--bg3)}
+.jrn-row:active{background:var(--bg4)}
 .progress-fill{height:100%;border-radius:3px;transition:width 0.6s ease}
 .progress-fill.gold{background:linear-gradient(90deg,var(--accent),var(--accent2))}
 .progress-fill.green{background:var(--green)}
@@ -551,6 +554,7 @@ tr:hover td{background:var(--bg3)}
     <div class="nav-section">Principal</div>
     <div class="nav-item active" onclick="nav('dashboard',this)"><i class="ti ti-layout-dashboard nav-icon"></i> Dashboard</div>
     <div class="nav-item" onclick="nav('timetable',this)"><i class="ti ti-calendar-time nav-icon"></i> Horario</div>
+    <div class="nav-item" onclick="nav('journal',this)"><i class="ti ti-notebook nav-icon"></i> Diario de Clases</div>
     <div class="nav-section">Gestión</div>
     <div class="nav-item" onclick="nav('groups',this)"><i class="ti ti-users nav-icon"></i> Grupos</div>
     <div class="nav-item" onclick="nav('payments',this)"><i class="ti ti-cash nav-icon"></i> Pagos <span class="nav-badge" id="badge-pending" style="display:none">0</span></div>
@@ -585,6 +589,7 @@ tr:hover td{background:var(--bg3)}
   <div id="page-teachers" class="page-inner" style="display:none"></div>
   <div id="page-classcalc" class="page-inner" style="display:none"></div>
   <div id="page-grades" class="page-inner" style="display:none"></div>
+  <div id="page-journal" class="page-inner" style="display:none"></div>
   <div id="page-bills" class="page-inner" style="display:none"></div>
   <div id="page-datamanager" class="page-inner" style="display:none"></div>
   <div id="page-settings" class="page-inner" style="display:none"></div>
@@ -849,6 +854,57 @@ tr:hover td{background:var(--bg3)}
 </div>
 </div>
 
+<!-- MODAL: Journal class entry -->
+<div class="overlay" id="m-journal">
+<div class="modal" style="max-width:600px">
+  <div class="modal-header">
+    <div class="modal-title" id="mj-title">Clase</div>
+    <button class="btn ghost sm" onclick="closeModal('m-journal')"><i class="ti ti-x"></i></button>
+  </div>
+  <input type="hidden" id="mj-gid">
+  <input type="hidden" id="mj-date">
+  <div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="mj-meta"></div>
+
+  <!-- Ausentes (read-only from attendance) -->
+  <div id="mj-absent-row" style="margin-bottom:16px;display:none">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--red);font-weight:600;margin-bottom:6px">Ausentes en esta clase</div>
+    <div id="mj-absent-list"></div>
+  </div>
+
+  <!-- Feriado toggle -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+    <input type="checkbox" id="mj-holiday" onchange="toggleJournalHoliday()" style="width:16px;height:16px;cursor:pointer">
+    <label for="mj-holiday" style="font-size:13px;cursor:pointer">Marcar como feriado / clase cancelada</label>
+  </div>
+
+  <div id="mj-fields">
+    <div class="form-grid" style="margin-bottom:14px">
+      <div class="field">
+        <label>Anotaciones</label>
+        <textarea id="mj-notes" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="form-grid" style="margin-bottom:14px">
+      <div class="field">
+        <label>Material de la clase</label>
+        <textarea id="mj-material" rows="4"></textarea>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Tarea</label>
+        <textarea id="mj-homework" rows="3"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('m-journal')">Cancelar</button>
+    <button class="btn primary" onclick="saveJournalEntry()"><i class="ti ti-device-floppy"></i> Guardar clase</button>
+  </div>
+</div>
+</div>
+
 <!-- MORE OVERLAY -->
 <div class="more-overlay" id="more-overlay" onclick="closeMore()"></div>
 
@@ -860,6 +916,7 @@ tr:hover td{background:var(--bg3)}
     <div class="more-item" id="mm-teachers" onclick="mobileNav('teachers')"><i class="ti ti-award"></i>Profesores</div>
     <div class="more-item" id="mm-classcalc" onclick="mobileNav('classcalc')"><i class="ti ti-school"></i>Calc.Clases</div>
     <div class="more-item" id="mm-grades" onclick="mobileNav('grades')"><i class="ti ti-clipboard-list"></i>Notas</div>
+    <div class="more-item" id="mm-journal" onclick="mobileNav('journal')"><i class="ti ti-notebook"></i>Diario</div>
     <div class="more-item" id="mm-timetable" onclick="mobileNav('timetable')"><i class="ti ti-calendar-time"></i>Horario</div>
     <div class="more-item" id="mm-bills" onclick="mobileNav('bills')"><i class="ti ti-calculator"></i>Billetes</div>
     <div class="more-item" id="mm-datamanager" onclick="mobileNav('datamanager')"><i class="ti ti-database"></i>Datos</div>
@@ -905,7 +962,7 @@ const MONTHS=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO',
 const DAY_SHORT=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const DAY_FULL=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 
-let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{},settings:{},grades:{},cambridge2025:[],classTypes:[],classLogs:{},schools:[]};
+let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{},settings:{},grades:{},cambridge2025:[],classTypes:[],classLogs:{},schools:[],journal:{}};
 
 // Grade subjects — fixed 8, split into 2 categories
 const GRADE_SUBJECTS=[
@@ -1097,7 +1154,7 @@ function setSyncStatus(state,label){
 }
 
 function refreshCurrentPage(){
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[currentPage]) renders[currentPage]();
   updatePendingBadge();
 }
@@ -1337,7 +1394,7 @@ function nav(page,el){
   currentPage=page;
   // scroll to top on page change
   document.querySelector('.main').scrollTop=0;
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[page])renders[page]();
 }
 
@@ -3343,6 +3400,290 @@ function saveClassType(){
   else db.classTypes.push({id:uid(),name,price});
   document.getElementById('ct-id').value='';
   scheduleSave();closeModal('m-classtype');renderClassCalc();toast('Tipo guardado');
+}
+
+/* ---- JOURNAL (Diario de Clases) ---- */
+
+// Cycle reference: week 1 = week of March 9 2026 (Mon)
+// Mon/Wed groups (Teens 3, Teens 4) first class = Wed Mar 11
+// Tue/Thu groups first class = Thu Mar 12
+const CYCLE_MONDAY = '2026-03-09'; // reference Monday for week counting
+const CYCLE_END    = '2026-12-05';
+
+// Per-group start dates (ISO)
+const GROUP_START_DATE = {
+  'Teens 3': '2026-03-11',
+  'Teens 4': '2026-03-11',
+};
+const DEFAULT_GROUP_START = '2026-03-12'; // Tue/Thu groups
+
+function groupStartDate(gname){
+  return GROUP_START_DATE[gname] || DEFAULT_GROUP_START;
+}
+
+function getCycleWeek(dateStr){
+  const d     = new Date(dateStr+'T12:00:00');
+  const start = new Date(CYCLE_MONDAY+'T12:00:00');
+  const dMon  = new Date(d);   dMon.setDate(d.getDate() - (d.getDay()===0?6:d.getDay()-1));
+  const sMon  = new Date(start);
+  const diff  = Math.round((dMon - sMon) / (7*24*3600*1000));
+  return diff < 0 ? null : diff + 1;
+}
+
+function getGroupClassDates(g){
+  const days  = g.days || [];
+  const start = groupStartDate(g.name);
+  const end   = CYCLE_END;
+  const result = [];
+  const cur = new Date(start+'T12:00:00');
+  const endD = new Date(end+'T12:00:00');
+  while(cur <= endD){
+    if(days.includes(cur.getDay())) result.push(cur.toISOString().slice(0,10));
+    cur.setDate(cur.getDate()+1);
+  }
+  return result;
+}
+
+function getAbsentsForClass(gid, dateStr){
+  const[y,m,d] = dateStr.split('-').map(Number);
+  const mk = `${y}-${String(m).padStart(2,'0')}`;
+  return db.students.filter(s=>{
+    if(s.groupId!==gid)return false;
+    return (db.attendance[gid]||{})[mk]?.[s.id]?.[d]==='A';
+  }).map(s=>s.name);
+}
+
+function isHolidayDate(gid, dateStr){
+  const[y,m,d] = dateStr.split('-').map(Number);
+  const mk = `${y}-${String(m).padStart(2,'0')}`;
+  return !!((db.dayNotes[mk]||{})[`${gid}-${mk}-${d}`]);
+}
+
+function getHolidayNote(gid, dateStr){
+  const[y,m,d] = dateStr.split('-').map(Number);
+  const mk = `${y}-${String(m).padStart(2,'0')}`;
+  return (db.dayNotes[mk]||{})[`${gid}-${mk}-${d}`]||'';
+}
+
+function markHolidayFromJournal(gid, dateStr, note){
+  const[y,m,d] = dateStr.split('-').map(Number);
+  const mk  = `${y}-${String(m).padStart(2,'0')}`;
+  const key = `${gid}-${mk}-${d}`;
+  if(!db.dayNotes[mk])db.dayNotes[mk]={};
+  if(note) db.dayNotes[mk][key]=note;
+  else delete db.dayNotes[mk][key];
+  db.students.filter(s=>s.groupId===gid).forEach(s=>{
+    if(db.attendance[gid]?.[mk]?.[s.id]) delete db.attendance[gid][mk][s.id][d];
+  });
+}
+
+function getJournalEntry(gid, dateStr){
+  return (db.journal[gid]||{})[dateStr]||{notes:'',material:'',links:'',homework:'',holiday:false,holidayNote:''};
+}
+
+function journalRowClick(e){
+  var row = e.target.closest('.jrn-row');
+  if(!row) return;
+  openJournalEntry(row.dataset.gid, row.dataset.date, parseInt(row.dataset.cn));
+}
+
+function renderJournal(){
+  const selGid  = document.getElementById('jrn-gid')?.value||'';
+  const selMonth= document.getElementById('jrn-month')?.value||curMonth();
+  const today   = new Date().toISOString().slice(0,10);
+  document.getElementById('page-journal').innerHTML=`
+    <div class="page-header">
+      <div>
+        <div class="page-title">Diario de Clases</div>
+        <div class="page-subtitle">Ciclo 2026 · Clases pasadas y futuras</div>
+      </div>
+    </div>
+    <div class="search-row" style="margin-bottom:14px">
+      <select class="search-input" id="jrn-gid" onchange="renderJournal()" style="flex:1;min-width:160px">
+        <option value="">Seleccionar grupo...</option>
+        ${db.groups.map(g=>`<option value="${g.id}"${g.id===selGid?' selected':''}>${g.name}</option>`).join('')}
+      </select>
+      <input type="month" id="jrn-month" value="${selMonth}" onchange="renderJournal()"
+        style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;flex:0 0 auto">
+    </div>
+    ${!selGid
+      ? '<div class="empty"><i class="ti ti-notebook"></i>Seleccioná un grupo para ver el diario</div>'
+      : renderJournalMonth(selGid, selMonth, today)}`;
+}
+
+function renderJournalMonth(gid, month, today){
+  const g        = getGroup(gid);
+  const allDates = getGroupClassDates(g);
+  if(!allDates.length) return '<div class="empty">Sin clases configuradas</div>';
+
+  const classNumMap={};
+  allDates.forEach(function(d,i){classNumMap[d]=i+1;});
+
+  const parts = month.split('-');
+  const y=parseInt(parts[0]), m=parseInt(parts[1]);
+  const monthDates = allDates.filter(function(d){return d.startsWith(month);});
+  const pastAll    = allDates.filter(function(d){return d<=today;});
+  const loaded     = pastAll.filter(function(d){var e=getJournalEntry(gid,d);return(e.notes||e.material||e.homework)&&!isHolidayDate(gid,d)&&!e.holiday;}).length;
+  const holidays   = pastAll.filter(function(d){return isHolidayDate(gid,d)||getJournalEntry(gid,d).holiday;}).length;
+  const future     = allDates.filter(function(d){return d>today;}).length;
+
+  // Find which trimestre this month belongs to
+  var triIdx = TRIMESTRES.findIndex(function(t){return t.includes(m);});
+  var triName = ['','1° Trim (Mar-May)','2° Trim (Jun-Ago)','3° Trim (Sep-Dic)'][triIdx+1]||'';
+
+  // Tarea vigente
+  var prevClass = null;
+  for(var i=allDates.length-1;i>=0;i--){if(allDates[i]<=today){prevClass=allDates[i];break;}}
+  var prevEntry = prevClass ? getJournalEntry(gid,prevClass) : null;
+  var nextClass = allDates.find(function(d){return d>today;});
+
+  var html = '';
+
+  // Stats
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:16px">';
+  html += '<div class="metric" style="padding:10px 12px"><div class="metric-label">Total</div><div class="metric-value purple">' + allDates.length + '</div></div>';
+  html += '<div class="metric gold" style="padding:10px 12px"><div class="metric-label">Dadas</div><div class="metric-value gold">' + pastAll.length + '</div></div>';
+  html += '<div class="metric green" style="padding:10px 12px"><div class="metric-label">Registradas</div><div class="metric-value green">' + loaded + '</div></div>';
+  html += '<div class="metric red" style="padding:10px 12px"><div class="metric-label">Sin cargar</div><div class="metric-value red">' + (pastAll.length-loaded-holidays) + '</div></div>';
+  html += '<div class="metric" style="padding:10px 12px"><div class="metric-label">Futuras</div><div class="metric-value blue">' + future + '</div></div>';
+  html += '</div>';
+
+  // Tarea vigente
+  if(prevEntry && prevEntry.homework){
+    var nxtLbl = nextClass ? new Date(nextClass+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}) : '';
+    html += '<div class="card" style="margin-bottom:14px;border-color:var(--accent-border);padding:12px 16px">';
+    html += '<div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px">Tarea vigente — Clase #' + classNumMap[prevClass] + '</div>';
+    html += '<div style="font-size:13px">' + prevEntry.homework + '</div>';
+    if(nextClass) html += '<div style="font-size:11px;color:var(--text3);margin-top:4px">Para: Clase #' + classNumMap[nextClass] + ' · ' + nxtLbl + '</div>';
+    html += '</div>';
+  }
+
+  if(!monthDates.length){
+    html += '<div class="empty"><i class="ti ti-calendar-off"></i>Sin clases en este mes</div>';
+    return html;
+  }
+
+  // Month header
+  var monthLabel = new Date(y,m-1,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+  html += '<div class="card" style="padding:0;overflow:hidden">';
+  html += '<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">';
+  html += '<div><div style="font-size:14px;font-weight:600">' + g.name + ' — ' + monthLabel + '</div>';
+  if(triName) html += '<div style="font-size:11px;color:var(--text3);margin-top:2px">' + triName + '</div>';
+  html += '</div>';
+  html += '<div style="font-size:12px;color:var(--text3)">' + monthDates.length + ' clases</div>';
+  html += '</div>';
+
+  // Class rows
+  monthDates.forEach(function(dateStr){
+    var entry   = getJournalEntry(gid,dateStr);
+    var holiday = isHolidayDate(gid,dateStr)||entry.holiday;
+    var absents = getAbsentsForClass(gid,dateStr);
+    var cn      = classNumMap[dateStr];
+    var week    = getCycleWeek(dateStr);
+    var d       = new Date(dateStr+'T12:00:00');
+    var isFut   = dateStr>today;
+    var isToday = dateStr===today;
+    var hasData = entry.notes||entry.material||entry.homework;
+    var dayLbl  = d.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
+
+    var dot='', dotColor='var(--text3)';
+    if(holiday){dot='FER';dotColor='var(--amber)';}
+    else if(isToday){dot='HOY';dotColor='var(--accent)';}
+    else if(hasData){dot='✓';dotColor='var(--green)';}
+    else if(!isFut){dot='!';dotColor='var(--red)';}
+
+    var center='';
+    if(holiday){
+      center = '<div style="font-size:13px;font-weight:500;color:var(--amber)">Clase cancelada / Feriado</div>';
+    } else {
+      if(absents.length){
+        center += '<div style="margin-bottom:4px">';
+        absents.forEach(function(n){
+          center += '<span class="badge red" style="font-size:10px;margin-right:3px">' + n.split(' ')[0] + '</span>';
+        });
+        center += '</div>';
+      }
+      if(entry.notes)    center += '<div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px">' + entry.notes + '</div>';
+      if(entry.material) center += '<div style="font-size:12px;color:var(--text2);margin-bottom:2px"><span style="color:var(--text3);font-size:10px;text-transform:uppercase">Material · </span>' + entry.material + '</div>';
+      if(entry.homework) center += '<div style="font-size:12px;color:var(--text2)"><span style="color:var(--text3);font-size:10px;text-transform:uppercase">Tarea · </span>' + entry.homework + '</div>';
+      if(!hasData && isFut)  center += '<div style="font-size:12px;color:var(--text3)">Clase futura</div>';
+      if(!hasData && !isFut) center += '<div style="font-size:12px;color:var(--text3)">Sin registrar</div>';
+      if(isToday)            center += '<span class="badge gold" style="margin-top:4px;display:inline-block">Hoy</span>';
+    }
+
+    // Use a regular div with tabindex so it's focusable and clickable
+    // onclick uses data attributes to avoid quote escaping issues
+    html += '<div class="jrn-row" onclick="openJournalEntry(\'' + gid + '\',\'' + dateStr + '\',' + cn + ')"';
+    html += ' style="display:flex;border-bottom:1px solid var(--border)">';
+    html += '<div style="padding:12px 14px;min-width:96px;border-right:1px solid var(--border);flex-shrink:0;text-align:center">';
+    html += '<div style="font-size:10px;color:var(--text3)">Clase ' + cn + '</div>';
+    html += '<div style="font-size:10px;color:var(--text3);margin-top:2px;text-transform:capitalize">' + dayLbl + '</div>';
+    html += '<div style="font-size:10px;color:var(--text3)">Sem. ' + week + '</div>';
+    html += '</div>';
+    html += '<div style="flex:1;padding:12px 14px;min-width:0">' + center + '</div>';
+    html += '<div style="padding:12px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0">';
+    if(dot) html += '<span style="font-size:11px;font-weight:700;color:' + dotColor + '">' + dot + '</span>';
+    html += '<i class="ti ti-chevron-right" style="color:var(--text3);font-size:14px"></i>';
+    html += '</div>';
+    html += '</div>';
+  });
+
+  html += '</div>';
+
+  // No wrapper needed - onclick on each row
+
+  return html;
+}
+
+function openJournalEntry(gid, dateStr, classNum){
+  const g=getGroup(gid);const entry=getJournalEntry(gid,dateStr);
+  const absents=getAbsentsForClass(gid,dateStr);
+  const holiday=isHolidayDate(gid,dateStr)||entry.holiday;
+  const week=getCycleWeek(dateStr);
+  const d=new Date(dateStr+'T12:00:00');
+  const lbl=d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const isFuture=dateStr>new Date().toISOString().slice(0,10);
+  document.getElementById('mj-gid').value=gid;
+  document.getElementById('mj-date').value=dateStr;
+  document.getElementById('mj-title').textContent=`${g.name} · Clase #${classNum}`;
+  document.getElementById('mj-meta').innerHTML=`<span style="text-transform:capitalize">${lbl}</span> · Semana <strong>${week}</strong> del ciclo${isFuture?` · <span style="color:var(--blue)">Clase futura</span>`:''}`;
+  const absentRow=document.getElementById('mj-absent-row');
+  const absentList=document.getElementById('mj-absent-list');
+  if(absents.length&&!holiday){
+    absentRow.style.display='';
+    absentList.innerHTML=absents.map(n=>`<span class="badge red" style="margin-right:5px;margin-bottom:4px">${n}</span>`).join('');
+  } else { absentRow.style.display='none'; }
+  document.getElementById('mj-holiday').checked=holiday;
+  document.getElementById('mj-fields').style.display=holiday?'none':'';
+  document.getElementById('mj-notes').value=entry.notes||'';
+  document.getElementById('mj-material').value=entry.material||'';
+  document.getElementById('mj-homework').value=entry.homework||'';
+  openModal('m-journal');
+}
+
+function toggleJournalHoliday(){
+  document.getElementById('mj-fields').style.display=document.getElementById('mj-holiday').checked?'none':'';
+}
+
+function saveJournalEntry(){
+  const gid=document.getElementById('mj-gid').value;
+  const dateStr=document.getElementById('mj-date').value;
+  const holiday=document.getElementById('mj-holiday').checked;
+  const notes=document.getElementById('mj-notes').value.trim();
+  const material=document.getElementById('mj-material').value.trim();
+  const homework=document.getElementById('mj-homework').value.trim();
+  if(!db.journal)db.journal={};if(!db.journal[gid])db.journal[gid]={};
+  db.journal[gid][dateStr]={notes,material,homework,holiday,holidayNote:holiday?'Cancelada':''};
+  markHolidayFromJournal(gid,dateStr,holiday?'Cancelada':'');
+  scheduleSave();closeModal('m-journal');renderJournal();
+  toast(holiday?'Clase cancelada marcada':'Clase guardada');
+}
+
+function toggleSection(id){
+  const el=document.getElementById(id);const icon=document.getElementById(id+'-icon');
+  if(!el)return;const hidden=el.style.display==='none';
+  el.style.display=hidden?'':'none';
+  if(icon)icon.className=hidden?'ti ti-chevron-up':'ti ti-chevron-down';
 }
 
 /* ---- INIT ---- */
