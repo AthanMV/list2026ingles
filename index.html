@@ -1387,17 +1387,40 @@ function syncThemeUI(theme){
 }
 
 /* ---- NAV ---- */
+// Valid pages for URL routing
+const VALID_PAGES=['dashboard','timetable','journal','groups','payments','families','attendance','students','teachers','classcalc','grades','bills','datamanager','settings'];
+
 function nav(page,el){
+  // Validate page
+  if(!VALID_PAGES.includes(page)) page='dashboard';
+
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el)el.classList.add('active');
+  if(el) el.classList.add('active');
+  // Also highlight sidebar nav item if nav() called without el (e.g. from URL)
+  if(!el){
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      if((n.getAttribute('onclick')||'').includes("'"+page+"'")) n.classList.add('active');
+    });
+  }
   document.querySelectorAll('.page-inner').forEach(p=>p.style.display='none');
   document.getElementById('page-'+page).style.display='block';
   currentPage=page;
-  // scroll to top on page change
   document.querySelector('.main').scrollTop=0;
+
+  // Update URL hash without triggering hashchange listener
+  if(location.hash !== '#'+page){
+    history.pushState({page}, '', '#'+page);
+  }
+
   const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[page])renders[page]();
 }
+
+// Back/forward button support
+window.addEventListener('popstate', function(e){
+  const page = (e.state && e.state.page) || location.hash.replace('#','') || 'dashboard';
+  nav(page, null);
+});
 
 function updatePendingBadge(){
   const month=curMonth();
@@ -3693,10 +3716,16 @@ async function init(){
   await loadFromSupabase();
   document.getElementById('loading').style.display='none';
   document.getElementById('app').style.display='flex';
-  renderDashboard();
+
+  // Navigate to page from URL hash, or default to dashboard
+  const hashPage = location.hash.replace('#','');
+  const startPage = VALID_PAGES.includes(hashPage) ? hashPage : 'dashboard';
+  // Set initial history state so popstate works from the start
+  history.replaceState({page:startPage}, '', '#'+startPage);
+  nav(startPage, null);
+
   updatePendingBadge();
   startPolling();
-  // Flush any pending writes from last offline session
   try{if(localStorage.getItem(OFFLINE_KEY))flushPending();}catch(e){}
 }
 
