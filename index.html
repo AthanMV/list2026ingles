@@ -75,7 +75,7 @@ body{font-family:var(--font-body);font-size:14px;color:var(--text);background:va
 /* LAYOUT */
 .app{display:flex;height:100vh}
 .sidebar{width:var(--sidebar);min-width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-.main{flex:1;overflow-y:auto;background:var(--bg)}
+.main{flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;align-items:stretch}
 
 /* SIDEBAR */
 .sidebar-header{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
@@ -108,7 +108,7 @@ body{font-family:var(--font-body);font-size:14px;color:var(--text);background:va
 .toggle-switch.on .toggle-knob{transform:translateX(16px);background:#1a1400}
 
 /* MAIN CONTENT */
-.page-inner{padding:28px 32px;max-width:1200px}
+.page-inner{padding:28px 32px;max-width:1200px;width:100%;box-sizing:border-box}
 .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px}
 .page-title{font-family:var(--font-display);font-size:26px;font-weight:600;color:var(--text);line-height:1.2}
 .page-subtitle{font-size:13px;color:var(--text3);margin-top:4px}
@@ -563,7 +563,6 @@ tr:hover td{background:var(--bg3)}
     <div class="nav-item" onclick="nav('students',this)"><i class="ti ti-user nav-icon"></i> Alumnos</div>
     <div class="nav-section">Administración</div>
     <div class="nav-item" onclick="nav('teachers',this)"><i class="ti ti-award nav-icon"></i> Profesores</div>
-    <div class="nav-item" onclick="nav('classcalc',this)"><i class="ti ti-school nav-icon"></i> Calc. Clases</div>
     <div class="nav-item" onclick="nav('grades',this)"><i class="ti ti-clipboard-list nav-icon"></i> Notas 2026</div>
     <div class="nav-item" onclick="nav('bills',this)"><i class="ti ti-calculator nav-icon"></i> Billetes</div>
     <div class="nav-item" onclick="nav('datamanager',this)"><i class="ti ti-database nav-icon"></i> Datos</div>
@@ -587,7 +586,6 @@ tr:hover td{background:var(--bg3)}
   <div id="page-attendance" class="page-inner" style="display:none"></div>
   <div id="page-students" class="page-inner" style="display:none"></div>
   <div id="page-teachers" class="page-inner" style="display:none"></div>
-  <div id="page-classcalc" class="page-inner" style="display:none"></div>
   <div id="page-grades" class="page-inner" style="display:none"></div>
   <div id="page-journal" class="page-inner" style="display:none"></div>
   <div id="page-bills" class="page-inner" style="display:none"></div>
@@ -748,10 +746,17 @@ tr:hover td{background:var(--bg3)}
   <input type="hidden" id="tp-tid">
   <div id="tp-fixed-form">
     <div class="form-grid c2">
-      <div class="field"><label>Monto ($)</label><input id="tp-amount" type="number"></div>
-      <div class="field"><label>Fecha</label><input id="tp-date" type="date"></div>
+      <div class="field"><label>Mes</label><input id="tp-month" type="month"></div>
+      <div class="field"><label>Fecha de pago</label><input id="tp-date" type="date"></div>
     </div>
-    <div class="form-grid"><div class="field"><label>Concepto</label><input id="tp-concept" placeholder="Sueldo, adelanto, bono..."></div></div>
+    <div class="form-grid c2">
+      <div class="field"><label>Monto ($)</label><input id="tp-amount" type="number"></div>
+      <div class="field"><label>Concepto</label><input id="tp-concept" placeholder="Sueldo, adelanto..."></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+      <input type="checkbox" id="tp-is-bonus" style="width:16px;height:16px;cursor:pointer">
+      <label for="tp-is-bonus" style="font-size:13px;cursor:pointer">⭐ Es un extra / bono — <span style="color:var(--text3);font-size:12px">se suma al sueldo, no se descuenta</span></label>
+    </div>
   </div>
   <div id="tp-weekly-form" style="display:none">
     <div class="form-grid c2">
@@ -914,7 +919,6 @@ tr:hover td{background:var(--bg3)}
     <div class="more-item" id="mm-families" onclick="mobileNav('families')"><i class="ti ti-home"></i>Familias</div>
     <div class="more-item" id="mm-attendance" onclick="mobileNav('attendance')"><i class="ti ti-calendar-check"></i>Asistencias</div>
     <div class="more-item" id="mm-teachers" onclick="mobileNav('teachers')"><i class="ti ti-award"></i>Profesores</div>
-    <div class="more-item" id="mm-classcalc" onclick="mobileNav('classcalc')"><i class="ti ti-school"></i>Calc.Clases</div>
     <div class="more-item" id="mm-grades" onclick="mobileNav('grades')"><i class="ti ti-clipboard-list"></i>Notas</div>
     <div class="more-item" id="mm-journal" onclick="mobileNav('journal')"><i class="ti ti-notebook"></i>Diario</div>
     <div class="more-item" id="mm-timetable" onclick="mobileNav('timetable')"><i class="ti ti-calendar-time"></i>Horario</div>
@@ -1018,9 +1022,13 @@ window.addEventListener('offline', ()=>{
 });
 
 function dbHash(d){
-  // quick hash to detect remote changes
-  try{return JSON.stringify(d).length+'-'+(d.payments||[]).length+'-'+(d.students||[]).length;}
-  catch(e){return'';}
+  // A hash that captures attendance and journal changes, not just counts
+  try{
+    const attKeys=Object.values(d.attendance||{}).reduce((a,mk)=>a+Object.keys(mk).length,0);
+    const jrnKeys=Object.values(d.journal||{}).reduce((a,g)=>a+Object.keys(g).length,0);
+    const dayN=Object.values(d.dayNotes||{}).reduce((a,m)=>a+Object.keys(m).length,0);
+    return (d.payments||[]).length+'-'+(d.students||[]).length+'-'+(d.teacherPayments||[]).length+'-'+attKeys+'-'+dayN+'-'+jrnKeys+'-'+(d.grades?JSON.stringify(d.grades).length:0);
+  }catch(e){return'';}
 }
 
 async function loadFromSupabase(){
@@ -1155,7 +1163,7 @@ function setSyncStatus(state,label){
 }
 
 function refreshCurrentPage(){
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[currentPage]) renders[currentPage]();
   updatePendingBadge();
 }
@@ -1388,7 +1396,7 @@ function syncThemeUI(theme){
 
 /* ---- NAV ---- */
 // Valid pages for URL routing
-const VALID_PAGES=['dashboard','timetable','journal','groups','payments','families','attendance','students','teachers','classcalc','grades','bills','datamanager','settings'];
+const VALID_PAGES=['dashboard','timetable','journal','groups','payments','families','attendance','students','teachers','grades','bills','datamanager','settings'];
 
 function nav(page,el){
   // Validate page
@@ -1412,7 +1420,7 @@ function nav(page,el){
     history.pushState({page}, '', '#'+page);
   }
 
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,classcalc:renderClassCalc,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[page])renders[page]();
 }
 
@@ -1962,7 +1970,7 @@ function showProfile(id){
   const f=getFam(s.id);
   const month=curMonth();
   const paid=hasPaid(s.id,month);
-  const myPays=[...db.payments].filter(p=>p.studentId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const myPays=[...db.payments].filter(p=>p.studentId===id&&p.amount>0).sort((a,b)=>b.date.localeCompare(a.date));
   const now=new Date();
   let bdayHtml='';
   if(s.dob){
@@ -1970,14 +1978,34 @@ function showProfile(id){
     const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
     if(next<now)next.setFullYear(now.getFullYear()+1);
     const diff=Math.ceil((next-now)/86400000);
-    // Calculate exact age
     let age=now.getFullYear()-dob.getFullYear();
     const hadBday=now.getMonth()>dob.getMonth()||(now.getMonth()===dob.getMonth()&&now.getDate()>=dob.getDate());
     if(!hadBday)age--;
     bdayHtml=`<span class="badge ${diff<=14?'amber':'gray'}">${age} años · Cumple ${next.toLocaleDateString('es-AR')} · en ${diff} días</span>`;
   }
+
+  // Grades summary — all trimestres
+  const grades=db.grades||{};
+  const gradesSummary=[];
+  [1,2,3].forEach(tri=>{
+    const sGrades=(grades[s.groupId]||{})[s.id]?.[tri]||{};
+    const allSubjs=GRADE_SUBJECTS.flatMap(c=>c.items);
+    const avgs=allSubjs.map(subj=>{
+      const entries=(sGrades[subj]||[]).filter(e=>e.score!=='A');
+      if(!entries.length)return null;
+      return entries.reduce((a,e)=>a+Number(e.score),0)/entries.length;
+    }).filter(v=>v!==null);
+    if(avgs.length) gradesSummary.push({tri,prom:(avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1)});
+  });
+
+  // Absences this year
+  const totalAbs=Object.entries(db.attendance[s.groupId]||{}).reduce((total,[mk,students])=>{
+    const recs=students[s.id]||{};
+    return total+Object.values(recs).filter(v=>v==='A').length;
+  },0);
+
   document.getElementById('profile-content').innerHTML=`
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
       ${avatar(s.name,52,s.gender||'')}
       <div>
         <div style="font-family:var(--font-display);font-size:20px;font-weight:600">${s.name}</div>
@@ -1985,21 +2013,48 @@ function showProfile(id){
         ${bdayHtml?`<div style="margin-top:6px">${bdayHtml}</div>`:''}
       </div>
     </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:var(--bg3);border-radius:var(--radius);padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px">Estado pago</div>
+        <span class="badge ${paid?'green':'red'}">${paid?'Pagó':'Pendiente'}</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--radius);padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px">Ausencias 2026</div>
+        <div style="font-size:17px;font-weight:700;color:${totalAbs>5?'var(--red)':totalAbs>2?'var(--amber)':'var(--green)'}">${totalAbs}</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--radius);padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px">Pagos registrados</div>
+        <div style="font-size:17px;font-weight:700;color:var(--text)">${myPays.length}</div>
+      </div>
+    </div>
+
     <div class="sep"></div>
     <div style="font-size:13px;line-height:2">
-      ${s.dadName||s.dadPhone?`<div style="display:flex;align-items:center;gap:8px"><span style="color:var(--text3);width:80px">Papá</span><span>${s.dadName||''} ${s.dadPhone?`<span style="color:var(--text2)">${s.dadPhone}</span>`:''}</span> ${s.dadPhone&&s.waTarget==='dad'?waBtn(s,'pay'):''}</div>`:''}
-      ${s.momName||s.momPhone?`<div style="display:flex;align-items:center;gap:8px"><span style="color:var(--text3);width:80px">Mamá</span><span>${s.momName||''} ${s.momPhone?`<span style="color:var(--text2)">${s.momPhone}</span>`:''}</span> ${s.momPhone&&s.waTarget==='mom'?waBtn(s,'pay'):''}</div>`:''}
-      ${s.school?`<div><span style="color:var(--text3)">Colegio  </span>${s.school}</div>`:''}
-      <div style="margin-top:4px"><span class="badge ${paid?'green':'red'}">${paid?'Pagó este mes':'Pendiente este mes'}</span></div>
+      ${s.dadName||s.dadPhone?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="color:var(--text3);min-width:60px">Papá</span><span>${s.dadName||''}</span>${s.dadPhone?`<span style="color:var(--text2)">${s.dadPhone}</span>`:''} ${s.dadPhone&&s.waTarget==='dad'?waBtn(s,'pay'):''}</div>`:''}
+      ${s.momName||s.momPhone?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="color:var(--text3);min-width:60px">Mamá</span><span>${s.momName||''}</span>${s.momPhone?`<span style="color:var(--text2)">${s.momPhone}</span>`:''} ${s.momPhone&&s.waTarget==='mom'?waBtn(s,'pay'):''}</div>`:''}
+      ${s.school?`<div><span style="color:var(--text3)">Colegio &nbsp;</span>${s.school}</div>`:''}
     </div>
     ${s.notes?`<div class="sep"></div><div style="font-size:13px;color:var(--text2)">${s.notes}</div>`:''}
+
+    ${gradesSummary.length?`
+      <div class="sep"></div>
+      <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Promedios 2026</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${gradesSummary.map(({tri,prom})=>`<span class="badge ${Number(prom)>=7?'green':Number(prom)>=4?'amber':'red'}">Trim. ${tri}: ${prom}</span>`).join('')}
+      </div>`:''} 
+
     <div class="sep"></div>
     <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Historial de pagos</div>
-    ${myPays.length===0?`<div class="empty" style="padding:10px">Sin pagos</div>`:
+    ${myPays.length===0?`<div style="font-size:13px;color:var(--text3)">Sin pagos registrados</div>`:
     `<div class="table-wrap"><table><thead><tr><th>Mes</th><th>Monto</th><th>Método</th><th>Fecha</th></tr></thead><tbody>
-    ${myPays.map(p=>`<tr><td>${p.month}</td><td>${fm(p.amount)}</td><td><span class="badge ${p.method==='Transferencia'?'blue':p.method==='Efectivo'?'green':'amber'}">${p.method}</span></td><td>${fdate(p.date)}</td></tr>`).join('')}
-    </tbody></table></div>`}
-    <div style="margin-top:14px"><button class="btn sm" onclick="closeModal('m-profile');editStudent('${id}')"><i class="ti ti-edit"></i> Editar</button></div>`;
+    ${myPays.slice(0,8).map(p=>`<tr><td>${monthName(p.month)} ${p.month.split('-')[0]}</td><td style="font-family:var(--font-mono)">${fm(p.amount)}</td><td><span class="badge ${p.method==='Transferencia'?'blue':p.method==='Efectivo'?'green':'amber'}">${p.method||'—'}</span></td><td>${fdate(p.date)}</td></tr>`).join('')}
+    </tbody></table></div>
+    ${myPays.length>8?`<div style="font-size:12px;color:var(--text3);margin-top:6px">+${myPays.length-8} más</div>`:''}`}
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btn sm" onclick="closeModal('m-profile');editStudent('${id}')"><i class="ti ti-edit"></i> Editar</button>
+      ${!paid?`<button class="btn sm primary" onclick="closeModal('m-profile');nav('payments',null)"><i class="ti ti-credit-card"></i> Ir a pagos</button>`:''}
+    </div>`;
   openModal('m-profile');
 }
 
@@ -2658,22 +2713,11 @@ function saveDayNote(){
   const mm=allParts[allParts.length-2];
   const yyyy=allParts[allParts.length-3];
   const realMonth=`${yyyy}-${mm}`;
-  const gid=allParts.slice(0,allParts.length-3).join('-');
   const text=document.getElementById('mdn-text').value.trim();
   if(!db.dayNotes[realMonth])db.dayNotes[realMonth]={};
-  if(text){
-    db.dayNotes[realMonth][key]=text;
-    // Clear any individual marks on this day (holiday takes precedence)
-    const students=db.students.filter(s=>s.groupId===gid);
-    if(!db.attendance[gid])db.attendance[gid]={};
-    if(!db.attendance[gid][realMonth])db.attendance[gid][realMonth]={};
-    students.forEach(s=>{
-      if(!db.attendance[gid][realMonth][s.id])db.attendance[gid][realMonth][s.id]={};
-      delete db.attendance[gid][realMonth][s.id][day];
-    });
-  } else {
-    delete db.dayNotes[realMonth][key];
-  }
+  if(text) db.dayNotes[realMonth][key]=text;
+  else delete db.dayNotes[realMonth][key];
+  // NOTE: we do NOT delete attendance — holidays just override display
   scheduleSave();closeModal('m-daynote');renderAttendance();
   toast(text?'Feriado marcado':'Nota eliminada');
 }
@@ -2690,54 +2734,95 @@ function toggleTeacherSalaryField(){
 
 function renderTeachers(){
   const tm=document.getElementById('t-month-sel')?.value||curMonth();
+
+  // Build summary per teacher for selected month
+  function teacherSummary(t){
+    const pays=db.teacherPayments.filter(p=>p.teacherId===t.id&&p.month===tm);
+    const total=pays.reduce((a,p)=>a+Number(p.amount),0);
+    const allPays=db.teacherPayments.filter(p=>p.teacherId===t.id);
+    const allTotal=allPays.reduce((a,p)=>a+Number(p.amount),0);
+    return{pays,total,allTotal};
+  }
+
   document.getElementById('page-teachers').innerHTML=`
     <div class="page-header">
-      <div><div class="page-title">Profesores</div><div class="page-subtitle">Sueldos y pagos</div></div>
+      <div><div class="page-title">Profesores</div><div class="page-subtitle">Sueldos, pagos y tipos de clase</div></div>
       <div class="page-actions">
-        <input type="month" id="t-month-sel" value="${tm}" onchange="renderTeachers()" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none">
+        <input type="month" id="t-month-sel" value="${tm}" onchange="renderTeachers()"
+          style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none">
         <button class="btn primary" onclick="openTeacherModal()"><i class="ti ti-plus"></i> Agregar</button>
       </div>
     </div>
+
+    <!-- CLASS TYPES -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="card-title" style="margin-bottom:0">Tipos de clase</div>
+        <button class="btn sm primary" onclick="openAddClassType()"><i class="ti ti-plus"></i> Agregar</button>
+      </div>
+      ${(db.classTypes||[]).length===0
+        ? '<div style="font-size:13px;color:var(--text3)">Sin tipos configurados</div>'
+        : `<div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${(db.classTypes||[]).map(ct=>`
+            <div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px">
+              <div>
+                <div style="font-size:13px;font-weight:600">${ct.name}</div>
+                <div style="font-size:12px;color:var(--accent);font-family:var(--font-mono)">${fm(ct.price)}</div>
+              </div>
+              <button class="btn ghost xs" onclick="editClassType('${ct.id}')"><i class="ti ti-edit"></i></button>
+              <button class="btn ghost xs danger" onclick="deleteClassType('${ct.id}')"><i class="ti ti-trash"></i></button>
+            </div>`).join('')}
+        </div>`}
+    </div>
+
+    <!-- TEACHERS -->
     ${db.teachers.length===0?'<div class="empty"><i class="ti ti-award"></i>Sin profesores</div>':
     db.teachers.map(t=>{
       const isWeekly=t.payMode==='weekly';
-      const pays=db.teacherPayments.filter(p=>p.teacherId===t.id&&p.month===tm);
-      const total=pays.reduce((a,p)=>a+Number(p.amount),0);
-      const rem=isWeekly?null:Number(t.salary)-total;
+      const {pays,total}=teacherSummary(t);
+      const baseTotal=pays.filter(p=>!p.isBonus).reduce((a,p)=>a+Number(p.amount),0);
+      const bonusTotal=pays.filter(p=>p.isBonus).reduce((a,p)=>a+Number(p.amount),0);
+      const rem=isWeekly?null:Number(t.salary)-baseTotal+bonusTotal;
 
-      // Weekly: group by week
+      // Payment history for this month
       let payContent='';
       if(isWeekly){
         const byWeek={};
         pays.forEach(p=>{const w=p.week||p.date?.slice(0,10)||'?';if(!byWeek[w])byWeek[w]=[];byWeek[w].push(p);});
         payContent=`
-          <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:12px;color:var(--text2)">Total pagado en ${monthName(tm)}:</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span style="font-size:12px;color:var(--text2)">Total en ${monthName(tm)}:</span>
             <span style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--accent)">${fm(total)}</span>
           </div>
-          ${pays.length===0?`<div class="empty" style="padding:10px">Sin pagos en ${monthName(tm)}</div>`:
+          ${pays.length===0?`<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin pagos en ${monthName(tm)}</div>`:
           Object.entries(byWeek).sort().map(([w,wpays])=>{
             const wt=wpays.reduce((a,p)=>a+Number(p.amount),0);
             return`<div style="margin-bottom:8px;padding:10px 12px;background:var(--bg3);border-radius:var(--radius)">
               <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:6px">
                 <span>Semana del ${w}</span><span style="color:var(--accent);font-weight:600">${fm(wt)}</span>
               </div>
-              ${wpays.map(p=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0">
-                <span>${p.concept}</span>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-family:var(--font-mono)">${fm(p.amount)}</span>
-                  <button class="btn ghost xs danger" onclick="deleteTPay('${p.id}')"><i class="ti ti-trash"></i></button>
-                </div>
+              ${wpays.map(p=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;gap:8px">
+                <span style="flex:1">${p.concept}</span>
+                <span style="font-family:var(--font-mono)">${fm(p.amount)}</span>
+                <button class="btn ghost xs danger" onclick="deleteTPay('${p.id}')"><i class="ti ti-trash"></i></button>
               </div>`).join('')}
             </div>`;
           }).join('')}`;
       } else {
-        payContent=`
-          ${pays.length===0?`<div class="empty" style="padding:10px">Sin pagos en ${monthName(tm)}</div>`:
-          `<div class="table-wrap"><table><thead><tr><th>Concepto</th><th>Monto</th><th>Fecha</th><th></th></tr></thead><tbody>
-          ${pays.map(p=>`<tr><td>${p.concept}</td><td style="font-family:var(--font-mono)">${fm(p.amount)}</td><td>${fdate(p.date)}</td><td><button class="btn ghost xs danger" onclick="deleteTPay('${p.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('')}
-          </tbody></table></div>`}`;
+        payContent=pays.length===0
+          ?`<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin pagos en ${monthName(tm)}</div>`
+          :`<div class="table-wrap"><table><thead><tr><th>Concepto</th><th>Monto</th><th>Fecha</th><th></th></tr></thead><tbody>
+            ${pays.map(p=>`<tr>
+              <td>${p.concept}${p.isBonus?' ⭐':''}</td>
+              <td style="font-family:var(--font-mono)">${fm(p.amount)}</td>
+              <td>${fdate(p.date)}</td>
+              <td><button class="btn ghost xs danger" onclick="deleteTPay('${p.id}')"><i class="ti ti-trash"></i></button></td>
+            </tr>`).join('')}
+          </tbody></table></div>`;
       }
+
+      // History button — show all-time total
+      const allTime=db.teacherPayments.filter(p=>p.teacherId===t.id).reduce((a,p)=>a+Number(p.amount),0);
 
       return`<div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
@@ -2745,12 +2830,15 @@ function renderTeachers(){
             ${avatar(t.name,42)}
             <div>
               <div style="font-family:var(--font-display);font-size:17px;font-weight:600">${t.name}</div>
-              <div style="font-size:12px;color:var(--text3)">${isWeekly?'Pago por clases':'Sueldo fijo'}${t.phone?' · '+t.phone:''}</div>
+              <div style="font-size:12px;color:var(--text3)">${isWeekly?'Por clases':'Sueldo fijo'}${t.phone?' · '+t.phone:''}</div>
             </div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-            ${!isWeekly?`<span class="badge gold">Base: ${fm(t.salary)}</span><span class="badge ${rem<=0?'green':'amber'}">Saldo: ${fm(Math.max(0,rem))}</span>`:`<span class="badge blue">Acumulado: ${fm(total)}</span>`}
-            <button class="btn sm primary" onclick="openTpay('${t.id}')"><i class="ti ti-plus"></i> Pago</button>
+            ${!isWeekly
+              ? `<span class="badge gold">Base: ${fm(t.salary)}</span>${bonusTotal>0?`<span class="badge blue">+${fm(bonusTotal)} extra</span>`:''}<span class="badge ${rem<=0?'green':'amber'}">Saldo: ${fm(Math.max(0,rem))}</span>`
+              : `<span class="badge blue">Este mes: ${fm(total)}</span>`}
+            <span class="badge gray" style="cursor:pointer" onclick="showTeacherHistory('${t.id}')" title="Historial completo">Total: ${fm(allTime)}</span>
+            <button class="btn sm primary" onclick="openTpay('${t.id}','${tm}')"><i class="ti ti-plus"></i> Pago</button>
             <button class="btn sm" onclick="openTeacherModal('${t.id}')"><i class="ti ti-edit"></i></button>
             <button class="btn sm danger" onclick="deleteTeacher('${t.id}')"><i class="ti ti-trash"></i></button>
           </div>
@@ -2793,7 +2881,7 @@ function deleteTeacher(id){
   scheduleSave();renderTeachers();
 }
 
-function openTpay(tid){
+function openTpay(tid, defaultMonth){
   const t=db.teachers.find(x=>x.id===tid);
   const isWeekly=t?.payMode==='weekly';
   document.getElementById('tp-tid').value=tid;
@@ -2803,8 +2891,11 @@ function openTpay(tid){
   document.getElementById('tp-amount').value='';
   document.getElementById('tp-date').value=today();
   document.getElementById('tp-concept').value='Sueldo';
+  document.getElementById('tp-is-bonus').checked=false;
+  // Set the month field to the selected month on teachers page
+  const mon=defaultMonth||curMonth();
+  if(document.getElementById('tp-month')) document.getElementById('tp-month').value=mon;
   if(isWeekly){
-    // Default week to this Monday
     const now=new Date();const day=now.getDay();
     const monday=new Date(now);monday.setDate(now.getDate()-(day===0?6:day-1));
     document.getElementById('tp-week').value=monday.toISOString().slice(0,10);
@@ -2829,7 +2920,7 @@ function renderWeeklyClassQty(){
         <span id="qty-${ct.id}" style="font-family:var(--font-mono);font-size:15px;font-weight:600;min-width:24px;text-align:center">0</span>
         <button onclick="adjQty('${ct.id}',1)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text)">+</button>
       </div>
-    </div>`).join('')||'<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin tipos de clase configurados. Agregá tipos en Calc. Clases.</div>';
+    </div>`).join('')||'<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin tipos de clase configurados. Agregalos en Profesores.</div>';
   updateWeeklyTotal();
 }
 
@@ -2879,9 +2970,11 @@ function saveTeacherPayment(){
   } else {
     const amount=Number(document.getElementById('tp-amount').value);
     const date=document.getElementById('tp-date').value;
+    const month=document.getElementById('tp-month')?.value||date.slice(0,7);
     const concept=document.getElementById('tp-concept').value.trim()||'Pago';
-    if(!amount||!date)return toast('Completá monto y fecha','error');
-    db.teacherPayments.push({id:uid(),teacherId:tid,month:date.slice(0,7),amount,date,concept});
+    const isBonus=document.getElementById('tp-is-bonus')?.checked||false;
+    if(!amount||!date||!month)return toast('Completá monto, mes y fecha','error');
+    db.teacherPayments.push({id:uid(),teacherId:tid,month,amount,date,concept,isBonus});
     toast('Pago registrado');
   }
   scheduleSave();closeModal('m-tpay');renderTeachers();
@@ -2939,7 +3032,7 @@ function renderSettings(){
   const[,mo]=month.split('-');
   const key='waMsg_'+month;
   const customMsg=s[key]||'';
-  const defaultMsg=s['waMsg_default']||`💰 MES DE {MES} RECIBIDO! Muchas gracias ❣️`;
+  const defaultMsg=s['waMsg_default']||'💰 MES DE {MES} RECIBIDO! Muchas gracias ❣️';
   const activeMsg=customMsg||(defaultMsg.replace('{MES}',MONTHS[parseInt(mo)-1]));
 
   document.getElementById('page-settings').innerHTML=`
@@ -2947,11 +3040,11 @@ function renderSettings(){
       <div><div class="page-title">Configuración</div></div>
     </div>
 
+    <!-- WA MESSAGE -->
     <div class="card" style="margin-bottom:14px">
       <div class="card-title">Mensaje de WhatsApp — ${MONTHS[parseInt(mo)-1]} ${month.split('-')[0]}</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Se usa al enviar el aviso de pago. Dejá en blanco para usar el predeterminado.</div>
       <div class="field" style="margin-bottom:10px">
-        <label>Mensaje de este mes (opcional)</label>
+        <label>Mensaje personalizado este mes (vacío = usa el predeterminado)</label>
         <textarea id="wa-msg-${month}" rows="2" placeholder="${activeMsg}">${customMsg}</textarea>
       </div>
       <div style="background:var(--bg3);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text2);margin-bottom:10px">
@@ -2964,9 +3057,10 @@ function renderSettings(){
       </div>
     </div>
 
+    <!-- DEFAULT MESSAGE -->
     <div class="card" style="margin-bottom:14px">
       <div class="card-title">Mensaje predeterminado</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Usá <code style="background:var(--bg4);padding:1px 5px;border-radius:4px">{MES}</code> para insertar el nombre del mes automáticamente.</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Usá <code style="background:var(--bg4);padding:1px 5px;border-radius:4px">{MES}</code> para el nombre del mes automático.</div>
       <div class="field" style="margin-bottom:10px">
         <textarea id="wa-default-msg" rows="2">${s['waMsg_default']||''}</textarea>
       </div>
@@ -2974,13 +3068,12 @@ function renderSettings(){
       <button class="btn primary sm" onclick="saveDefaultWAMsg()"><i class="ti ti-device-floppy"></i> Guardar predeterminado</button>
     </div>
 
+    <!-- SCHOOLS -->
     <div class="card" style="margin-bottom:14px">
       <div class="card-title">Colegios</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Lista para filtrar alumnos y autocompletar en fichas.</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
-        ${(db.schools||[]).map(sc=>`<span style="display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px">
-          ${sc}
-          <button onclick="deleteSchool('${sc.replace(/'/g,"\\'")}')" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:11px;padding:0;line-height:1">×</button>
+        ${(db.schools||[]).map(sc=>`<span style="display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px">
+          ${sc}<button onclick="deleteSchool('${sc.replace(/'/g,"\\'")}');renderSettings()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:11px;padding:0;line-height:1">×</button>
         </span>`).join('')||'<span style="color:var(--text3);font-size:13px">Sin colegios</span>'}
       </div>
       <div style="display:flex;gap:8px">
@@ -2989,18 +3082,37 @@ function renderSettings(){
       </div>
     </div>
 
+    <!-- APPEARANCE -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Apariencia</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:13px">Tema:</span>
+        <button class="btn sm" onclick="setTheme('light')" style="${document.documentElement.getAttribute('data-theme')==='light'?'border-color:var(--accent);color:var(--accent)':''}"><i class="ti ti-sun"></i> Claro</button>
+        <button class="btn sm" onclick="setTheme('dark')" style="${document.documentElement.getAttribute('data-theme')==='dark'?'border-color:var(--accent);color:var(--accent)':''}"><i class="ti ti-moon"></i> Oscuro</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
     <div class="card">
-      <div class="card-title">Acerca del sistema</div>
+      <div class="card-title">Estado del sistema</div>
       <div class="stat-row"><span class="stat-label">Alumnos</span><span class="stat-val">${db.students.length}</span></div>
       <div class="stat-row"><span class="stat-label">Grupos</span><span class="stat-val">${db.groups.length}</span></div>
       <div class="stat-row"><span class="stat-label">Pagos registrados</span><span class="stat-val">${db.payments.length}</span></div>
       <div class="stat-row"><span class="stat-label">Familias</span><span class="stat-val">${db.families.length}</span></div>
-      <div class="stat-row"><span class="stat-label">Notas cargadas</span><span class="stat-val">${Object.keys(db.grades||{}).length} grupos con notas</span></div>
+      <div class="stat-row"><span class="stat-label">Notas cargadas</span><span class="stat-val">${Object.keys(db.grades||{}).length} grupos</span></div>
+      <div class="stat-row"><span class="stat-label">Entradas del diario</span><span class="stat-val">${Object.values(db.journal||{}).reduce((a,g)=>a+Object.keys(g).length,0)}</span></div>
       <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn sm" onclick="exportData()"><i class="ti ti-download"></i> Backup</button>
+        <button class="btn sm" onclick="exportData()"><i class="ti ti-download"></i> Backup JSON</button>
         <button class="btn sm" onclick="loadFromSupabase().then(()=>{renderSettings();toast('Actualizado')})"><i class="ti ti-cloud-download"></i> Forzar sync</button>
       </div>
     </div>`;
+}
+
+function setTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  try{localStorage.setItem('theme',theme);}catch(e){}
+  syncThemeUI(theme);
+  renderSettings();
 }
 
 function saveDefaultWAMsg(){
@@ -3285,7 +3397,10 @@ function deleteGradeEntry(gid,sid,tri,subj,idx){
 
 /* ---- CLASS CALCULATOR ---- */
 function renderClassCalc(){
-  document.getElementById('page-classcalc').innerHTML=`
+  // Calc. Clases was merged into Profesores
+  nav('teachers', null);
+  return;
+  document.getElementById('page-teachers').innerHTML=`// redirected
     <div class="page-header">
       <div><div class="page-title">Tipos de clase</div><div class="page-subtitle">Configurá los tipos y precios. El registro de clases está en Profesores.</div></div>
     </div>
@@ -3323,84 +3438,6 @@ function editClassType(id){
   openModal('m-classtype');
 }
 
-function renderClassCalcEntries(tid,month){
-  if(!db.classLogs)db.classLogs={};
-  const logs=(db.classLogs[tid]||[]).filter(l=>l.month===month);
-  const types=db.classTypes||[];
-
-  // Group by week
-  const total=logs.reduce((a,l)=>{const t=types.find(x=>x.id===l.typeId);return a+(t?t.price:0);},0);
-  const byWeek={};
-  logs.forEach(l=>{const w=l.week||'Sin semana';if(!byWeek[w])byWeek[w]=[];byWeek[w].push(l);});
-
-  return`<div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="font-size:13px;color:var(--text2)">${logs.length} clases registradas</div>
-      <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--accent)">${fm(total)}</div>
-    </div>
-    <button class="btn primary sm" onclick="openAddClassLog('${tid}','${month}')" style="margin-bottom:14px"><i class="ti ti-plus"></i> Agregar clase</button>
-    ${Object.keys(byWeek).length===0?'<div class="empty" style="padding:14px">Sin clases registradas este mes</div>':
-    Object.entries(byWeek).sort().map(([w,wlogs])=>{
-      const wTotal=wlogs.reduce((a,l)=>{const t=types.find(x=>x.id===l.typeId);return a+(t?t.price:0);},0);
-      return`<div style="margin-bottom:12px">
-        <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;display:flex;justify-content:space-between">
-          <span>Semana del ${w}</span><span style="color:var(--accent)">${fm(wTotal)}</span>
-        </div>
-        ${wlogs.map(l=>{
-          const t=types.find(x=>x.id===l.typeId);
-          return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg3);border-radius:var(--radius);margin-bottom:4px;font-size:13px">
-            <div>
-              <span style="font-weight:500">${t?t.name:'?'}</span>
-              ${l.note?`<span style="color:var(--text3);margin-left:6px;font-size:12px">${l.note}</span>`:''}
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-family:var(--font-mono);color:var(--accent)">${t?fm(t.price):'—'}</span>
-              <button class="btn ghost xs danger" onclick="deleteClassLog('${tid}','${month}',${logs.indexOf(l)})"><i class="ti ti-trash"></i></button>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-function openAddClassLog(tid,month){
-  document.getElementById('cl-tid').value=tid;
-  document.getElementById('cl-month').value=month;
-  document.getElementById('cl-note').value='';
-  const types=db.classTypes||[];
-  document.getElementById('cl-type').innerHTML=types.map(t=>`<option value="${t.id}">${t.name} — ${fm(t.price)}</option>`).join('');
-  // Default week = this Monday
-  const now=new Date();
-  const day=now.getDay();
-  const monday=new Date(now);monday.setDate(now.getDate()-(day===0?6:day-1));
-  document.getElementById('cl-week').value=monday.toISOString().slice(0,10);
-  openModal('m-classlog');
-}
-
-function saveClassLog(){
-  const tid=document.getElementById('cl-tid').value;
-  const month=document.getElementById('cl-month').value;
-  const typeId=document.getElementById('cl-type').value;
-  const week=document.getElementById('cl-week').value;
-  const note=document.getElementById('cl-note').value.trim();
-  if(!typeId)return toast('Elegí tipo de clase','error');
-  if(!db.classLogs)db.classLogs={};
-  if(!db.classLogs[tid])db.classLogs[tid]=[];
-  db.classLogs[tid].push({month,typeId,week,note,date:new Date().toISOString()});
-  scheduleSave();closeModal('m-classlog');renderClassCalc();toast('Clase registrada');
-}
-
-function deleteClassLog(tid,month,idx){
-  if(!db.classLogs?.[tid])return;
-  const logs=db.classLogs[tid].filter(l=>l.month===month);
-  const allLogs=db.classLogs[tid];
-  const item=logs[idx];
-  const realIdx=allLogs.indexOf(item);
-  if(realIdx>=0)allLogs.splice(realIdx,1);
-  scheduleSave();if(currentPage==='classcalc')renderClassCalc();else renderTeachers();
-}
-
 function openAddClassType(){
   document.getElementById('ct-id').value='';
   document.getElementById('ct-name').value='';
@@ -3411,7 +3448,7 @@ function openAddClassType(){
 function deleteClassType(id){
   if(!confirm('¿Eliminar tipo de clase?'))return;
   db.classTypes=(db.classTypes||[]).filter(t=>t.id!==id);
-  scheduleSave();if(currentPage==='classcalc')renderClassCalc();else renderTeachers();
+  scheduleSave();renderTeachers();
 }
 
 function saveClassType(){
@@ -3496,9 +3533,8 @@ function markHolidayFromJournal(gid, dateStr, note){
   if(!db.dayNotes[mk])db.dayNotes[mk]={};
   if(note) db.dayNotes[mk][key]=note;
   else delete db.dayNotes[mk][key];
-  db.students.filter(s=>s.groupId===gid).forEach(s=>{
-    if(db.attendance[gid]?.[mk]?.[s.id]) delete db.attendance[gid][mk][s.id][d];
-  });
+  // NOTE: we do NOT touch attendance records — holidays just override the display
+  // Deleting attendance here caused absence data loss
 }
 
 function getJournalEntry(gid, dateStr){
@@ -3730,6 +3766,20 @@ async function init(){
 }
 
 init();
+
+// Quick keyboard shortcuts
+document.addEventListener('keydown', function(e){
+  // Esc closes any open modal
+  if(e.key==='Escape'){
+    document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));
+  }
+  // Ctrl+/ or Cmd+/ focuses search if available
+  if((e.ctrlKey||e.metaKey)&&e.key==='/'){
+    e.preventDefault();
+    const s=document.querySelector('.search-input');
+    if(s){s.focus();s.select();}
+  }
+});
 </script>
 </body>
 </html>
