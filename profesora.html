@@ -21,7 +21,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;font-size:14px}
   --amber:#b8620a;--amber-bg:rgba(184,98,10,0.08);
   --radius:10px;--radius-lg:14px;
   --font-display:'Playfair Display',Georgia,serif;
-  --shadow:0 4px 24px rgba(0,0,0,0.1);
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
 }
 [data-theme="dark"]{
   --bg:#0f0f13;--bg2:#16161d;--bg3:#1e1e28;--bg4:#252533;
@@ -35,29 +35,25 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;font-size:14px}
 }
 body{background:var(--bg);color:var(--text)}
 
-/* TOPBAR */
-.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:50}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:8px;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
 .logo{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--accent)}
-.logo-sub{font-size:11px;color:var(--text3)}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);display:inline-block;margin-right:4px}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.sync-row{display:flex;align-items:center;gap:8px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);display:inline-block;transition:background 0.3s}
 .sync-dot.ok{background:var(--green)}.sync-dot.saving{background:var(--amber);animation:pulse 1s infinite}.sync-dot.error{background:var(--red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 
-/* TABS */
-.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px}
-.tab{padding:12px 18px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:6px}
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;gap:0}
+.tab{padding:13px 20px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:7px;transition:all 0.15s}
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
-/* MAIN */
-.main{padding:20px;max-width:1100px;margin:0 auto}
+.main{padding:20px;max-width:1100px;margin:0 auto;width:100%}
 
-/* CARD */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px}
-.card-title{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);font-weight:500;margin-bottom:12px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:14px}
 
-/* BADGE */
-.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
 .badge.green{background:var(--green-bg);color:var(--green)}
 .badge.red{background:var(--red-bg);color:var(--red)}
 .badge.amber{background:var(--amber-bg);color:var(--amber)}
@@ -65,72 +61,76 @@ body{background:var(--bg);color:var(--text)}
 .badge.gold{background:var(--accent-bg);color:var(--accent)}
 .badge.gray{background:var(--bg4);color:var(--text2)}
 
-/* BTN */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500}
-.btn.sm{padding:4px 10px;font-size:12px;border-radius:7px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;transition:all 0.15s}
+.btn:hover{background:var(--bg4)}
+.btn.sm{padding:5px 11px;font-size:12px}
 .btn.ghost{background:transparent;border-color:transparent;color:var(--text2)}
 
-/* FORM */
 .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:5px;font-weight:500}
 .field select,.field input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
 .field select:focus,.field input:focus{border-color:var(--accent)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 
-/* TABLE */
-.tbl-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{padding:9px 12px;text-align:left;font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--text3);font-weight:500;border-bottom:1px solid var(--border);background:var(--bg3)}
-td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text)}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--bg3)}
-
-/* SEARCH ROW */
 .srow{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .sinput{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;flex:1;min-width:130px}
 .sinput:focus{border-color:var(--accent)}
 
-/* ATT */
-.att-day{width:30px;height:30px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:600;border:1px solid var(--border);background:var(--bg3);color:var(--text3);line-height:1}
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:9px 10px;text-align:left;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+.tbl-num{text-align:center;font-family:'DM Mono',monospace;font-size:13px;font-weight:600}
+
+/* ATTENDANCE WEEK */
+.week-day-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px}
+.week-day-title{font-size:14px;font-weight:600;text-transform:capitalize;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.group-block{background:var(--bg3);border-radius:var(--radius);padding:10px 14px;margin-bottom:8px;border:1px solid var(--border)}
+.student-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;margin:3px;border:1px solid}
+
+/* MONTH ATT */
+.att-day{width:32px;height:32px;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--bg3);color:var(--text3);line-height:1.1}
 .att-day.absent{background:var(--red-bg);border-color:rgba(192,57,43,0.3);color:var(--red)}
 .att-day.holiday{background:var(--amber-bg);border-color:rgba(184,98,10,0.3);color:var(--amber)}
-.att-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
-.att-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;margin-bottom:4px;flex-wrap:wrap}
-.att-wrap{margin-bottom:14px}
+.att-day.present{background:var(--green-bg);border-color:rgba(26,122,64,0.2);color:var(--green)}
 
-/* PROGRESS */
-.pbar{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:5px}
-.pbar-fill{height:100%;border-radius:3px}
-.pbar-fill.green{background:var(--green)}.pbar-fill.amber{background:var(--amber)}.pbar-fill.red{background:var(--red)}
+/* GRADES TABLE */
+.grade-cell{text-align:center;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;min-width:52px}
+.grade-avg{background:var(--bg3);font-weight:700}
 
 /* EMPTY */
-.empty{text-align:center;padding:28px;color:var(--text3);font-size:13px}
-.empty i{font-size:26px;display:block;margin-bottom:8px;opacity:0.4}
+.empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:13px}
+.empty i{font-size:32px;display:block;margin-bottom:10px;opacity:0.35}
 
 /* LOADING */
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px}
-.loading-title{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--accent)}
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px}
+.loading-title{font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--accent)}
 .loading-bar{width:180px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden}
-.loading-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:lf 1.5s ease infinite}
-@keyframes lf{0%{width:0%}100%{width:100%}}
+.loading-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:lf 1.4s ease infinite}
+@keyframes lf{0%{width:0}100%{width:100%}}
 
-@media(max-width:640px){
-  .grid2,.grid3{grid-template-columns:1fr}
-  .main{padding:14px}
-}
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;text-align:center}
+.metric-label{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);font-weight:500;margin-bottom:4px}
+.metric-val{font-family:var(--font-display);font-size:22px;font-weight:700;line-height:1}
+.metric-val.green{color:var(--green)}.metric-val.red{color:var(--red)}.metric-val.amber{color:var(--amber)}.metric-val.blue{color:var(--blue)}.metric-val.gold{color:var(--accent)}
+
+@media(max-width:640px){.main{padding:12px}.tabs{padding:0 8px}.tab{padding:11px 12px;font-size:12px}}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div>
-    <div class="logo">Cambridge Institute</div>
-    <div class="logo-sub">Vista Profesora — Solo lectura</div>
+    <div class="logo">Hola Marce 👋</div>
+    <div class="logo-sub">Te extrañamos — Cambridge Institute 2026</div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px">
+  <div class="sync-row">
     <span class="sync-dot" id="sync-dot"></span>
     <span id="sync-label" style="font-size:12px;color:var(--text3)">Conectando...</span>
-    <button class="btn sm ghost" onclick="toggleTheme()" title="Tema"><i class="ti ti-sun"></i></button>
+    <button class="btn sm ghost" onclick="toggleTheme()"><i class="ti ti-sun-moon"></i></button>
   </div>
 </div>
 
@@ -141,18 +141,13 @@ tr:hover td{background:var(--bg3)}
 
 <div class="main">
   <div id="view-att">
-    <div class="loading">
+    <div class="loading-wrap">
       <div class="loading-title">Cambridge</div>
       <div style="font-size:12px;color:var(--text3)">Cargando datos...</div>
       <div class="loading-bar"><div class="loading-fill"></div></div>
     </div>
   </div>
-  <div id="view-grades" style="display:none">
-    <div class="loading">
-      <div class="loading-title">Cambridge</div>
-      <div style="font-size:12px;color:var(--text3)">Cargando datos...</div>
-    </div>
-  </div>
+  <div id="view-grades" style="display:none"></div>
 </div>
 
 <script>
@@ -163,427 +158,665 @@ const MONTHS=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO',
 const DAY_SHORT=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const DAY_FULL=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 const GRADE_SUBJECTS=[
-  {cat:'WRITTEN LANGUAGE WORK',items:['Grammar','Writing','Homework','Tests']},
-  {cat:'ORAL SKILL WORK',items:['Reading and Comprehension','Listening','Speaking','Pronunciation']},
+  {cat:'Written Language Work',items:['Grammar','Writing','Homework','Tests']},
+  {cat:'Oral Skill Work',items:['Reading and Comprehension','Listening','Speaking','Pronunciation']},
 ];
 const TRIMESTRES=[[3,4,5],[6,7,8],[9,10,11,12]];
-const GROUP_SCHEDULE={'Kids 5':{days:[2,4],time:'16:00-17:30'},'Teens 2 Girls':{days:[2,4],time:'20:00-21:30'},'Teens 2 Boys':{days:[2,4],time:'18:30-20:00'},'Teens 3':{days:[1,3],time:'20:00-21:30'},'Teens 4':{days:[1,3],time:'18:30-20:00'},'5th Year A':{days:[2,4],time:'17:00-18:30'},'5th Year B':{days:[2,4],time:'18:30-20:00'},'Superior':{days:[2,4],time:'20:00-21:30'}};
+const GROUP_SCHEDULE={
+  'Kids 5':{days:[2,4],time:'16:00-17:30'},
+  'Teens 2 Girls':{days:[2,4],time:'20:00-21:30'},
+  'Teens 2 Boys':{days:[2,4],time:'18:30-20:00'},
+  'Teens 3':{days:[1,3],time:'20:00-21:30'},
+  'Teens 4':{days:[1,3],time:'18:30-20:00'},
+  '5th Year A':{days:[2,4],time:'17:00-18:30'},
+  '5th Year B':{days:[2,4],time:'18:30-20:00'},
+  'Superior':{days:[2,4],time:'20:00-21:30'}
+};
 
 let db={groups:[],students:[],attendance:{},dayNotes:{},grades:{},cambridge2025:[]};
-let lastHash='';
-let pollInterval=null;
-let currentTab='att';
+let lastHash='';let pollInterval=null;let currentTab='att';
 
-/* ── UTILS ── */
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
-function curMonth(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')}
-function getGroup(id){return db.groups.find(g=>g.id===id)||{name:'—',fee:0,days:[],time:''}}
-function getTrimonths(tri){return TRIMESTRES[tri-1]||[]}
-function parseDOB(dob){if(!dob)return null;const[y,m,d]=dob.split('-').map(Number);return new Date(y,m-1,d)}
-function dbHash(d){try{return JSON.stringify(d).length+'-'+(d.students||[]).length+'-'+Object.keys(d.attendance||{}).length}catch(e){return''}}
-
+/* UTILS */
+function curMonth(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');}
+function getGroup(id){return db.groups.find(g=>g.id===id)||{name:'—',days:[],time:''};}
+function parseDOB(d){if(!d)return null;const[y,m,v]=d.split('-').map(Number);return new Date(y,m-1,v);}
+function dbHash(d){
+  try{
+    const attK=Object.values(d.attendance||{}).reduce((a,m)=>a+Object.keys(m).length,0);
+    const dayN=Object.values(d.dayNotes||{}).reduce((a,m)=>a+Object.keys(m).length,0);
+    return (d.students||[]).length+'-'+attK+'-'+dayN+'-'+JSON.stringify(d.grades||{}).length;
+  }catch(e){return '';}
+}
 function avatar(name,size=32,gender=''){
   const ini=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   let bg,color,border;
   if(gender==='m'){bg='rgba(74,158,255,0.15)';color='var(--blue)';border='rgba(74,158,255,0.3)';}
   else if(gender==='f'){bg='rgba(255,100,150,0.15)';color='#e0507a';border='rgba(255,100,150,0.3)';}
   else{bg='var(--accent-bg)';color='var(--accent)';border='var(--accent-border)';}
-  return`<div style="width:${size}px;height:${size}px;min-width:${size}px;border-radius:50%;background:${bg};border:1px solid ${border};display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:${Math.round(size*0.33)}px;font-weight:700;color:${color};flex-shrink:0">${ini}</div>`;
+  return '<div style="width:'+size+'px;height:'+size+'px;min-width:'+size+'px;border-radius:50%;background:'+bg+';border:1px solid '+border+';display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:'+Math.round(size*0.33)+'px;font-weight:700;color:'+color+';flex-shrink:0">'+ini+'</div>';
 }
-
 function toggleTheme(){
   const d=document.documentElement;
   d.setAttribute('data-theme',d.getAttribute('data-theme')==='dark'?'light':'dark');
 }
 
+/* SUPABASE */
 function setSyncStatus(s,label){
-  const dot=document.getElementById('sync-dot');const lbl=document.getElementById('sync-label');
+  const dot=document.getElementById('sync-dot');
+  const lbl=document.getElementById('sync-label');
   if(dot)dot.className='sync-dot '+(s==='offline'?'error':s);
   if(lbl)lbl.textContent=label;
 }
 
-/* ── SUPABASE ── */
 async function loadData(){
   setSyncStatus('saving','Cargando...');
   try{
-    const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{
+    const r=await fetch(SUPA_URL+'/rest/v1/institute_data?id=eq.main&select=data',{
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
     });
     if(!r.ok)throw new Error('HTTP '+r.status);
     const rows=await r.json();
     if(rows&&rows[0]&&rows[0].data){
       const d=rows[0].data;
-      const h=dbHash(d);
-      if(h!==lastHash){
-        lastHash=h;
-        if(d.groups)db.groups=d.groups;
-        if(d.students)db.students=d.students;
-        if(d.attendance)db.attendance=d.attendance;
-        if(d.dayNotes)db.dayNotes=d.dayNotes;
-        if(d.grades)db.grades=d.grades;
-        if(d.cambridge2025)db.cambridge2025=d.cambridge2025;
-        // Backfill schedule
-        db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days||!g.days.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
-      }
+      lastHash=dbHash(d);
+      if(d.groups)db.groups=d.groups;
+      if(d.students)db.students=d.students;
+      if(d.attendance)db.attendance=d.attendance;
+      if(d.dayNotes)db.dayNotes=d.dayNotes;
+      if(d.grades)db.grades=d.grades;
+      if(d.cambridge2025)db.cambridge2025=d.cambridge2025;
+      db.groups.forEach(function(g){
+        var sc=GROUP_SCHEDULE[g.name];
+        if(sc){if(!g.days||!g.days.length)g.days=sc.days;if(!g.time)g.time=sc.time;}
+      });
     }
     setSyncStatus('ok','Sincronizado');
     return true;
   }catch(e){
-    setSyncStatus('error','Sin conexión — '+e.message);
+    setSyncStatus('error','Sin conexión');
     return false;
   }
 }
 
 function startPolling(){
   if(pollInterval)clearInterval(pollInterval);
-  pollInterval=setInterval(async()=>{
+  pollInterval=setInterval(async function(){
     try{
-      const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
-      const rows=await r.json();if(!rows||!rows[0])return;
-      const h=dbHash(rows[0].data);
+      var r=await fetch(SUPA_URL+'/rest/v1/institute_data?id=eq.main&select=data',{
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      });
+      var rows=await r.json();
+      if(!rows||!rows[0])return;
+      var h=dbHash(rows[0].data);
       if(h!==lastHash){
-        const d=rows[0].data;lastHash=h;
+        var d=rows[0].data;lastHash=h;
         if(d.groups)db.groups=d.groups;if(d.students)db.students=d.students;
         if(d.attendance)db.attendance=d.attendance;if(d.dayNotes)db.dayNotes=d.dayNotes;
         if(d.grades)db.grades=d.grades;
-        db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days||!g.days.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
+        db.groups.forEach(function(g){var sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days||!g.days.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
         setSyncStatus('ok','Actualizado');
         if(currentTab==='att')renderAtt();else renderGrades();
       }
     }catch(e){}
-  },25000);
+  },20000);
 }
 
-/* ── TABS ── */
+/* TABS */
 function showTab(tab){
   currentTab=tab;
-  ['att','grades'].forEach(t=>{
+  ['att','grades'].forEach(function(t){
     document.getElementById('tab-'+t).classList.toggle('active',t===tab);
     document.getElementById('view-'+t).style.display=t===tab?'':'none';
   });
   if(tab==='att')renderAtt();else renderGrades();
 }
 
-/* ── ATTENDANCE ── */
+/* ─── ATTENDANCE ─── */
 function renderAtt(){
-  const vm=document.getElementById('att-view')?.value||'week';
-  const gid=document.getElementById('att-gid')?.value||'';
-  const month=document.getElementById('att-month')?.value||curMonth();
-  const tri=document.getElementById('att-tri')?.value||'1';
+  var vm=document.getElementById('att-view')? document.getElementById('att-view').value:'week';
+  var gid=document.getElementById('att-gid')?document.getElementById('att-gid').value:'';
+  var month=document.getElementById('att-month')?document.getElementById('att-month').value:curMonth();
+  var tri=document.getElementById('att-tri')?document.getElementById('att-tri').value:'1';
 
-  document.getElementById('view-att').innerHTML=`
-    <div style="font-family:var(--font-display);font-size:22px;font-weight:600;margin-bottom:16px;margin-top:4px">Asistencias <span style="font-size:13px;font-weight:400;color:var(--text3)">— vista de lectura</span></div>
-    <div class="srow">
-      <select class="sinput" id="att-view" onchange="renderAtt()" style="flex:0 0 auto;min-width:160px">
-        <option value="week"${vm==='week'?' selected':''}>Esta semana</option>
-        <option value="month"${vm==='month'?' selected':''}>Por mes</option>
-        <option value="trimester"${vm==='trimester'?' selected':''}>Por trimestre</option>
-      </select>
-      ${vm!=='week'?`<select class="sinput" id="att-gid" onchange="renderAtt()" style="flex:1;min-width:140px">
-        <option value="">Todos los grupos</option>
-        ${db.groups.map(g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${g.name}</option>`).join('')}
-      </select>`:''}
-      ${vm==='month'?`<input type="month" class="sinput" id="att-month" value="${month}" onchange="renderAtt()" style="flex:0 0 auto;min-width:140px">`:''}
-      ${vm==='trimester'?`<select class="sinput" id="att-tri" onchange="renderAtt()" style="flex:0 0 auto">
-        <option value="1"${tri==='1'?' selected':''}>1° Trim (Mar-May)</option>
-        <option value="2"${tri==='2'?' selected':''}>2° Trim (Jun-Ago)</option>
-        <option value="3"${tri==='3'?' selected':''}>3° Trim (Sep-Dic)</option>
-      </select>`:''}
-    </div>
-    <div id="att-body">${
-      vm==='week'?renderWeekView():
-      vm==='trimester'?(gid?renderTriAtt(gid,parseInt(tri)):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>'):
-      (gid?renderMonthAtt(gid,month):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>')
-    }</div>`;
+  var selectors='<div class="srow">';
+  selectors+='<select class="sinput" id="att-view" onchange="renderAtt()" style="flex:0 0 auto;min-width:160px">';
+  selectors+='<option value="week"'+(vm==='week'?' selected':'')+'>Esta semana</option>';
+  selectors+='<option value="month"'+(vm==='month'?' selected':'')+'>Por mes</option>';
+  selectors+='<option value="trimester"'+(vm==='trimester'?' selected':'')+'>Por trimestre</option>';
+  selectors+='</select>';
+  if(vm!=='week'){
+    selectors+='<select class="sinput" id="att-gid" onchange="renderAtt()" style="flex:1;min-width:140px">';
+    selectors+='<option value="">Todos los grupos</option>';
+    db.groups.forEach(function(g){selectors+='<option value="'+g.id+'"'+(g.id===gid?' selected':'')+'>'+g.name+'</option>';});
+    selectors+='</select>';
+  }
+  if(vm==='month'){
+    selectors+='<input type="month" class="sinput" id="att-month" value="'+month+'" onchange="renderAtt()" style="flex:0 0 auto;min-width:140px">';
+  }
+  if(vm==='trimester'){
+    selectors+='<select class="sinput" id="att-tri" onchange="renderAtt()" style="flex:0 0 auto;min-width:160px">';
+    selectors+='<option value="1"'+(tri==='1'?' selected':'')+'>1° Trim (Mar-May)</option>';
+    selectors+='<option value="2"'+(tri==='2'?' selected':'')+'>2° Trim (Jun-Ago)</option>';
+    selectors+='<option value="3"'+(tri==='3'?' selected':'')+'>3° Trim (Sep-Dic)</option>';
+    selectors+='</select>';
+  }
+  selectors+='</div>';
+
+  var body='';
+  if(vm==='week') body=renderWeekView();
+  else if(vm==='trimester') body=(gid?renderTriAtt(gid,parseInt(tri)):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>');
+  else body=(gid?renderMonthAtt(gid,month):'<div class="empty"><i class="ti ti-calendar"></i>Seleccioná un grupo</div>');
+
+  document.getElementById('view-att').innerHTML=
+    '<div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:16px;margin-top:4px">Asistencias</div>'+
+    selectors+'<div id="att-body">'+body+'</div>';
 }
 
 function renderWeekView(){
-  const now=new Date();
-  const dow=now.getDay();
-  const monday=new Date(now);monday.setDate(now.getDate()-(dow===0?6:dow-1));monday.setHours(0,0,0,0);
-  const days={};
-  for(let d=0;d<7;d++){
-    const date=new Date(monday);date.setDate(monday.getDate()+d);
-    const dayN=date.getDate(),mo=date.getMonth()+1,yr=date.getFullYear();
-    const mk=`${yr}-${String(mo).padStart(2,'0')}`;
-    const dk=`${yr}-${String(mo).padStart(2,'0')}-${String(dayN).padStart(2,'0')}`;
-    db.groups.forEach(g=>{
+  var now=new Date();
+  var dow=now.getDay();
+  var monday=new Date(now);monday.setDate(now.getDate()-(dow===0?6:dow-1));monday.setHours(0,0,0,0);
+
+  // Collect all class days this week
+  var days={};
+  for(var d=0;d<7;d++){
+    var date=new Date(monday);date.setDate(monday.getDate()+d);
+    var dayN=date.getDate(),mo=date.getMonth()+1,yr=date.getFullYear();
+    var mk=yr+'-'+String(mo).padStart(2,'0');
+    var dk=yr+'-'+String(mo).padStart(2,'0')+'-'+String(dayN).padStart(2,'0');
+    db.groups.forEach(function(g){
       if(!(g.days||[]).includes(date.getDay()))return;
-      if(!days[dk])days[dk]={date:new Date(date),groups:[]};
-      days[dk].groups.push({g,dayN,mk});
+      if(!days[dk])days[dk]={date:new Date(date),dayN:dayN,mk:mk,groups:[]};
+      days[dk].groups.push({g:g,dayN:dayN,mk:mk});
     });
   }
-  const sorted=Object.entries(days).sort(([a],[b])=>a.localeCompare(b));
-  if(!sorted.length)return'<div class="empty"><i class="ti ti-calendar-off"></i>Sin clases esta semana</div>';
 
-  let totalAbs=0;
-  sorted.forEach(([,{groups}])=>groups.forEach(({g,dayN,mk})=>{
-    const noteKey=`${g.id}-${mk}-${dayN}`;
-    if((db.dayNotes[mk]||{})[noteKey])return;
-    db.students.filter(s=>s.groupId===g.id).forEach(s=>{
-      if((db.attendance[g.id]||{})[mk]?.[s.id]?.[dayN]==='A')totalAbs++;
+  var sortedDays=Object.entries(days).sort(function(a,b){return a[0].localeCompare(b[0]);});
+  if(!sortedDays.length) return '<div class="empty"><i class="ti ti-calendar-off"></i>Sin clases programadas esta semana</div>';
+
+  // Count total absences
+  var totalAbs=0;
+  var totalPresent=0;
+  sortedDays.forEach(function(entry){
+    var info=entry[1];
+    info.groups.forEach(function(item){
+      var nk=item.g.id+'-'+item.mk+'-'+item.dayN;
+      if((db.dayNotes[item.mk]||{})[nk])return;
+      var studs=db.students.filter(function(s){return s.groupId===item.g.id;});
+      studs.forEach(function(s){
+        if((db.attendance[item.g.id]||{})[item.mk]?.[s.id]?.[item.dayN]==='A')totalAbs++;
+        else totalPresent++;
+      });
     });
-  }));
+  });
 
-  const fmt=d=>d.toLocaleDateString('es-AR',{day:'numeric',month:'long'});
-  const weekEnd=new Date(monday);weekEnd.setDate(monday.getDate()+6);
+  var fmt=function(d){return d.toLocaleDateString('es-AR',{day:'numeric',month:'long'});};
+  var weekEnd=new Date(monday);weekEnd.setDate(monday.getDate()+6);
 
-  return`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-    <span style="font-size:13px;color:var(--text2)">Semana del <strong>${fmt(monday)}</strong> al <strong>${fmt(weekEnd)}</strong></span>
-    <span class="badge ${totalAbs===0?'green':'red'}">${totalAbs===0?'Sin ausencias':totalAbs+' ausencia'+(totalAbs!==1?'s':'')}</span>
-  </div>
-  ${sorted.map(([,{date,groups}])=>{
-    const isToday=date.toDateString()===now.toDateString();
-    const dateLabel=date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
-    return`<div class="card" style="${isToday?'border-color:var(--accent-border);':''};margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        ${isToday?'<span class="badge gold">HOY</span>':''}
-        <div style="font-size:14px;font-weight:600;text-transform:capitalize">${dateLabel}</div>
-      </div>
-      ${groups.map(({g,dayN,mk})=>{
-        const students=db.students.filter(s=>s.groupId===g.id);
-        const nk=`${g.id}-${mk}-${dayN}`;
-        const holiday=(db.dayNotes[mk]||{})[nk];
-        const absent=students.filter(s=>!holiday&&(db.attendance[g.id]||{})[mk]?.[s.id]?.[dayN]==='A');
-        const present=holiday?[]:students.filter(s=>(db.attendance[g.id]||{})[mk]?.[s.id]?.[dayN]!=='A');
-        return`<div style="margin-bottom:8px;padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border:1px solid ${holiday?'rgba(184,98,10,0.3)':'var(--border)'}">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
-            <div>
-              <span style="font-size:13px;font-weight:600">${g.name}</span>
-              <span style="font-size:11px;color:var(--text3);margin-left:6px">${g.time||''}</span>
-            </div>
-            <div style="display:flex;gap:5px;align-items:center">
-              ${holiday?`<span class="badge amber">🚫 ${holiday}</span>`:`
-                <span class="badge green" style="font-size:10px">✓ ${present.length}</span>
-                ${absent.length?`<span class="badge red" style="font-size:10px">A ${absent.length}</span>`:''}`}
-            </div>
-          </div>
-          ${holiday?'<span style="font-size:12px;color:var(--amber)">Clase cancelada / Feriado</span>':`
-            <div style="display:flex;flex-wrap:wrap;gap:5px">
-              ${students.map(s=>{
-                const isA=(db.attendance[g.id]||{})[mk]?.[s.id]?.[dayN]==='A';
-                return`<div style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid ${isA?'rgba(192,57,43,0.3)':'var(--border)'};background:${isA?'var(--red-bg)':'var(--bg2)'};color:${isA?'var(--red)':'var(--text2)'}">
-                  ${avatar(s.name,18,s.gender||'')} ${s.name.split(' ')[0]} ${isA?'<strong>A</strong>':''}
-                </div>`;
-              }).join('')}
-            </div>`}
-        </div>`;
-      }).join('')}
-    </div>`;
-  }).join('')}`;
+  var html='';
+
+  // Summary banner
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg)">';
+  html+='<div><div style="font-size:13px;font-weight:600">Semana del '+fmt(monday)+' al '+fmt(weekEnd)+'</div>';
+  html+='<div style="font-size:11px;color:var(--text3);margin-top:2px">Semana actual del ciclo lectivo</div></div>';
+  html+='<div style="display:flex;gap:8px">';
+  html+='<span class="badge '+(totalAbs===0?'green':'red')+'" style="font-size:12px;padding:5px 12px">'+(totalAbs===0?'Sin ausencias':totalAbs+' ausencia'+(totalAbs!==1?'s':''))+'</span>';
+  if(totalAbs>0) html+='<span class="badge green" style="font-size:12px;padding:5px 12px">'+totalPresent+' presentes</span>';
+  html+='</div></div>';
+
+  sortedDays.forEach(function(entry){
+    var dateStr=entry[0];var info=entry[1];
+    var isToday=info.date.toDateString()===now.toDateString();
+    var dateLabel=info.date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+
+    // Check if any absences this day
+    var dayTotalAbs=0;
+    info.groups.forEach(function(item){
+      var nk=item.g.id+'-'+item.mk+'-'+item.dayN;
+      if((db.dayNotes[item.mk]||{})[nk])return;
+      db.students.filter(function(s){return s.groupId===item.g.id;}).forEach(function(s){
+        if((db.attendance[item.g.id]||{})[item.mk]?.[s.id]?.[item.dayN]==='A')dayTotalAbs++;
+      });
+    });
+
+    html+='<div class="week-day-card" style="'+(isToday?'border-color:var(--accent-border);':'')+'">';
+    html+='<div class="week-day-title">';
+    if(isToday) html+='<span class="badge gold">HOY</span>';
+    html+='<span style="text-transform:capitalize">'+dateLabel+'</span>';
+    if(dayTotalAbs>0) html+='<span class="badge red" style="margin-left:auto">'+dayTotalAbs+' ausencia'+(dayTotalAbs!==1?'s':'')+'</span>';
+    else html+='<span class="badge green" style="margin-left:auto">Todos presentes</span>';
+    html+='</div>';
+
+    info.groups.forEach(function(item){
+      var studs=db.students.filter(function(s){return s.groupId===item.g.id;});
+      var nk=item.g.id+'-'+item.mk+'-'+item.dayN;
+      var holiday=(db.dayNotes[item.mk]||{})[nk];
+      var absent=studs.filter(function(s){return !holiday&&(db.attendance[item.g.id]||{})[item.mk]?.[s.id]?.[item.dayN]==='A';});
+      var present=holiday?[]:studs.filter(function(s){return (db.attendance[item.g.id]||{})[item.mk]?.[s.id]?.[item.dayN]!=='A';});
+
+      html+='<div class="group-block">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:'+(holiday||!studs.length?'0':'10px')+'">';
+      html+='<div><span style="font-size:13px;font-weight:600">'+item.g.name+'</span><span style="font-size:11px;color:var(--text3);margin-left:8px">'+item.g.time+'</span></div>';
+      html+='<div style="display:flex;gap:6px">';
+      if(holiday) html+='<span class="badge amber">🚫 '+holiday+'</span>';
+      else{
+        html+='<span class="badge green" style="font-size:10px">✓ '+present.length+'</span>';
+        if(absent.length) html+='<span class="badge red" style="font-size:10px">A '+absent.length+'</span>';
+      }
+      html+='</div></div>';
+
+      if(!holiday&&absent.length){
+        // Show absent students prominently
+        html+='<div style="background:var(--red-bg);border-radius:var(--radius);padding:8px 10px;margin-bottom:8px">';
+        html+='<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--red);margin-bottom:6px">Ausentes</div>';
+        html+='<div style="display:flex;flex-wrap:wrap;gap:5px">';
+        absent.forEach(function(s){
+          html+='<span class="student-chip" style="background:var(--red-bg);border-color:rgba(192,57,43,0.3);color:var(--red)">'+avatar(s.name,20,s.gender||'')+'<span>'+s.name+'</span></span>';
+        });
+        html+='</div></div>';
+      }
+
+      if(!holiday&&present.length){
+        html+='<div style="display:flex;flex-wrap:wrap;gap:4px">';
+        present.forEach(function(s){
+          html+='<span class="student-chip" style="background:var(--green-bg);border-color:rgba(26,122,64,0.2);color:var(--green)">'+avatar(s.name,18,s.gender||'')+'<span style="font-size:11px">'+s.name.split(' ')[0]+'</span></span>';
+        });
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+
+  return html;
 }
 
 function renderMonthAtt(gid,month){
-  const g=getGroup(gid);
-  const students=db.students.filter(s=>s.groupId===gid);
-  const[y,m]=month.split('-').map(Number);
-  const dim=new Date(y,m,0).getDate();
-  const classDays=[];
-  for(let d=1;d<=dim;d++){if((g.days||[]).includes(new Date(y,m-1,d).getDay()))classDays.push(d);}
-  if(!db.attendance[gid])db.attendance[gid]={};
-  if(!db.attendance[gid][month])db.attendance[gid][month]={};
-  if(!db.dayNotes[month])db.dayNotes[month]={};
-  const notes=db.dayNotes[month]||{};
+  var g=getGroup(gid);
+  var students=db.students.filter(function(s){return s.groupId===gid;});
+  var parts=month.split('-');var y=parseInt(parts[0]),m=parseInt(parts[1]);
+  var dim=new Date(y,m,0).getDate();
+  var classDays=[];
+  for(var d=1;d<=dim;d++){if((g.days||[]).includes(new Date(y,m-1,d).getDay()))classDays.push(d);}
+  var att=db.attendance[gid]||{};var attM=att[month]||{};var notes=db.dayNotes[month]||{};
 
-  return`<div class="card">
-    <div style="margin-bottom:12px">
-      <div style="font-size:16px;font-weight:600">${g.name}</div>
-      <div style="font-size:12px;color:var(--text3)">${(g.days||[]).map(d=>DAY_SHORT[d]).join('+')} · ${g.time} · ${classDays.length} clases</div>
-    </div>
-    <div style="margin-bottom:12px">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">Días de clase</div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">${classDays.map(d=>{
-        const nk=`${gid}-${month}-${d}`;const note=notes[nk]||'';
-        return`<div style="text-align:center;padding:4px 8px;border-radius:7px;border:1px solid ${note?'rgba(184,98,10,0.3)':'var(--border)'};background:${note?'var(--amber-bg)':'var(--bg3)'};min-width:40px" title="${note||''}">
-          <div style="font-size:10px;color:${note?'var(--amber)':'var(--text3)'}">${DAY_SHORT[new Date(y,m-1,d).getDay()]}</div>
-          <div style="font-size:12px;font-weight:600;color:${note?'var(--amber)':'var(--text)'}">${d}${note?'★':''}</div>
-        </div>`;
-      }).join('')}</div>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;font-size:12px">
-      <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--red-bg);border:1px solid var(--red);display:inline-block"></span>Ausente</span>
-      <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);display:inline-block"></span>Presente (auto)</span>
-      <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--amber-bg);border:1px solid var(--amber);display:inline-block"></span>Feriado</span>
-    </div>
-    ${students.map(s=>{
-      const rec=(db.attendance[gid][month][s.id])||{};
-      const activeDays=classDays.filter(d=>!notes[`${gid}-${month}-${d}`]);
-      const absentC=activeDays.filter(d=>rec[d]==='A').length;
-      const presentC=activeDays.length-absentC;
-      return`<div class="att-wrap">
-        <div class="att-name">${avatar(s.name,26,s.gender||'')} <span>${s.name}</span>
-          <span class="badge green" style="font-size:10px">P: ${presentC}/${activeDays.length}</span>
-          <span class="badge red" style="font-size:10px">A: ${absentC}</span>
-        </div>
-        <div class="att-row">${classDays.map(d=>{
-          const nk=`${gid}-${month}-${d}`;const isHol=!!notes[nk];const isA=!isHol&&rec[d]==='A';
-          return`<div class="att-day ${isHol?'holiday':isA?'absent':''}" title="${DAY_SHORT[new Date(y,m-1,d).getDay()]} ${d}${isHol?' — '+notes[nk]:''}">${d}<span style="font-size:8px;line-height:1;margin-top:1px">${isHol?'FER':isA?'A':''}</span></div>`;
-        }).join('')}</div>
-      </div>`;
-    }).join('')}
-  </div>`;
+  var html='<div class="card">';
+  html+='<div style="font-size:16px;font-weight:700;margin-bottom:4px">'+g.name+'</div>';
+  html+='<div style="font-size:12px;color:var(--text3);margin-bottom:16px">'+classDays.length+' clases · '+(g.days||[]).map(function(d){return DAY_SHORT[d];}).join('+')+' · '+g.time+'</div>';
+
+  // Summary metrics
+  var totalAbs=0;var totalClasses=0;
+  students.forEach(function(s){
+    classDays.forEach(function(d){
+      var nk=gid+'-'+month+'-'+d;
+      if(notes[nk])return;
+      totalClasses++;
+      if((attM[s.id]||{})[d]==='A')totalAbs++;
+    });
+  });
+  html+='<div class="metrics" style="margin-bottom:16px">';
+  html+='<div class="metric"><div class="metric-label">Alumnos</div><div class="metric-val blue">'+students.length+'</div></div>';
+  html+='<div class="metric"><div class="metric-label">Clases</div><div class="metric-val gold">'+classDays.length+'</div></div>';
+  html+='<div class="metric"><div class="metric-label">Ausencias</div><div class="metric-val '+(totalAbs===0?'green':'red')+'">'+totalAbs+'</div></div>';
+  html+='</div>';
+
+  // Student rows
+  students.forEach(function(s){
+    var rec=attM[s.id]||{};
+    var activeDays=classDays.filter(function(d){return !notes[gid+'-'+month+'-'+d];});
+    var abs=activeDays.filter(function(d){return rec[d]==='A';});
+    html+='<div style="margin-bottom:14px">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">';
+    html+=avatar(s.name,28,s.gender||'');
+    html+='<span style="font-size:13px;font-weight:500">'+s.name+'</span>';
+    html+='<span class="badge '+(abs.length===0?'green':abs.length<=2?'amber':'red')+'">'+abs.length+' falta'+(abs.length!==1?'s':'')+'</span>';
+    html+='<span class="badge gray">'+( activeDays.length-abs.length)+'/'+activeDays.length+' presencias</span>';
+    html+='</div>';
+    html+='<div style="display:flex;flex-wrap:wrap;gap:4px">';
+    classDays.forEach(function(d){
+      var nk=gid+'-'+month+'-'+d;
+      var isHol=!!notes[nk];var isA=!isHol&&rec[d]==='A';
+      var cls=isHol?'holiday':isA?'absent':'present';
+      html+='<div class="att-day '+cls+'" title="'+DAY_SHORT[new Date(y,m-1,d).getDay()]+' '+d+(isHol?' — '+notes[nk]:'')+'">';
+      html+=d+'<span style="font-size:8px;line-height:1">'+(isHol?'FER':isA?'A':'')+'</span></div>';
+    });
+    html+='</div></div>';
+  });
+  html+='</div>';
+  return html;
 }
 
 function renderTriAtt(gid,tri){
-  const g=getGroup(gid);const students=db.students.filter(s=>s.groupId===gid);
-  const triMonths=getTrimonths(tri);const yr=new Date().getFullYear();
-  const triNames=['','1° Trimestre (Mar-May)','2° Trimestre (Jun-Ago)','3° Trimestre (Sep-Dic)'];
+  var g=getGroup(gid);
+  var students=db.students.filter(function(s){return s.groupId===gid;});
+  var triMonths=TRIMESTRES[tri-1]||[];
+  var yr=new Date().getFullYear();
+  var triNames=['','1° Trimestre (Mar-May)','2° Trimestre (Jun-Ago)','3° Trimestre (Sep-Dic)'];
+
   function stats(s){
-    let tc=0,ab=0;
-    triMonths.forEach(mo=>{
-      const mk=`${yr}-${String(mo).padStart(2,'0')}`;
-      const[yy,mm]=mk.split('-').map(Number);const dim=new Date(yy,mm,0).getDate();
-      const cdays=[];for(let d=1;d<=dim;d++){if((g.days||[]).includes(new Date(yy,mm-1,d).getDay()))cdays.push(d);}
-      const rec=(db.attendance[gid]||{})[mk]?.[s.id]||{};const notes=db.dayNotes[mk]||{};
-      cdays.forEach(d=>{const k=`${gid}-${mk}-${d}`;if(notes[k])return;tc++;if(rec[d]==='A')ab++;});
+    var tc=0,ab=0;
+    triMonths.forEach(function(mo){
+      var mk=yr+'-'+String(mo).padStart(2,'0');
+      var dim=new Date(yr,mo,0).getDate();
+      for(var d=1;d<=dim;d++){
+        if(!(g.days||[]).includes(new Date(yr,mo-1,d).getDay()))continue;
+        var k=gid+'-'+mk+'-'+d;
+        if((db.dayNotes[mk]||{})[k])continue;
+        tc++;
+        if((db.attendance[gid]||{})[mk]?.[s.id]?.[d]==='A')ab++;
+      }
     });
-    return{tc,ab,pr:tc-ab};
+    return{tc:tc,ab:ab,pr:tc-ab};
   }
-  return`<div class="card">
-    <div style="margin-bottom:12px">
-      <div style="font-size:16px;font-weight:600">${g.name}</div>
-      <div style="font-size:12px;color:var(--text3)">${(g.days||[]).map(d=>DAY_SHORT[d]).join('+')} · ${triNames[tri]}</div>
-    </div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Alumno</th>${triMonths.map(mo=>`<th>${MONTHS[mo-1].slice(0,3)}</th>`).join('')}<th>Clases</th><th>Ausencias</th><th>Presencia</th></tr></thead>
-      <tbody>${students.map(s=>{
-        const st=stats(s);const pct=st.tc?Math.round(st.pr/st.tc*100):100;
-        const mCols=triMonths.map(mo=>{
-          const mk=`${yr}-${String(mo).padStart(2,'0')}`;const[yy,mm]=mk.split('-').map(Number);const dim=new Date(yy,mm,0).getDate();let a=0;
-          for(let d=1;d<=dim;d++){if(!(g.days||[]).includes(new Date(yy,mm-1,d).getDay()))continue;const k=`${gid}-${mk}-${d}`;if((db.dayNotes[mk]||{})[k])continue;if((db.attendance[gid]?.[mk]?.[s.id]||{})[d]==='A')a++;}
-          return`<td style="text-align:center"><span class="${a>0?'badge red':'badge green'}" style="font-size:10px">${a===0?'✓':a+'A'}</span></td>`;
-        }).join('');
-        return`<tr><td><div style="display:flex;align-items:center;gap:6px">${avatar(s.name,24,s.gender||'')} ${s.name}</div></td>${mCols}
-          <td style="text-align:center">${st.tc}</td>
-          <td style="text-align:center"><span class="badge ${st.ab===0?'green':st.ab<=2?'amber':'red'}">${st.ab}</span></td>
-          <td style="text-align:center"><span class="badge ${pct>=80?'green':pct>=60?'amber':'red'}">${pct}%</span></td></tr>`;
-      }).join('')}
-      </tbody></table></div>
-  </div>`;
+
+  var html='<div class="card"><div style="font-size:16px;font-weight:700;margin-bottom:4px">'+g.name+'</div>';
+  html+='<div style="font-size:12px;color:var(--text3);margin-bottom:16px">'+triNames[tri]+'</div>';
+  html+='<div class="tbl-wrap"><table><thead><tr><th>Alumno</th>';
+  triMonths.forEach(function(mo){html+='<th>'+MONTHS[mo-1].slice(0,3)+'</th>';});
+  html+='<th>Total</th><th>Ausencias</th><th>%</th></tr></thead><tbody>';
+
+  students.forEach(function(s){
+    var st=stats(s);
+    var pct=st.tc?Math.round(st.pr/st.tc*100):100;
+    html+='<tr><td><div style="display:flex;align-items:center;gap:7px">'+avatar(s.name,26,s.gender||'')+'<span>'+s.name+'</span></div></td>';
+    triMonths.forEach(function(mo){
+      var mk=yr+'-'+String(mo).padStart(2,'0');
+      var dim=new Date(yr,mo,0).getDate();var a=0;
+      for(var d=1;d<=dim;d++){
+        if(!(g.days||[]).includes(new Date(yr,mo-1,d).getDay()))continue;
+        var k=gid+'-'+mk+'-'+d;
+        if((db.dayNotes[mk]||{})[k])continue;
+        if((db.attendance[gid]||{})[mk]?.[s.id]?.[d]==='A')a++;
+      }
+      html+='<td class="tbl-num"><span class="badge '+(a===0?'green':a<=2?'amber':'red')+'" style="font-size:10px">'+(a===0?'✓':a+'A')+'</span></td>';
+    });
+    html+='<td class="tbl-num">'+st.tc+'</td>';
+    html+='<td class="tbl-num"><span class="badge '+(st.ab===0?'green':st.ab<=3?'amber':'red')+'">'+st.ab+'</span></td>';
+    html+='<td class="tbl-num"><span class="badge '+(pct>=85?'green':pct>=70?'amber':'red')+'">'+pct+'%</span></td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  return html;
 }
 
-/* ── GRADES ── */
+/* ─── GRADES ─── */
 function renderGrades(){
-  const gid=document.getElementById('gr-gid')?.value||'';
-  const tri=document.getElementById('gr-tri')?.value||'1';
-  const sid=document.getElementById('gr-sid')?.value||'';
+  var gid=document.getElementById('gr-gid')?document.getElementById('gr-gid').value:'';
+  var tri=document.getElementById('gr-tri')?document.getElementById('gr-tri').value:'1';
+  var vw=document.getElementById('gr-view')?document.getElementById('gr-view').value:'table';
 
-  document.getElementById('view-grades').innerHTML=`
-    <div style="font-family:var(--font-display);font-size:22px;font-weight:600;margin-bottom:16px;margin-top:4px">Notas 2026 <span style="font-size:13px;font-weight:400;color:var(--text3)">— vista de lectura</span></div>
-    <div class="grid3" style="margin-bottom:14px">
-      <div class="field"><label>Grupo</label>
-        <select id="gr-gid" onchange="renderGrades()">
-          <option value="">Seleccionar...</option>
-          ${db.groups.map(g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${g.name}</option>`).join('')}
-        </select>
-      </div>
-      <div class="field"><label>Trimestre</label>
-        <select id="gr-tri" onchange="renderGrades()">
-          <option value="1"${tri==='1'?' selected':''}>1° Trimestre</option>
-          <option value="2"${tri==='2'?' selected':''}>2° Trimestre</option>
-          <option value="3"${tri==='3'?' selected':''}>3° Trimestre</option>
-        </select>
-      </div>
-      <div class="field"><label>Alumno</label>
-        <select id="gr-sid" onchange="renderGrades()">
-          <option value="">Todos</option>
-          ${gid?db.students.filter(s=>s.groupId===gid).map(s=>`<option value="${s.id}"${s.id===sid?' selected':''}>${s.name}</option>`).join(''):''}
-        </select>
-      </div>
-    </div>
-    ${!gid?'<div class="empty"><i class="ti ti-clipboard-list"></i>Seleccioná un grupo para ver las notas</div>':renderGradesBody(gid,tri,sid)}
-    ${gid?`<div class="card" style="margin-top:18px">
-      <div class="card-title">📋 Cambridge 2025 — Referencia examen final</div>
-      ${renderCambridge(gid)}
-    </div>`:''}`;
+  var html='<div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:16px;margin-top:4px">Notas 2026</div>';
+  html+='<div class="srow">';
+
+  // Group selector
+  html+='<div class="field" style="flex:1;min-width:150px"><label>Grupo</label><select id="gr-gid" onchange="renderGrades()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-size:13px;outline:none;width:100%"><option value="">Seleccionar...</option>';
+  db.groups.forEach(function(g){html+='<option value="'+g.id+'"'+(g.id===gid?' selected':'')+'>'+g.name+'</option>';});
+  html+='</select></div>';
+
+  // Trimester selector
+  html+='<div class="field" style="flex:1;min-width:150px"><label>Trimestre</label><select id="gr-tri" onchange="renderGrades()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-size:13px;outline:none;width:100%">';
+  html+='<option value="1"'+(tri==='1'?' selected':'')+'>1° Trimestre (Mar-May)</option>';
+  html+='<option value="2"'+(tri==='2'?' selected':'')+'>2° Trimestre (Jun-Ago)</option>';
+  html+='<option value="3"'+(tri==='3'?' selected':'')+'>3° Trimestre (Sep-Dic)</option>';
+  html+='</select></div>';
+
+  // View toggle
+  html+='<div class="field" style="flex:0 0 auto"><label>Vista</label>';
+  html+='<div style="display:flex;border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden">';
+  html+='<button onclick="switchGradeView(\'table\')" style="padding:8px 14px;font-size:12px;font-family:inherit;font-weight:500;cursor:pointer;border:none;'+(vw==='table'?'background:var(--accent);color:#fff;':'background:var(--bg3);color:var(--text2);')+' display:flex;align-items:center;gap:5px"><i class="ti ti-table"></i> Tabla</button>';
+  html+='<button onclick="switchGradeView(\'student\')" style="padding:8px 14px;font-size:12px;font-family:inherit;font-weight:500;cursor:pointer;border:none;border-left:1px solid var(--border2);'+(vw==='student'?'background:var(--accent);color:#fff;':'background:var(--bg3);color:var(--text2);')+' display:flex;align-items:center;gap:5px"><i class="ti ti-user"></i> Por alumno</button>';
+  html+='</div></div>';
+
+  html+='</div>';
+
+  if(!gid){
+    html+='<div class="empty"><i class="ti ti-clipboard-list"></i>Seleccioná un grupo para ver las notas</div>';
+  } else if(vw==='table'){
+    html+=renderGradesTable(gid,tri);
+    html+=renderCambridge(gid);
+  } else {
+    html+=renderGradesStudents(gid,tri);
+    html+=renderCambridge(gid);
+  }
+
+  document.getElementById('view-grades').innerHTML=html;
 }
 
-function renderGradesBody(gid,tri,filterSid){
-  const students=db.students.filter(s=>s.groupId===gid&&(!filterSid||s.id===filterSid));
+function switchGradeView(vw){
+  // Store the selection and re-render without losing group/tri selectors
+  var gid=document.getElementById('gr-gid')?document.getElementById('gr-gid').value:'';
+  var tri=document.getElementById('gr-tri')?document.getElementById('gr-tri').value:'1';
+  // Temporarily inject a hidden select so renderGrades reads the new view
+  var dummy=document.createElement('select');dummy.id='gr-view';dummy.style.display='none';
+  var opt=document.createElement('option');opt.value=vw;opt.selected=true;dummy.appendChild(opt);
+  document.body.appendChild(dummy);
+  renderGrades();
+  dummy.remove();
+}
+
+function renderGradesStudents(gid,tri){
+  var students=db.students.filter(function(s){return s.groupId===gid;});
   if(!students.length)return'<div class="empty">Sin alumnos en este grupo</div>';
-  const grades=db.grades||{};
+  var grades=db.grades||{};
 
   function subAvg(sGrades,subj){
-    const e=(sGrades[subj]||[]).filter(x=>x.score!=='A');
-    if(!e.length)return null;
-    return(e.reduce((a,x)=>a+Number(x.score),0)/e.length).toFixed(1);
+    var entries=(sGrades[subj]||[]).filter(function(x){return x.score!=='A';});
+    if(!entries.length)return null;
+    return(entries.reduce(function(a,x){return a+Number(x.score);},0)/entries.length).toFixed(1);
   }
   function catAvg(sGrades,items){
-    const avgs=items.map(s=>subAvg(sGrades,s)).filter(v=>v!==null).map(Number);
+    var avgs=items.map(function(s){return subAvg(sGrades,s);}).filter(function(v){return v!==null;}).map(Number);
     if(!avgs.length)return null;
-    return(avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1);
+    return(avgs.reduce(function(a,b){return a+b;},0)/avgs.length).toFixed(1);
   }
 
-  return students.map(s=>{
-    const sGrades=(grades[gid]||{})[s.id]?.[tri]||{};
-    const wAvg=catAvg(sGrades,GRADE_SUBJECTS[0].items);
-    const oAvg=catAvg(sGrades,GRADE_SUBJECTS[1].items);
-    const total=wAvg&&oAvg?((Number(wAvg)+Number(oAvg))/2).toFixed(1):wAvg||oAvg||null;
+  var html='';
+  students.forEach(function(s){
+    var sGrades=(grades[gid]||{})[s.id]?.[tri]||{};
+    var wAvg=catAvg(sGrades,GRADE_SUBJECTS[0].items);
+    var oAvg=catAvg(sGrades,GRADE_SUBJECTS[1].items);
+    var total=wAvg&&oAvg?((Number(wAvg)+Number(oAvg))/2).toFixed(1):wAvg||oAvg||null;
 
-    return`<div class="card" style="margin-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div style="display:flex;align-items:center;gap:10px">
-          ${avatar(s.name,38,s.gender||'')}
-          <div>
-            <div style="font-weight:600;font-size:15px">${s.name}</div>
-            <div style="font-size:11px;color:var(--text3)">${getGroup(s.groupId).name} · Trimestre ${tri}</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:7px;flex-wrap:wrap">
-          ${wAvg?`<span class="badge blue">Written: ${wAvg}</span>`:''}
-          ${oAvg?`<span class="badge green">Oral: ${oAvg}</span>`:''}
-          ${total?`<span class="badge ${Number(total)>=7?'green':Number(total)>=4?'amber':'red'}" style="font-size:14px;padding:5px 12px">Prom: ${total}</span>`:'<span style="font-size:12px;color:var(--text3)">Sin notas aún</span>'}
-        </div>
-      </div>
-      <div class="grid2">
-        ${GRADE_SUBJECTS.map(cat=>`<div>
-          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:8px">${cat.cat}</div>
-          ${cat.items.map(subj=>{
-            const entries=sGrades[subj]||[];const avg=subAvg(sGrades,subj);
-            return`<div style="margin-bottom:10px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-                <span style="font-size:13px;font-weight:500">${subj}</span>
-                ${avg!==null?`<span class="badge ${Number(avg)>=7?'green':Number(avg)>=4?'amber':'red'}">${avg}</span>`:'<span style="font-size:11px;color:var(--text3)">—</span>'}
-              </div>
-              ${entries.length?`<div style="display:flex;flex-wrap:wrap;gap:4px">${entries.map(e=>`<span style="background:${e.score==='A'?'var(--amber-bg)':'var(--bg3)'};border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:12px">${e.score==='A'?'Ausente':e.score}${e.desc?` · ${e.desc}`:''}</span>`).join('')}</div>`:'<span style="font-size:12px;color:var(--text3)">Sin notas</span>'}
-            </div>`;
-          }).join('')}
-        </div>`).join('')}
-      </div>
-    </div>`;
-  }).join('');
+    html+='<div class="card" style="margin-bottom:12px">';
+    // Student header
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">';
+    html+='<div style="display:flex;align-items:center;gap:10px">'+avatar(s.name,38,s.gender||'');
+    html+='<div><div style="font-weight:700;font-size:15px">'+s.name+'</div>';
+    html+='<div style="font-size:11px;color:var(--text3)">Trim. '+tri+' · '+getGroup(s.groupId).name+'</div></div></div>';
+    html+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+    if(wAvg) html+='<span class="badge blue">Written: '+wAvg+'</span>';
+    if(oAvg) html+='<span class="badge green">Oral: '+oAvg+'</span>';
+    if(total) html+='<span class="badge '+gradeColor(total)+'" style="font-size:14px;padding:5px 12px">Prom: '+total+'</span>';
+    else html+='<span style="font-size:12px;color:var(--text3)">Sin notas aún</span>';
+    html+='</div></div>';
+
+    // Two-column subject grid
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+    GRADE_SUBJECTS.forEach(function(cat){
+      html+='<div>';
+      html+='<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)">'+cat.cat+'</div>';
+      cat.items.forEach(function(subj){
+        var entries=sGrades[subj]||[];
+        var avg=subAvg(sGrades,subj);
+        html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px">';
+        html+='<span style="font-size:12px;font-weight:500;flex:1">'+subj+'</span>';
+        html+='<div style="text-align:right">';
+        if(avg!==null) html+='<span class="badge '+gradeColor(avg)+'">'+avg+'</span>';
+        else if(entries.some(function(e){return e.score==='A';})) html+='<span class="badge amber">A</span>';
+        else html+='<span style="font-size:11px;color:var(--border2)">—</span>';
+        // Show individual scores
+        if(entries.length){
+          html+='<div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px;margin-top:4px">';
+          entries.forEach(function(e){
+            html+='<span style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:11px;font-family:var(--font-mono)">';
+            html+=(e.score==='A'?'A':e.score)+(e.desc?' <span style="color:var(--text3);font-size:10px">'+e.desc+'</span>':'');
+            html+='</span>';
+          });
+          html+='</div>';
+        }
+        html+='</div></div>';
+      });
+      html+='</div>';
+    });
+    html+='</div></div>';
+  });
+
+  return html;
+}
+
+function gradeColor(v){
+  if(v===null)return'gray';
+  var n=Number(v);
+  return n>=7?'green':n>=4?'amber':'red';
+}
+
+function renderGradesTable(gid,tri){
+  var students=db.students.filter(function(s){return s.groupId===gid;});
+  if(!students.length)return'<div class="empty">Sin alumnos en este grupo</div>';
+  var grades=db.grades||{};
+  var allSubjs=GRADE_SUBJECTS.flatMap(function(c){return c.items;});
+
+  function subAvg(sGrades,subj){
+    var entries=(sGrades[subj]||[]).filter(function(x){return x.score!=='A';});
+    if(!entries.length)return null;
+    return(entries.reduce(function(a,x){return a+Number(x.score);},0)/entries.length).toFixed(1);
+  }
+  function catAvg(sGrades,items){
+    var avgs=items.map(function(s){return subAvg(sGrades,s);}).filter(function(v){return v!==null;}).map(Number);
+    if(!avgs.length)return null;
+    return(avgs.reduce(function(a,b){return a+b;},0)/avgs.length).toFixed(1);
+  }
+
+  var html='<div class="card" style="margin-bottom:16px">';
+  html+='<div style="font-size:14px;font-weight:700;margin-bottom:4px">'+getGroup(gid).name+' — Tabla de notas</div>';
+  html+='<div style="font-size:11px;color:var(--text3);margin-bottom:14px">Trimestre '+tri+' · '+['','Mar-May','Jun-Ago','Sep-Dic'][parseInt(tri)]+'</div>';
+  html+='<div class="tbl-wrap"><table>';
+
+  // Header — categories spanning columns
+  html+='<thead>';
+  html+='<tr><th rowspan="2" style="min-width:140px">Alumno</th>';
+  GRADE_SUBJECTS.forEach(function(cat){
+    html+='<th colspan="'+cat.items.length+'" style="text-align:center;border-left:2px solid var(--border2)">'+cat.cat+'</th>';
+  });
+  html+='<th rowspan="2" style="text-align:center;border-left:2px solid var(--border2);background:var(--bg4)">Written</th>';
+  html+='<th rowspan="2" style="text-align:center;border-left:1px solid var(--border2);background:var(--bg4)">Oral</th>';
+  html+='<th rowspan="2" style="text-align:center;border-left:2px solid var(--accent-border);background:var(--accent-bg)">Prom.</th>';
+  html+='</tr>';
+
+  // Sub-header — subject names
+  html+='<tr>';
+  GRADE_SUBJECTS.forEach(function(cat,ci){
+    cat.items.forEach(function(subj,si){
+      html+='<th style="text-align:center;font-weight:500;font-size:10px;'+(si===0?'border-left:2px solid var(--border2)':'')+'" title="'+subj+'">'+subj.split(' ')[0]+'</th>';
+    });
+  });
+  html+='</tr></thead>';
+
+  html+='<tbody>';
+  students.forEach(function(s){
+    var sGrades=(grades[gid]||{})[s.id]?.[tri]||{};
+    html+='<tr>';
+    html+='<td><div style="display:flex;align-items:center;gap:8px">'+avatar(s.name,26,s.gender||'')+'<span style="font-size:13px">'+s.name+'</span></div></td>';
+
+    GRADE_SUBJECTS.forEach(function(cat,ci){
+      cat.items.forEach(function(subj,si){
+        var avg=subAvg(sGrades,subj);
+        var entries=sGrades[subj]||[];
+        var hasAbs=entries.some(function(e){return e.score==='A';});
+        html+='<td class="grade-cell" style="'+(si===0?'border-left:2px solid var(--border2)':'')+'">';
+        if(avg!==null){
+          html+='<span class="badge '+gradeColor(avg)+'">'+avg+'</span>';
+        } else if(hasAbs){
+          html+='<span class="badge amber">A</span>';
+        } else {
+          html+='<span style="color:var(--border2)">—</span>';
+        }
+        html+='</td>';
+      });
+    });
+
+    var wAvg=catAvg(sGrades,GRADE_SUBJECTS[0].items);
+    var oAvg=catAvg(sGrades,GRADE_SUBJECTS[1].items);
+    var total=wAvg&&oAvg?((Number(wAvg)+Number(oAvg))/2).toFixed(1):wAvg||oAvg||null;
+
+    html+='<td class="grade-cell grade-avg" style="border-left:2px solid var(--border2)">'+(wAvg?'<span class="badge '+gradeColor(wAvg)+'">'+wAvg+'</span>':'<span style="color:var(--border2)">—</span>')+'</td>';
+    html+='<td class="grade-cell grade-avg" style="border-left:1px solid var(--border2)">'+(oAvg?'<span class="badge '+gradeColor(oAvg)+'">'+oAvg+'</span>':'<span style="color:var(--border2)">—</span>')+'</td>';
+    html+='<td class="grade-cell" style="border-left:2px solid var(--accent-border);background:var(--accent-bg)">'+(total?'<span class="badge '+gradeColor(total)+'" style="font-size:13px;padding:4px 10px">'+total+'</span>':'<span style="color:var(--text3)">—</span>')+'</td>';
+    html+='</tr>';
+  });
+
+  // Group averages row
+  html+='<tr style="background:var(--bg4);font-weight:700">';
+  html+='<td style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3)">Promedio grupo</td>';
+  GRADE_SUBJECTS.forEach(function(cat,ci){
+    cat.items.forEach(function(subj,si){
+      var avgs=students.map(function(s){
+        var sG=(grades[gid]||{})[s.id]?.[tri]||{};
+        return subAvg(sG,subj);
+      }).filter(function(v){return v!==null;}).map(Number);
+      var grpAvg=avgs.length?(avgs.reduce(function(a,b){return a+b;},0)/avgs.length).toFixed(1):null;
+      html+='<td class="grade-cell" style="'+(si===0?'border-left:2px solid var(--border2)':'')+'">'+(grpAvg?'<span class="badge '+gradeColor(grpAvg)+'">'+grpAvg+'</span>':'—')+'</td>';
+    });
+  });
+  // Group written/oral/total averages
+  var grpWAvgs=students.map(function(s){return catAvg((grades[gid]||{})[s.id]?.[tri]||{},GRADE_SUBJECTS[0].items);}).filter(function(v){return v!==null;}).map(Number);
+  var grpOAvgs=students.map(function(s){return catAvg((grades[gid]||{})[s.id]?.[tri]||{},GRADE_SUBJECTS[1].items);}).filter(function(v){return v!==null;}).map(Number);
+  var grpW=grpWAvgs.length?(grpWAvgs.reduce(function(a,b){return a+b;},0)/grpWAvgs.length).toFixed(1):null;
+  var grpO=grpOAvgs.length?(grpOAvgs.reduce(function(a,b){return a+b;},0)/grpOAvgs.length).toFixed(1):null;
+  var grpT=grpW&&grpO?((Number(grpW)+Number(grpO))/2).toFixed(1):grpW||grpO||null;
+  html+='<td class="grade-cell grade-avg" style="border-left:2px solid var(--border2)">'+(grpW?'<span class="badge '+gradeColor(grpW)+'">'+grpW+'</span>':'—')+'</td>';
+  html+='<td class="grade-cell grade-avg" style="border-left:1px solid var(--border2)">'+(grpO?'<span class="badge '+gradeColor(grpO)+'">'+grpO+'</span>':'—')+'</td>';
+  html+='<td class="grade-cell" style="border-left:2px solid var(--accent-border);background:var(--accent-bg)">'+(grpT?'<span class="badge '+gradeColor(grpT)+'" style="font-size:13px;padding:4px 10px">'+grpT+'</span>':'—')+'</td>';
+  html+='</tr>';
+
+  html+='</tbody></table></div>';
+
+  // Legend
+  html+='<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin-top:10px;color:var(--text3)">';
+  html+='<span style="display:flex;align-items:center;gap:3px"><span class="badge green">7+</span> Aprobado</span>';
+  html+='<span style="display:flex;align-items:center;gap:3px"><span class="badge amber">4-6</span> Regular</span>';
+  html+='<span style="display:flex;align-items:center;gap:3px"><span class="badge red">-4</span> Desaprobado</span>';
+  html+='<span style="display:flex;align-items:center;gap:3px"><span class="badge amber">A</span> Ausente</span>';
+  html+='<span style="color:var(--text3)">· Promedio de todas las notas cargadas por materia</span>';
+  html+='</div></div>';
+
+  return html;
 }
 
 function renderCambridge(gid){
-  const grpName=gid?db.groups.find(g=>g.id===gid)?.name||'':'';
-  const rows=(db.cambridge2025||[]).filter(r=>!grpName||r.group.toLowerCase().includes(grpName.toLowerCase().split(' ')[0]));
-  if(!rows.length)return'<div style="font-size:13px;color:var(--text3)">Sin datos para este grupo</div>';
-  const byGroup={};rows.forEach(r=>{if(!byGroup[r.group])byGroup[r.group]=[];byGroup[r.group].push(r);});
-  return Object.entries(byGroup).map(([grp,rs])=>`
-    <div style="margin-bottom:14px">
-      <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;text-transform:uppercase">${grp}</div>
-      <div class="tbl-wrap"><table><thead><tr><th>Alumno</th><th>Escrito</th><th>Oral</th><th>Promedio</th><th>Conclusión</th></tr></thead><tbody>
-      ${rs.map(r=>`<tr><td>${r.name}</td>
-        <td><span class="badge ${r.written>=7?'green':r.written>=4?'amber':'red'}">${r.written}</span></td>
-        <td><span class="badge ${r.oral>=7?'green':r.oral>=4?'amber':'red'}">${r.oral}</span></td>
-        <td>${r.prom!==null?`<span class="badge ${Number(r.prom)>=7?'green':Number(r.prom)>=4?'amber':'red'}">${r.prom}</span>`:`<span class="badge red">${r.conclusion}</span>`}</td>
-        <td style="font-size:12px;color:var(--text3)">${r.conclusion||'—'}</td>
-      </tr>`).join('')}
-      </tbody></table></div>
-    </div>`).join('');
+  var grpName=gid?((db.groups.find(function(g){return g.id===gid;})||{}).name||''):'';
+  var rows=(db.cambridge2025||[]).filter(function(r){return !grpName||r.group.toLowerCase().includes(grpName.toLowerCase().split(' ')[0]);});
+  if(!rows.length)return'';
+  var byGroup={};
+  rows.forEach(function(r){if(!byGroup[r.group])byGroup[r.group]=[];byGroup[r.group].push(r);});
+  var html='<div class="card"><div class="card-title">Cambridge 2025 — Examen final de referencia</div>';
+  Object.entries(byGroup).forEach(function(entry){
+    var grp=entry[0];var rs=entry[1];
+    html+='<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;margin-bottom:8px">'+grp+'</div>';
+    html+='<div class="tbl-wrap"><table><thead><tr><th>Alumno</th><th>Escrito</th><th>Oral</th><th>Promedio</th><th>Observación</th></tr></thead><tbody>';
+    rs.forEach(function(r){
+      html+='<tr><td>'+r.name+'</td>';
+      html+='<td class="tbl-num"><span class="badge '+(r.written>=7?'green':r.written>=4?'amber':'red')+'">'+r.written+'</span></td>';
+      html+='<td class="tbl-num"><span class="badge '+(r.oral>=7?'green':r.oral>=4?'amber':'red')+'">'+r.oral+'</span></td>';
+      html+='<td class="tbl-num">'+(r.prom!==null?'<span class="badge '+(Number(r.prom)>=7?'green':Number(r.prom)>=4?'amber':'red')+'">'+r.prom+'</span>':'<span class="badge red">'+r.conclusion+'</span>')+'</td>';
+      html+='<td style="font-size:12px;color:var(--text3)">'+( r.conclusion||'—')+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+  });
+  html+='</div>';
+  return html;
 }
 
-/* ── INIT ── */
+/* INIT */
 async function init(){
-  const ok=await loadData();
+  var ok=await loadData();
   if(ok){renderAtt();}
   else{
-    document.getElementById('view-att').innerHTML='<div class="empty"><i class="ti ti-wifi-off"></i>Error al conectar con Supabase.<br>Verificá tu conexión a internet.</div>';
+    document.getElementById('view-att').innerHTML='<div class="empty"><i class="ti ti-wifi-off"></i>Error al conectar.<br>Verificá tu conexión e intentá de nuevo.</div>';
   }
   startPolling();
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
