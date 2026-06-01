@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diario de Clases — Cambridge Institute 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;font-size:14px}
+
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#18181f;--bg4:#1e1e28;--bg5:#252533;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --text:#f0efe8;--text2:#9896a0;--text3:#5a5868;
+  --accent:#c9a84c;--accent2:#e8c96a;--accent-bg:rgba(201,168,76,0.12);--accent-border:rgba(201,168,76,0.3);
+  --blue:#4a9eff;--blue-bg:rgba(74,158,255,0.1);--blue-border:rgba(74,158,255,0.25);
+  --green:#52c97a;--green-bg:rgba(82,201,122,0.1);--green-border:rgba(82,201,122,0.25);
+  --red:#ff6b6b;--red-bg:rgba(255,107,107,0.1);--red-border:rgba(255,107,107,0.25);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,0.1);--amber-border:rgba(245,166,35,0.25);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.1);
+  --radius:10px;--radius-lg:16px;--radius-xl:22px;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-mono:'DM Mono',monospace;
+  --shadow:0 8px 32px rgba(0,0,0,0.4);
+  --shadow-lg:0 20px 60px rgba(0,0,0,0.5);
+}
+[data-theme="light"]{
+  --bg:#f0f0ec;--bg2:#fafaf7;--bg3:#f4f3ee;--bg4:#eceae4;--bg5:#e4e2db;
+  --border:rgba(0,0,0,0.06);--border2:rgba(0,0,0,0.1);
+  --text:#1a1818;--text2:#5a5650;--text3:#9a9690;
+  --accent:#9a6e1a;--accent2:#b8820f;--accent-bg:rgba(154,110,26,0.08);--accent-border:rgba(154,110,26,0.2);
+  --blue:#1a6fd4;--blue-bg:rgba(26,111,212,0.08);--blue-border:rgba(26,111,212,0.2);
+  --green:#1a7a40;--green-bg:rgba(26,122,64,0.08);--green-border:rgba(26,122,64,0.2);
+  --red:#c0392b;--red-bg:rgba(192,57,43,0.08);--red-border:rgba(192,57,43,0.2);
+  --amber:#b8620a;--amber-bg:rgba(184,98,10,0.08);--amber-border:rgba(184,98,10,0.2);
+  --shadow:0 4px 20px rgba(0,0,0,0.08);--shadow-lg:0 12px 40px rgba(0,0,0,0.12);
+}
+
+body{background:var(--bg);color:var(--text);min-height:100vh}
+
+/* TOPBAR */
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap;
+  backdrop-filter:blur(12px);
+}
+.topbar-brand{display:flex;align-items:center;gap:14px}
+.brand-logo{
+  font-family:var(--font-display);font-size:18px;font-weight:900;
+  color:var(--accent);letter-spacing:-0.02em;
+}
+.brand-sub{font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
+.topbar-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* GROUP TABS */
+.group-tabs{
+  display:flex;gap:0;background:var(--bg3);border-radius:var(--radius-lg);
+  padding:4px;overflow-x:auto;scrollbar-width:none;border:1px solid var(--border);
+}
+.group-tabs::-webkit-scrollbar{display:none}
+.group-tab{
+  padding:8px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;
+  cursor:pointer;white-space:nowrap;color:var(--text2);transition:all 0.2s;
+  border:1px solid transparent;
+}
+.group-tab:hover{color:var(--text);background:var(--bg4)}
+.group-tab.active{
+  background:var(--accent);color:#fff;
+  box-shadow:0 2px 12px rgba(201,168,76,0.3);
+}
+
+/* MONTH NAV */
+.month-nav{display:flex;align-items:center;gap:6px}
+.month-btn{
+  width:32px;height:32px;border-radius:var(--radius);border:1px solid var(--border2);
+  background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:14px;transition:all 0.15s;
+}
+.month-btn:hover{background:var(--bg4);color:var(--text)}
+.month-label{
+  font-size:14px;font-weight:600;color:var(--text);min-width:130px;text-align:center;
+  text-transform:capitalize;
+}
+
+/* MAIN */
+.main{max-width:1000px;margin:0 auto;padding:28px 24px;width:100%}
+
+/* WEEK SECTION */
+.week-section{margin-bottom:32px}
+.week-header{
+  display:flex;align-items:center;gap:12px;margin-bottom:16px;
+}
+.week-num{
+  font-family:var(--font-display);font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);
+  background:var(--accent-bg);border:1px solid var(--accent-border);
+  border-radius:20px;padding:4px 12px;
+}
+.week-dates{font-size:12px;color:var(--text3);text-transform:capitalize}
+.week-divider{flex:1;height:1px;background:var(--border)}
+
+/* CLASS CARD */
+.class-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-xl);
+  padding:0;margin-bottom:12px;overflow:hidden;transition:all 0.2s;
+  box-shadow:var(--shadow);cursor:pointer;
+}
+.class-card:hover{border-color:var(--border2);box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.class-card.today{border-color:var(--accent-border)}
+.class-card.future{opacity:0.7}
+.class-card.holiday{border-color:var(--amber-border)}
+
+.card-head{
+  display:flex;align-items:stretch;gap:0;
+  border-bottom:1px solid var(--border);
+}
+.card-num{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px 20px;min-width:72px;border-right:1px solid var(--border);
+  background:var(--bg3);flex-shrink:0;
+}
+.card-num-label{font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-weight:600}
+.card-num-val{font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--text);line-height:1}
+.card-num-week{font-size:10px;color:var(--text3);margin-top:2px}
+.card-meta{flex:1;padding:14px 18px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.card-date{font-size:14px;font-weight:600;text-transform:capitalize;display:flex;align-items:center;gap:8px}
+.card-status{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.card-actions{padding:12px 14px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+
+.card-body{padding:18px 20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.card-body.holiday-body{padding:16px 20px}
+
+.section-label{
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--text3);margin-bottom:6px;display:flex;align-items:center;gap:5px;
+}
+.section-content{font-size:13px;color:var(--text2);line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.section-content.empty{color:var(--text3);font-style:italic;font-size:12px}
+
+/* ABSENT CHIPS */
+.absent-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.absent-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;
+  background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);
+}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.badge.red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.badge.amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.badge.blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.badge.gold{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
+.badge.gray{background:var(--bg4);color:var(--text2);border:1px solid var(--border2)}
+.badge.purple{background:var(--purple-bg);color:var(--purple)}
+
+/* BTNS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;transition:all 0.15s}
+.btn:hover{background:var(--bg4)}
+.btn.primary{background:var(--accent);color:#111;border-color:var(--accent);font-weight:600}
+.btn.primary:hover{background:var(--accent2)}
+.btn.sm{padding:5px 12px;font-size:12px;border-radius:8px}
+.btn.xs{padding:3px 8px;font-size:11px;border-radius:6px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--text2)}
+.btn.ghost:hover{background:var(--bg3);color:var(--text)}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:26px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px}
+.modal-title{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.2}
+.modal-meta{font-size:12px;color:var(--text3);margin-top:4px;text-transform:capitalize}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* FORM */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:6px;font-weight:600}
+.field textarea,.field input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;line-height:1.6;resize:vertical}
+.field textarea:focus,.field input:focus{border-color:var(--accent)}
+.field textarea{min-height:80px}
+
+/* ABSENT TOGGLE IN MODAL */
+.abs-toggle{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;margin-bottom:4px;transition:all 0.15s}
+.abs-toggle:hover{border-color:var(--border2)}
+.abs-toggle.absent{background:var(--red-bg);border-color:var(--red-border)}
+
+/* STATS BAR */
+.stats-bar{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:12px 16px;align-items:center;
+}
+.stat-item{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:60px}
+.stat-num{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1}
+.stat-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);font-weight:500}
+.stat-div{width:1px;height:32px;background:var(--border);margin:0 4px}
+
+/* SYNC */
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);display:inline-block}
+.sync-dot.ok{background:var(--green)}.sync-dot.saving{background:var(--amber);animation:pulse 1s infinite}.sync-dot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* LOADING */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;gap:18px}
+.loading-title{font-family:var(--font-display);font-size:36px;font-weight:900;color:var(--accent)}
+.loading-bar{width:200px;height:2px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.loading-fill{height:100%;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty i{font-size:40px;display:block;margin-bottom:12px;opacity:0.25}
+.empty p{font-size:15px}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:13px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:slideIn 0.3s ease}
+@keyframes slideIn{from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* NO SELECT for screen display */
+.no-select{user-select:none;-webkit-user-select:none}
+
+@media(max-width:700px){
+  .card-body{grid-template-columns:1fr}
+  .topbar{padding:12px 16px}
+  .main{padding:16px 14px}
+  .group-tab{padding:7px 12px;font-size:12px}
+  .modal{border-radius:16px 16px 0 0;border-left:none;border-right:none;border-bottom:none;max-height:90vh}
+  .overlay{align-items:flex-end;padding:0}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div>
+      <div class="brand-logo">Cambridge</div>
+      <div class="brand-sub">Diario de Clases 2026</div>
+    </div>
+  </div>
+  <div class="topbar-controls">
+    <div class="month-nav">
+      <button class="month-btn" onclick="prevMonth()"><i class="ti ti-chevron-left"></i></button>
+      <div class="month-label" id="month-label">—</div>
+      <button class="month-btn" onclick="nextMonth()"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <button class="btn sm" onclick="goToday()" id="btn-today"><i class="ti ti-calendar-event"></i> Hoy</button>
+    <div style="display:flex;align-items:center;gap:6px;margin-left:4px">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span id="sync-label" style="font-size:11px;color:var(--text3)">Cargando</span>
+    </div>
+    <button class="btn sm ghost" onclick="toggleTheme()"><i class="ti ti-sun-moon"></i></button>
+  </div>
+</div>
+
+<!-- GROUP TABS -->
+<div style="padding:12px 24px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:57px;z-index:99">
+  <div class="group-tabs no-select" id="group-tabs"></div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main-content">
+  <div class="loading-wrap">
+    <div class="loading-title">Cambridge</div>
+    <div style="font-size:13px;color:var(--text3)">Cargando diario...</div>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+  </div>
+</div>
+
+<!-- TOAST WRAP -->
+<div class="toast-wrap" id="toasts"></div>
+
+<!-- MODAL: Edit class entry -->
+<div class="overlay" id="m-entry">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="me-title">Clase</div>
+        <div class="modal-meta" id="me-meta"></div>
+      </div>
+      <button class="btn ghost" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+
+    <input type="hidden" id="me-gid">
+    <input type="hidden" id="me-date">
+
+    <!-- Holiday toggle -->
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:16px;cursor:pointer" id="holiday-toggle" onclick="toggleHoliday()">
+      <input type="checkbox" id="me-holiday" style="width:16px;height:16px;cursor:pointer;pointer-events:none">
+      <label style="font-size:13px;cursor:pointer;pointer-events:none">Clase cancelada / Feriado</label>
+    </div>
+
+    <div id="me-fields">
+      <!-- Absent students -->
+      <div style="margin-bottom:16px" id="me-absent-section">
+        <div class="field" style="margin-bottom:0">
+          <label><i class="ti ti-user-x"></i> Alumnos ausentes</label>
+          <div id="me-absent-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Tocá para marcar/desmarcar. Se sincroniza con Asistencias.</div>
+      </div>
+
+      <div class="field">
+        <label><i class="ti ti-notes"></i> Anotaciones de la clase</label>
+        <textarea id="me-notes" rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label><i class="ti ti-book-2"></i> Material y temas dados</label>
+        <textarea id="me-material" rows="4"></textarea>
+      </div>
+      <div class="field">
+        <label><i class="ti ti-home-check"></i> Tarea para la próxima clase</label>
+        <textarea id="me-homework" rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn primary" onclick="saveEntry()"><i class="ti ti-device-floppy"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const SUPA_URL='https://hnusoslzobzuplhdephe.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhudXNvc2x6b2J6dXBsaGRlcGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzEwNjQsImV4cCI6MjA5NDMwNzA2NH0.HTSM4lp4Dpl_voNAPYlWcNqvUQaaXDH1OTgjkUrWAI8';
+
+// ── CYCLE ────────────────────────────────────────────────
+const CYCLE_MONDAY = '2026-03-09';
+const CYCLE_END    = '2026-12-05';
+const GROUP_START  = {'Teens 3':'2026-03-11','Teens 4':'2026-03-11'};
+const DEFAULT_START= '2026-03-12';
+const GROUP_SCHEDULE = {
+  'Kids 5':        {days:[2,4],time:'16:00-17:30'},
+  'Teens 2 Girls': {days:[2,4],time:'20:00-21:30'},
+  'Teens 2 Boys':  {days:[2,4],time:'18:30-20:00'},
+  'Teens 3':       {days:[1,3],time:'20:00-21:30'},
+  'Teens 4':       {days:[1,3],time:'18:30-20:00'},
+  '5th Year A':    {days:[2,4],time:'17:00-18:30'},
+  '5th Year B':    {days:[2,4],time:'18:30-20:00'},
+  'Superior':      {days:[2,4],time:'20:00-21:30'}
+};
+const MONTHS_ES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const DAYS_ES=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const DAY_S=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+// ── STATE ────────────────────────────────────────────────
+let db={groups:[],students:[],attendance:{},dayNotes:{},journal:{}};
+let selGid='';
+let selMonth=curMonth();
+let lastHash='';
+let saveTimer=null;
+let pollTimer=null;
+
+// ── UTILS ────────────────────────────────────────────────
+function curMonth(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');}
+function today(){return new Date().toISOString().slice(0,10);}
+function getGroup(id){return db.groups.find(g=>g.id===id)||{name:'—',days:[],time:''};}
+function dbHash(d){
+  try{
+    const attK=Object.values(d.attendance||{}).reduce((a,m)=>a+Object.keys(m).length,0);
+    const jrnK=Object.values(d.journal||{}).reduce((a,g)=>a+Object.keys(g).length,0);
+    const dayN=Object.values(d.dayNotes||{}).reduce((a,m)=>a+Object.keys(m).length,0);
+    return (d.students||[]).length+'-'+attK+'-'+dayN+'-'+jrnK;
+  }catch(e){return '';}
+}
+
+function groupStart(gname){return GROUP_START[gname]||DEFAULT_START;}
+
+function getCycleWeek(dateStr){
+  const d=new Date(dateStr+'T12:00:00');
+  const start=new Date(CYCLE_MONDAY+'T12:00:00');
+  const dMon=new Date(d);dMon.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));
+  const diff=Math.round((dMon-start)/(7*24*3600*1000));
+  return diff<0?null:diff+1;
+}
+
+function getClassDates(g){
+  const days=g.days||[];
+  const start=groupStart(g.name);
+  const result=[];
+  const cur=new Date(start+'T12:00:00');
+  const end=new Date(CYCLE_END+'T12:00:00');
+  while(cur<=end){if(days.includes(cur.getDay()))result.push(cur.toISOString().slice(0,10));cur.setDate(cur.getDate()+1);}
+  return result;
+}
+
+function getJournalEntry(gid,dateStr){
+  return (db.journal[gid]||{})[dateStr]||{notes:'',material:'',homework:'',holiday:false};
+}
+
+function isHoliday(gid,dateStr){
+  const[y,m,d]=dateStr.split('-').map(Number);
+  const mk=`${y}-${String(m).padStart(2,'0')}`;
+  return !!((db.dayNotes[mk]||{})[`${gid}-${mk}-${d}`]);
+}
+
+function getAbsents(gid,dateStr){
+  const[y,m,d]=dateStr.split('-').map(Number);
+  const mk=`${y}-${String(m).padStart(2,'0')}`;
+  return db.students.filter(s=>{
+    if(s.groupId!==gid)return false;
+    return (db.attendance[gid]||{})[mk]?.[s.id]?.[d]==='A';
+  });
+}
+
+function avatar(name,size=28,gender=''){
+  const ini=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  let bg,color,border;
+  if(gender==='m'){bg='rgba(74,158,255,0.15)';color='var(--blue)';border='rgba(74,158,255,0.3)';}
+  else if(gender==='f'){bg='rgba(255,100,150,0.15)';color='#e06090';border='rgba(255,100,150,0.3)';}
+  else{bg='var(--accent-bg)';color='var(--accent)';border='var(--accent-border)';}
+  return`<div style="width:${size}px;height:${size}px;min-width:${size}px;border-radius:50%;background:${bg};border:1px solid ${border};display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:${Math.round(size*0.33)}px;font-weight:700;color:${color};flex-shrink:0">${ini}</div>`;
+}
+
+function toast(msg,type='ok'){
+  const w=document.getElementById('toasts');
+  const t=document.createElement('div');t.className='toast';
+  const icon=type==='ok'?'ti-check':type==='error'?'ti-alert-circle':'ti-info-circle';
+  t.innerHTML=`<i class="ti ${icon}" style="color:${type==='ok'?'var(--green)':type==='error'?'var(--red)':'var(--amber)'}"></i> ${msg}`;
+  w.appendChild(t);setTimeout(()=>t.remove(),3000);
+}
+
+function setSyncStatus(state,label){
+  const dot=document.getElementById('sync-dot');const lbl=document.getElementById('sync-label');
+  if(dot)dot.className='sync-dot '+(state==='offline'?'error':state);
+  if(lbl)lbl.textContent=label;
+}
+
+function toggleTheme(){
+  const d=document.documentElement;
+  d.setAttribute('data-theme',d.getAttribute('data-theme')==='dark'?'light':'dark');
+}
+
+// ── SUPABASE ─────────────────────────────────────────────
+async function loadData(){
+  setSyncStatus('saving','Cargando...');
+  try{
+    const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const rows=await r.json();
+    if(rows&&rows[0]?.data){
+      const d=rows[0].data;
+      lastHash=dbHash(d);
+      if(d.groups)db.groups=d.groups;
+      if(d.students)db.students=d.students;
+      if(d.attendance)db.attendance=d.attendance;
+      if(d.dayNotes)db.dayNotes=d.dayNotes;
+      if(d.journal)db.journal=d.journal;
+      db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days?.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
+    }
+    setSyncStatus('ok','Sincronizado');
+    return true;
+  }catch(e){setSyncStatus('error','Sin conexión');return false;}
+}
+
+async function saveData(){
+  setSyncStatus('saving','Guardando...');
+  try{
+    const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main`,{
+      method:'PATCH',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({data:db,updated_at:new Date().toISOString()})
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    lastHash=dbHash(db);
+    setSyncStatus('ok','Guardado ✓');
+    setTimeout(()=>setSyncStatus('ok','Sincronizado'),2000);
+  }catch(e){setSyncStatus('error','Error al guardar');}
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>saveData(),1200);
+}
+
+function startPolling(){
+  if(pollTimer)clearInterval(pollTimer);
+  pollTimer=setInterval(async()=>{
+    try{
+      const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+      const rows=await r.json();if(!rows?.[0])return;
+      const h=dbHash(rows[0].data);
+      if(h!==lastHash&&!saveTimer){
+        const d=rows[0].data;lastHash=h;
+        if(d.groups)db.groups=d.groups;if(d.students)db.students=d.students;
+        if(d.attendance)db.attendance=d.attendance;if(d.dayNotes)db.dayNotes=d.dayNotes;
+        if(d.journal)db.journal=d.journal;
+        db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days?.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
+        setSyncStatus('ok','Actualizado');
+        renderMain();
+      }
+    }catch(e){}
+  },20000);
+}
+
+// ── NAVIGATION ───────────────────────────────────────────
+function prevMonth(){
+  const[y,m]=selMonth.split('-').map(Number);
+  const d=new Date(y,m-2,1);
+  selMonth=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  renderMain();
+}
+function nextMonth(){
+  const[y,m]=selMonth.split('-').map(Number);
+  const d=new Date(y,m,1);
+  selMonth=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  renderMain();
+}
+function goToday(){
+  selMonth=curMonth();
+  renderMain();
+}
+function selectGroup(gid){
+  selGid=gid;
+  document.querySelectorAll('.group-tab').forEach(t=>t.classList.toggle('active',t.dataset.gid===gid));
+  renderMain();
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function buildGroupTabs(){
+  const el=document.getElementById('group-tabs');
+  if(!db.groups.length){el.innerHTML='';return;}
+  el.innerHTML=db.groups.map(g=>
+    `<div class="group-tab${g.id===selGid?' active':''}" data-gid="${g.id}" onclick="selectGroup('${g.id}')">${g.name}</div>`
+  ).join('');
+  // Default to first group
+  if(!selGid&&db.groups.length){selGid=db.groups[0].id;document.querySelector('.group-tab')?.classList.add('active');}
+}
+
+function updateMonthLabel(){
+  const[y,m]=selMonth.split('-').map(Number);
+  document.getElementById('month-label').textContent=MONTHS_ES[m-1]+' '+y;
+  // Highlight today btn
+  document.getElementById('btn-today').style.opacity=selMonth===curMonth()?'0.4':'1';
+}
+
+function renderMain(){
+  updateMonthLabel();
+  if(!selGid){
+    document.getElementById('main-content').innerHTML='<div class="empty"><i class="ti ti-notebook"></i><p>Seleccioná un grupo arriba</p></div>';
+    return;
+  }
+  const g=getGroup(selGid);
+  const allDates=getClassDates(g);
+  const classNumMap={};allDates.forEach((d,i)=>{classNumMap[d]=i+1;});
+  const monthDates=allDates.filter(d=>d.startsWith(selMonth));
+  const todayStr=today();
+  const[y,m]=selMonth.split('-').map(Number);
+
+  if(!monthDates.length){
+    document.getElementById('main-content').innerHTML=
+      `<div class="empty"><i class="ti ti-calendar-off"></i><p>Sin clases en ${MONTHS_ES[m-1]} ${y} para ${g.name}</p></div>`;
+    return;
+  }
+
+  // Stats for this month
+  const pastDates=monthDates.filter(d=>d<=todayStr);
+  const loaded=pastDates.filter(d=>{const e=getJournalEntry(selGid,d);return(e.notes||e.material||e.homework)&&!isHoliday(selGid,d)&&!e.holiday;}).length;
+  const holidays=monthDates.filter(d=>isHoliday(selGid,d)||getJournalEntry(selGid,d).holiday).length;
+
+  // Group by cycle week
+  const byWeek={};
+  monthDates.forEach(d=>{
+    const w=getCycleWeek(d)||1;
+    if(!byWeek[w])byWeek[w]=[];
+    byWeek[w].push(d);
+  });
+
+  // Build week boundaries (Mon-Fri)
+  function weekRange(w){
+    const start=new Date(CYCLE_MONDAY+'T12:00:00');
+    const monday=new Date(start);monday.setDate(start.getDate()+(w-1)*7);
+    const friday=new Date(monday);friday.setDate(monday.getDate()+4);
+    const fmt=d=>d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+    return`${fmt(monday)} — ${fmt(friday)}`;
+  }
+
+  let html='';
+
+  // Stats bar
+  html+=`<div class="stats-bar">
+    <div class="stat-item"><div class="stat-num" style="color:var(--accent)">${allDates.length}</div><div class="stat-lbl">Total</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-num" style="color:var(--blue)">${monthDates.length}</div><div class="stat-lbl">Este mes</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-num" style="color:var(--green)">${loaded}</div><div class="stat-lbl">Cargadas</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-num" style="color:var(--red)">${pastDates.length-loaded-holidays}</div><div class="stat-lbl">Pendientes</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-num" style="color:var(--text3)">${monthDates.filter(d=>d>todayStr).length}</div><div class="stat-lbl">Futuras</div></div>
+    <div style="margin-left:auto;font-size:12px;color:var(--text3)">${g.name} · ${g.time} · ${(g.days||[]).map(d=>DAY_S[d]).join('+')}</div>
+  </div>`;
+
+  // Weeks
+  Object.entries(byWeek).sort(([a],[b])=>Number(a)-Number(b)).forEach(([week,dates])=>{
+    html+=`<div class="week-section">
+      <div class="week-header">
+        <span class="week-num">Semana ${week}</span>
+        <span class="week-dates">${weekRange(Number(week))}</span>
+        <div class="week-divider"></div>
+      </div>`;
+
+    dates.forEach(dateStr=>{
+      const entry=getJournalEntry(selGid,dateStr);
+      const holiday=isHoliday(selGid,dateStr)||entry.holiday;
+      const absents=getAbsents(selGid,dateStr);
+      const cn=classNumMap[dateStr];
+      const d=new Date(dateStr+'T12:00:00');
+      const isToday=dateStr===todayStr;
+      const isFuture=dateStr>todayStr;
+      const hasData=entry.notes||entry.material||entry.homework;
+      const dayLabel=d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+
+      let cardClass='class-card';
+      if(isToday)cardClass+=' today';
+      if(isFuture&&!hasData)cardClass+=' future';
+      if(holiday)cardClass+=' holiday';
+
+      // Status badge
+      let statusBadge='';
+      if(holiday) statusBadge='<span class="badge amber">🚫 Cancelada</span>';
+      else if(isToday) statusBadge='<span class="badge gold">✦ Hoy</span>';
+      else if(isFuture&&!hasData) statusBadge='<span class="badge gray">Próxima</span>';
+      else if(hasData) statusBadge='<span class="badge green">✓ Cargada</span>';
+      else statusBadge='<span class="badge red">Sin cargar</span>';
+
+      html+=`<div class="${cardClass}">`;
+
+      // Card head
+      html+=`<div class="card-head">
+        <div class="card-num">
+          <div class="card-num-label">Clase</div>
+          <div class="card-num-val">${cn}</div>
+          <div class="card-num-week">Sem. ${week}</div>
+        </div>
+        <div class="card-meta">
+          <div class="card-date">${dayLabel}${isToday?'':''}</div>
+          <div class="card-status">
+            ${statusBadge}
+            ${absents.length&&!holiday?`<span class="badge red">${absents.length} ausente${absents.length!==1?'s':''}</span>`:''}
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn sm" onclick="openEntry('${selGid}','${dateStr}',${cn},'${week}')">
+            <i class="ti ti-${hasData||holiday?'edit':'plus'}"></i> ${hasData||holiday?'Editar':'Cargar'}
+          </button>
+        </div>
+      </div>`;
+
+      // Card body
+      if(holiday){
+        html+=`<div class="card-body holiday-body"><div style="color:var(--amber);font-size:13px">Clase cancelada / Feriado</div></div>`;
+      } else {
+        html+=`<div class="card-body">`;
+
+        // Absent students
+        html+=`<div>
+          <div class="section-label"><i class="ti ti-users"></i> Alumnos</div>`;
+        if(absents.length){
+          html+=`<div class="absent-chips">
+            ${absents.map(s=>`<div class="absent-chip">${avatar(s.name,18,s.gender||'')} ${s.name.split(' ')[0]}</div>`).join('')}
+          </div>`;
+        } else {
+          html+=`<div class="section-content empty">Todos presentes</div>`;
+        }
+        html+=`</div>`;
+
+        // Material
+        html+=`<div>
+          <div class="section-label"><i class="ti ti-book-2"></i> Material</div>
+          <div class="section-content ${entry.material?'':'empty'}">${entry.material||'Sin cargar'}</div>
+        </div>`;
+
+        // Homework
+        html+=`<div>
+          <div class="section-label"><i class="ti ti-home-check"></i> Tarea</div>
+          <div class="section-content ${entry.homework?'':'empty'}">${entry.homework||'Sin tarea'}</div>
+        </div>`;
+
+        html+=`</div>`;
+
+        // Notes if present
+        if(entry.notes){
+          html+=`<div style="padding:0 20px 16px;border-top:1px solid var(--border)">
+            <div class="section-label" style="margin-top:12px"><i class="ti ti-notes"></i> Anotaciones</div>
+            <div class="section-content">${entry.notes}</div>
+          </div>`;
+        }
+      }
+
+      html+=`</div>`;
+    });
+
+    html+=`</div>`;
+  });
+
+  document.getElementById('main-content').innerHTML=html;
+}
+
+// ── MODAL ─────────────────────────────────────────────────
+function openEntry(gid,dateStr,classNum,week){
+  const g=getGroup(gid);
+  const entry=getJournalEntry(gid,dateStr);
+  const holiday=isHoliday(gid,dateStr)||entry.holiday;
+  const d=new Date(dateStr+'T12:00:00');
+  const dayLabel=d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const isFuture=dateStr>today();
+
+  document.getElementById('me-gid').value=gid;
+  document.getElementById('me-date').value=dateStr;
+  document.getElementById('me-title').textContent=`${g.name} · Clase #${classNum}`;
+  document.getElementById('me-meta').innerHTML=`<span style="text-transform:capitalize">${dayLabel}</span> · Semana ${week} del ciclo${isFuture?' · <span style="color:var(--blue)">Clase futura</span>':''}`;
+
+  document.getElementById('me-holiday').checked=holiday;
+  document.getElementById('me-fields').style.display=holiday?'none':'';
+
+  document.getElementById('me-notes').value=entry.notes||'';
+  document.getElementById('me-material').value=entry.material||'';
+  document.getElementById('me-homework').value=entry.homework||'';
+
+  // Build absent student toggles
+  const students=db.students.filter(s=>s.groupId===gid);
+  const[y,m,day]=dateStr.split('-').map(Number);
+  const mk=`${y}-${String(m).padStart(2,'0')}`;
+  const absentList=document.getElementById('me-absent-list');
+  if(students.length){
+    absentList.innerHTML=students.map(s=>{
+      const isAbs=(db.attendance[gid]||{})[mk]?.[s.id]?.[day]==='A';
+      return`<div class="abs-toggle${isAbs?' absent':''}" id="abs-${s.id}" onclick="toggleAbsent('${gid}','${mk}','${s.id}',${day})">
+        ${avatar(s.name,26,s.gender||'')}
+        <span style="font-size:13px">${s.name}</span>
+        <span style="margin-left:auto;font-size:12px;font-weight:600;color:${isAbs?'var(--red)':'var(--text3)'}">${isAbs?'Ausente':'Presente'}</span>
+      </div>`;
+    }).join('');
+  } else {
+    absentList.innerHTML='<span style="font-size:12px;color:var(--text3)">Sin alumnos en este grupo</span>';
+  }
+
+  document.getElementById('m-entry').classList.add('open');
+}
+
+function toggleAbsent(gid,mk,sid,day){
+  if(!db.attendance[gid])db.attendance[gid]={};
+  if(!db.attendance[gid][mk])db.attendance[gid][mk]={};
+  if(!db.attendance[gid][mk][sid])db.attendance[gid][mk][sid]={};
+  const cur=db.attendance[gid][mk][sid][day];
+  if(cur==='A') delete db.attendance[gid][mk][sid][day];
+  else db.attendance[gid][mk][sid][day]='A';
+  // Update UI immediately
+  const isNowAbs=db.attendance[gid][mk][sid][day]==='A';
+  const el=document.getElementById('abs-'+sid);
+  if(el){
+    el.className='abs-toggle'+(isNowAbs?' absent':'');
+    el.querySelector('span:last-child').textContent=isNowAbs?'Ausente':'Presente';
+    el.querySelector('span:last-child').style.color=isNowAbs?'var(--red)':'var(--text3)';
+  }
+  scheduleSave();
+}
+
+function toggleHoliday(){
+  const cb=document.getElementById('me-holiday');
+  cb.checked=!cb.checked;
+  document.getElementById('me-fields').style.display=cb.checked?'none':'';
+}
+
+function closeModal(){document.getElementById('m-entry').classList.remove('open');}
+
+function saveEntry(){
+  const gid=document.getElementById('me-gid').value;
+  const dateStr=document.getElementById('me-date').value;
+  const holiday=document.getElementById('me-holiday').checked;
+  const notes=document.getElementById('me-notes').value.trim();
+  const material=document.getElementById('me-material').value.trim();
+  const homework=document.getElementById('me-homework').value.trim();
+
+  if(!db.journal)db.journal={};
+  if(!db.journal[gid])db.journal[gid]={};
+  db.journal[gid][dateStr]={notes,material,homework,holiday,holidayNote:holiday?'Cancelada':''};
+
+  // Sync holiday with dayNotes
+  const[y,m,d]=dateStr.split('-').map(Number);
+  const mk=`${y}-${String(m).padStart(2,'0')}`;
+  const key=`${gid}-${mk}-${d}`;
+  if(!db.dayNotes[mk])db.dayNotes[mk]={};
+  if(holiday)db.dayNotes[mk][key]='Cancelada';
+  else delete db.dayNotes[mk][key];
+
+  scheduleSave();
+  closeModal();
+  renderMain();
+  toast(holiday?'Clase cancelada guardada':'Clase guardada');
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if((e.ctrlKey||e.metaKey)&&e.key==='ArrowLeft')prevMonth();
+  if((e.ctrlKey||e.metaKey)&&e.key==='ArrowRight')nextMonth();
+});
+
+// ── INIT ──────────────────────────────────────────────────
+async function init(){
+  const ok=await loadData();
+  if(ok){
+    buildGroupTabs();
+    if(db.groups.length){
+      selGid=db.groups[0].id;
+      document.querySelector('.group-tab')?.classList.add('active');
+    }
+    renderMain();
+    startPolling();
+  } else {
+    document.getElementById('main-content').innerHTML=
+      '<div class="empty"><i class="ti ti-wifi-off"></i><p>Error al conectar.<br>Verificá tu conexión e intentá de nuevo.</p></div>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
