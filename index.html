@@ -1072,28 +1072,124 @@ async function loadFromSupabase(){
   }
 }
 
+// ── BACKUP SYSTEM ────────────────────────────────────────
+const BACKUP_PREFIX = 'cambridge_bk_';
+const MAX_BACKUPS = 5;
+
+function dbDataCount(data){
+  // Returns a "weight" of the db — used to detect data loss
+  return (
+    (data.students||[]).length * 10 +
+    (data.payments||[]).filter(p=>Number(p.amount)>0).length * 5 +
+    (data.groups||[]).length * 3 +
+    (data.teachers||[]).length * 2 +
+    (data.families||[]).length * 2 +
+    Object.values(data.attendance||{}).reduce((a,m)=>a+Object.keys(m).length,0) +
+    Object.values(data.journal||{}).reduce((a,g)=>a+Object.keys(g).length,0)
+  );
+}
+
+function saveLocalBackup(data){
+  try{
+    const ts = new Date().toISOString();
+    const snap = JSON.stringify({ts, data});
+    // Read existing backups
+    const keys = [];
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k && k.startsWith(BACKUP_PREFIX)) keys.push(k);
+    }
+    keys.sort().reverse(); // newest first
+    // Shift: remove oldest if at max
+    while(keys.length >= MAX_BACKUPS){
+      localStorage.removeItem(keys.pop());
+    }
+    // Save new backup
+    const newKey = BACKUP_PREFIX + ts.replace(/[:.]/g,'-');
+    localStorage.setItem(newKey, snap);
+    // Also save daily backup (overwrite same-day key)
+    const dayKey = BACKUP_PREFIX + 'daily_' + ts.slice(0,10);
+    localStorage.setItem(dayKey, snap);
+    localStorage.setItem('cambridge_last_backup', ts);
+  }catch(e){
+    // localStorage full — remove oldest backup and retry
+    try{
+      const keys2=[];
+      for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(BACKUP_PREFIX)&&!k.includes('daily'))keys2.push(k);}
+      if(keys2.length){localStorage.removeItem(keys2.sort()[0]);saveLocalBackup(data);}
+    }catch(e2){}
+  }
+}
+
+function getLocalBackups(){
+  const backups=[];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(!k||!k.startsWith(BACKUP_PREFIX))continue;
+      try{
+        const snap=JSON.parse(localStorage.getItem(k)||'{}');
+        if(!snap.ts||!snap.data)continue;
+        backups.push({key:k,ts:snap.ts,data:snap.data,count:dbDataCount(snap.data),isDaily:k.includes('daily')});
+      }catch(e2){}
+    }
+  }catch(e){}
+  return backups.sort((a,b)=>b.ts.localeCompare(a.ts));
+}
+
 async function saveToSupabase(){
   if(!isOnline){
-    // queue for later
     try{localStorage.setItem(OFFLINE_KEY,'1');}catch(e){}
     pendingWrite=true;
-    setSyncStatus('offline','Guardado local');
+    setSyncStatus('offline','Sin conexión — cambios pendientes');
     return false;
   }
   try{
     setSyncStatus('saving','Guardando...');
+
+    // ── SAFETY CHECK: don't save if new data has significantly less content than existing ──
+    const newCount = dbDataCount(db);
+    try{
+      const lastBackupRaw = (() => {
+        let newest = null;
+        for(let i=0;i<localStorage.length;i++){
+          const k=localStorage.key(i);
+          if(k&&k.startsWith(BACKUP_PREFIX)&&!k.includes('daily')){
+            const v=localStorage.getItem(k);
+            if(v&&(!newest||k>newest.k)) newest={k,v};
+          }
+        }
+        return newest?.v||null;
+      })();
+      if(lastBackupRaw){
+        const lastSnap = JSON.parse(lastBackupRaw);
+        const lastCount = dbDataCount(lastSnap.data||{});
+        // If new data has less than 70% of the previous count — BLOCK save
+        if(lastCount > 20 && newCount < lastCount * 0.7){
+          setSyncStatus('error','⚠️ Guardado bloqueado — datos incompletos');
+          toast('⚠️ No se guardó: los datos parecen incompletos. Recargá la página.','error');
+          pendingWrite=false;
+          return false;
+        }
+      }
+    }catch(e){}
+
     const r=await supaFetch('PATCH',{data:db,updated_at:new Date().toISOString()});
     if(!r.ok) throw new Error('HTTP '+r.status);
+
     pendingWrite=false;
     lastRemoteHash=dbHash(db);
     try{localStorage.removeItem(OFFLINE_KEY);}catch(e){}
+
+    // ── SAVE BACKUP AFTER SUCCESSFUL WRITE ──
+    saveLocalBackup(db);
+
     setSyncStatus('ok','Guardado ✓');
     return true;
   }catch(e){
     pendingWrite=true;
     try{localStorage.setItem(OFFLINE_KEY,'1');}catch(e2){}
-    setSyncStatus('error','Reintentando...');
-    // retry in 5s
+    setSyncStatus('error','Error — reintentando...');
     clearTimeout(retryTimer);
     retryTimer=setTimeout(()=>flushPending(),5000);
     return false;
@@ -2273,7 +2369,10 @@ function renderFamilies(){
   document.getElementById('page-families').innerHTML=`
     <div class="page-header">
       <div><div class="page-title">Familias</div><div class="page-subtitle">${db.families.length} familias con descuento</div></div>
-      <div class="page-actions"><button class="btn primary" onclick="openFamilyModal()"><i class="ti ti-plus"></i> Nueva familia</button></div>
+      <div class="page-actions">
+        <button class="btn sm" onclick="restoreFamilies()" title="Restaurar las 7 familias originales del ciclo 2026"><i class="ti ti-history"></i> Restaurar familias</button>
+        <button class="btn primary" onclick="openFamilyModal()"><i class="ti ti-plus"></i> Nueva familia</button>
+      </div>
     </div>
     ${db.families.length===0?'<div class="empty"><i class="ti ti-home"></i>Sin familias</div>':
     db.families.map(f=>{
@@ -3040,6 +3139,38 @@ function renderSettings(){
       <div><div class="page-title">Configuración</div></div>
     </div>
 
+    <!-- BACKUP LOCAL -->
+    <div class="card" style="margin-bottom:14px;border-color:var(--amber-border)">
+      <div class="card-title" style="color:var(--amber)">🛡️ Backup de emergencia</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+        El sistema guarda automáticamente las últimas 3 versiones en este dispositivo.
+        Si se pierden datos en Supabase, podés restaurar desde acá.
+      </div>
+      ${(()=>{
+        let html='';
+        try{
+          const ts=localStorage.getItem('cambridge_backup_ts');
+          if(ts){
+            const d=new Date(ts);
+            const snap=JSON.parse(localStorage.getItem('cambridge_backup_3')||'{}');
+            const pCount=(snap.data?.payments||[]).filter(p=>p.amount>0).length;
+            const sCount=(snap.data?.students||[]).length;
+            html+=`<div style="background:var(--bg3);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;font-size:13px">
+              <div style="font-weight:600;margin-bottom:4px">Último backup: ${d.toLocaleString('es-AR')}</div>
+              <div style="color:var(--text3)">${sCount} alumnos · ${pCount} pagos registrados</div>
+            </div>`;
+            html+=`<div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn primary sm" onclick="restoreLocalBackup(3)"><i class="ti ti-history"></i> Restaurar último backup</button>
+              <button class="btn sm" onclick="showAllBackups()"><i class="ti ti-list"></i> Ver los 3 backups</button>
+            </div>`;
+          } else {
+            html='<div style="font-size:13px;color:var(--text3)">Aún no hay backups locales. Se generan automáticamente al guardar.</div>';
+          }
+        }catch(e){html='<div style="font-size:13px;color:var(--text3)">No hay backups disponibles en este dispositivo.</div>';}
+        return html;
+      })()}
+    </div>
+
     <!-- WA MESSAGE -->
     <div class="card" style="margin-bottom:14px">
       <div class="card-title">Mensaje de WhatsApp — ${MONTHS[parseInt(mo)-1]} ${month.split('-')[0]}</div>
@@ -3123,6 +3254,79 @@ function saveDefaultWAMsg(){
   scheduleSave();renderSettings();toast('Predeterminado guardado');
 }
 
+function restoreLocalBackup(slot){
+  try{
+    const raw=localStorage.getItem('cambridge_backup_'+slot);
+    if(!raw){toast('No hay backup en ese slot','error');return;}
+    const snap=JSON.parse(raw);
+    if(!snap.data){toast('Backup inválido','error');return;}
+    const d=new Date(snap.ts);
+    const pCount=(snap.data.payments||[]).filter(p=>p.amount>0).length;
+    const sCount=(snap.data.students||[]).length;
+    if(!confirm(`¿Restaurar backup del ${d.toLocaleString('es-AR')}?\n${sCount} alumnos · ${pCount} pagos\n\nEsto sobreescribirá los datos actuales en Supabase.`))return;
+    // Restore
+    Object.assign(db, snap.data);
+    saveToSupabase().then(()=>{
+      toast('✅ Datos restaurados correctamente');
+      refreshCurrentPage();
+    });
+  }catch(e){toast('Error al restaurar: '+e.message,'error');}
+}
+
+function restoreFamilies(){
+  if(!confirm('¿Restaurar las familias originales del ciclo 2026?\nEsto reagrupará a los alumnos en sus familias con los descuentos originales.\nNo borra ni modifica nada más.'))return;
+  const SEED_FAMILIES=[
+    {name:'Zirilli',members:['Agustin Zirilli','Victoria Zirilli'],discount:17000},
+    {name:'Torrilla',members:['Delfina Torrilla','Franco Torrilla'],discount:18000},
+    {name:'Mariscal',members:['Matilda Mariscal','Matias Mariscal','Mateo Mariscal'],discount:36000},
+    {name:'Rius Morrison',members:['Alma Rius Morrison','Tao Rius Morrison'],discount:18000},
+    {name:'Falabella/Spada',members:['Cata Spada','Valentino Falabella'],discount:18000},
+    {name:'Fernandez',members:['Alma Fernandez','Mateo Fernandez'],discount:18000},
+    {name:'Motowylo',members:['Delfina Motowylo','Valentina Motowylo'],discount:18000},
+  ];
+  db.families=[];
+  SEED_FAMILIES.forEach(f=>{
+    const mids=f.members.map(n=>{const s=db.students.find(x=>x.name===n);return s?s.id:null;}).filter(Boolean);
+    if(!mids.length){console.warn('No students found for family',f.name);return;}
+    const sub=mids.reduce((a,sid)=>{const s=db.students.find(x=>x.id===sid);const g=getGroup(s?.groupId);return a+(g.fee||0);},0);
+    db.families.push({id:uid(),name:f.name,discount:f.discount,memberIds:mids,total:sub-f.discount});
+  });
+  scheduleSave();
+  renderFamilies();
+  toast('✅ '+db.families.length+' familias restauradas');
+}
+
+function showAllBackups(){
+  let html='<div style="padding:4px">';
+  html+='<div style="font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:16px">Backups locales disponibles</div>';
+  [3,2,1].forEach((slot,i)=>{
+    try{
+      const raw=localStorage.getItem('cambridge_backup_'+slot);
+      if(!raw){html+=`<div style="padding:12px;color:var(--text3);font-size:13px">Slot ${slot}: vacío</div>`;return;}
+      const snap=JSON.parse(raw);
+      const d=new Date(snap.ts);
+      const pCount=(snap.data?.payments||[]).filter(p=>p.amount>0).length;
+      const sCount=(snap.data?.students||[]).length;
+      const jCount=Object.values(snap.data?.journal||{}).reduce((a,g)=>a+Object.keys(g).length,0);
+      html+=`<div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);margin-bottom:8px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:13px;font-weight:600">${i===0?'⭐ Más reciente':'Backup '+slot}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">${d.toLocaleString('es-AR')}</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:3px">${sCount} alumnos · ${pCount} pagos · ${jCount} entradas del diario</div>
+          </div>
+          <button class="btn sm primary" onclick="restoreLocalBackup(${slot});closeModal('m-profile')">
+            <i class="ti ti-history"></i> Restaurar este
+          </button>
+        </div>
+      </div>`;
+    }catch(e){html+=`<div style="padding:12px;color:var(--red);font-size:13px">Slot ${slot}: error al leer</div>`;}
+  });
+  html+='</div>';
+  document.getElementById('profile-content').innerHTML=html;
+  openModal('m-profile');
+}
+
 function addSchool(){
   const el=document.getElementById('new-school-input');
   const name=el?el.value.trim():'';
@@ -3168,42 +3372,58 @@ function previewWA(month){
 function getGrades(){if(!db.grades)db.grades={};return db.grades;}
 
 function renderGrades(){
-  const g=db.groups;
   const selGid=document.getElementById('gr-gid')?.value||'';
   const selTri=document.getElementById('gr-tri')?.value||'1';
   const selSid=document.getElementById('gr-sid')?.value||'';
+  const selView=document.getElementById('gr-view')?.value||'student';
 
   document.getElementById('page-grades').innerHTML=`
     <div class="page-header">
-      <div><div class="page-title">Notas 2026</div><div class="page-subtitle">Boletín trimestral por alumno</div></div>
+      <div><div class="page-title">Notas 2026</div><div class="page-subtitle">Boletín trimestral</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
-      <div class="field"><label>Grupo</label>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end">
+      <div class="field" style="flex:1;min-width:140px"><label>Grupo</label>
         <select id="gr-gid" onchange="renderGrades()">
           <option value="">Seleccionar...</option>
           ${db.groups.map(g=>`<option value="${g.id}"${g.id===selGid?' selected':''}>${g.name}</option>`).join('')}
         </select>
       </div>
-      <div class="field"><label>Trimestre</label>
+      <div class="field" style="flex:1;min-width:140px"><label>Trimestre</label>
         <select id="gr-tri" onchange="renderGrades()">
           <option value="1"${selTri==='1'?' selected':''}>1° Trimestre (Mar-May)</option>
           <option value="2"${selTri==='2'?' selected':''}>2° Trimestre (Jun-Ago)</option>
           <option value="3"${selTri==='3'?' selected':''}>3° Trimestre (Sep-Dic)</option>
         </select>
       </div>
-      <div class="field"><label>Alumno (opcional)</label>
+      ${selView==='student'?`<div class="field" style="flex:1;min-width:140px"><label>Alumno</label>
         <select id="gr-sid" onchange="renderGrades()">
           <option value="">Todos</option>
           ${selGid?db.students.filter(s=>s.groupId===selGid).map(s=>`<option value="${s.id}"${s.id===selSid?' selected':''}>${s.name}</option>`).join(''):''}
         </select>
+      </div>`:''}
+      <div class="field" style="flex:0 0 auto"><label>Vista</label>
+        <div style="display:flex;border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden">
+          <button onclick="switchGradesView('student')" style="padding:8px 14px;font-size:12px;font-family:inherit;font-weight:500;cursor:pointer;border:none;${selView==='student'?'background:var(--accent);color:#fff;':'background:var(--bg3);color:var(--text2);'} display:flex;align-items:center;gap:5px"><i class="ti ti-user"></i> Por alumno</button>
+          <button onclick="switchGradesView('table')" style="padding:8px 14px;font-size:12px;font-family:inherit;font-weight:500;cursor:pointer;border:none;border-left:1px solid var(--border2);${selView==='table'?'background:var(--accent);color:#fff;':'background:var(--bg3);color:var(--text2);'} display:flex;align-items:center;gap:5px"><i class="ti ti-table"></i> Tabla</button>
+        </div>
       </div>
     </div>
-    ${!selGid?'<div class="empty"><i class="ti ti-clipboard-list"></i>Seleccioná un grupo para ver las notas</div>':renderGradesContent(selGid,selTri,selSid)}
-
-    <div class="card" style="margin-top:20px">
-      <div class="card-title">📋 Cambridge 2025 — Referencia examen final</div>
+    ${!selGid
+      ? '<div class="empty"><i class="ti ti-clipboard-list"></i>Seleccioná un grupo para ver las notas</div>'
+      : selView==='table'
+        ? renderGradesTable(selGid,selTri)
+        : renderGradesContent(selGid,selTri,selSid)}
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">📋 Cambridge 2025 — Referencia</div>
       ${renderCambridge2025Table(selGid)}
     </div>`;
+}
+
+function switchGradesView(view){
+  // Inject hidden select and re-render
+  const dummy=document.createElement('select');dummy.id='gr-view';dummy.style.display='none';
+  const opt=document.createElement('option');opt.value=view;opt.selected=true;dummy.appendChild(opt);
+  document.body.appendChild(dummy);renderGrades();dummy.remove();
 }
 
 function renderGradesContent(gid,tri,filterSid){
@@ -3541,22 +3761,21 @@ function getJournalEntry(gid, dateStr){
   return (db.journal[gid]||{})[dateStr]||{notes:'',material:'',links:'',homework:'',holiday:false,holidayNote:''};
 }
 
+
 function journalRowClick(e){
-  var row = e.target.closest('.jrn-row');
-  if(!row) return;
-  openJournalEntry(row.dataset.gid, row.dataset.date, parseInt(row.dataset.cn));
+  const row=e.target.closest('[data-gid]');
+  if(!row)return;
+  openJournalEntry(row.dataset.gid,row.dataset.date,parseInt(row.dataset.cn));
 }
 
 function renderJournal(){
-  const selGid  = document.getElementById('jrn-gid')?.value||'';
-  const selMonth= document.getElementById('jrn-month')?.value||curMonth();
-  const today   = new Date().toISOString().slice(0,10);
+  const selGid=document.getElementById('jrn-gid')?.value||'';
+  const selMonth=document.getElementById('jrn-month')?.value||curMonth();
+  const today=new Date().toISOString().slice(0,10);
+
   document.getElementById('page-journal').innerHTML=`
     <div class="page-header">
-      <div>
-        <div class="page-title">Diario de Clases</div>
-        <div class="page-subtitle">Ciclo 2026 · Clases pasadas y futuras</div>
-      </div>
+      <div><div class="page-title">Diario de Clases</div><div class="page-subtitle">Ciclo 2026 · Clases pasadas y futuras</div></div>
     </div>
     <div class="search-row" style="margin-bottom:14px">
       <select class="search-input" id="jrn-gid" onchange="renderJournal()" style="flex:1;min-width:160px">
@@ -3574,125 +3793,145 @@ function renderJournal(){
 function renderJournalMonth(gid, month, today){
   const g        = getGroup(gid);
   const allDates = getGroupClassDates(g);
-  if(!allDates.length) return '<div class="empty">Sin clases configuradas</div>';
+  if(!allDates.length) return '<div class="empty">Sin clases configuradas para este grupo</div>';
 
   const classNumMap={};
-  allDates.forEach(function(d,i){classNumMap[d]=i+1;});
+  allDates.forEach((d,i)=>{classNumMap[d]=i+1;});
 
-  const parts = month.split('-');
-  const y=parseInt(parts[0]), m=parseInt(parts[1]);
-  const monthDates = allDates.filter(function(d){return d.startsWith(month);});
-  const pastAll    = allDates.filter(function(d){return d<=today;});
-  const loaded     = pastAll.filter(function(d){var e=getJournalEntry(gid,d);return(e.notes||e.material||e.homework)&&!isHolidayDate(gid,d)&&!e.holiday;}).length;
-  const holidays   = pastAll.filter(function(d){return isHolidayDate(gid,d)||getJournalEntry(gid,d).holiday;}).length;
-  const future     = allDates.filter(function(d){return d>today;}).length;
+  const[y,m] = month.split('-').map(Number);
+  const monthDates = allDates.filter(d=>d.startsWith(month));
+  const pastAll    = allDates.filter(d=>d<=today);
+  const loaded     = pastAll.filter(d=>{const e=getJournalEntry(gid,d);return(e.notes||e.material||e.homework)&&!isHolidayDate(gid,d)&&!e.holiday;}).length;
+  const holidays   = pastAll.filter(d=>isHolidayDate(gid,d)||getJournalEntry(gid,d).holiday).length;
+  const future     = allDates.filter(d=>d>today).length;
 
-  // Find which trimestre this month belongs to
-  var triIdx = TRIMESTRES.findIndex(function(t){return t.includes(m);});
-  var triName = ['','1° Trim (Mar-May)','2° Trim (Jun-Ago)','3° Trim (Sep-Dic)'][triIdx+1]||'';
+  // Group by cycle week
+  const byWeek={};
+  monthDates.forEach(d=>{
+    const w=getCycleWeek(d)||1;
+    if(!byWeek[w])byWeek[w]=[];
+    byWeek[w].push(d);
+  });
+
+  function weekRange(w){
+    const start=new Date(CYCLE_MONDAY+'T12:00:00');
+    const monday=new Date(start);monday.setDate(start.getDate()+(w-1)*7);
+    const friday=new Date(monday);friday.setDate(monday.getDate()+4);
+    const fmt=d=>d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+    return fmt(monday)+' — '+fmt(friday);
+  }
 
   // Tarea vigente
-  var prevClass = null;
-  for(var i=allDates.length-1;i>=0;i--){if(allDates[i]<=today){prevClass=allDates[i];break;}}
-  var prevEntry = prevClass ? getJournalEntry(gid,prevClass) : null;
-  var nextClass = allDates.find(function(d){return d>today;});
+  const prevClass=[...allDates].reverse().find(d=>d<=today);
+  const prevEntry=prevClass?getJournalEntry(gid,prevClass):null;
+  const nextClass=allDates.find(d=>d>today);
 
-  var html = '';
+  let html='';
 
   // Stats
-  html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:16px">';
-  html += '<div class="metric" style="padding:10px 12px"><div class="metric-label">Total</div><div class="metric-value purple">' + allDates.length + '</div></div>';
-  html += '<div class="metric gold" style="padding:10px 12px"><div class="metric-label">Dadas</div><div class="metric-value gold">' + pastAll.length + '</div></div>';
-  html += '<div class="metric green" style="padding:10px 12px"><div class="metric-label">Registradas</div><div class="metric-value green">' + loaded + '</div></div>';
-  html += '<div class="metric red" style="padding:10px 12px"><div class="metric-label">Sin cargar</div><div class="metric-value red">' + (pastAll.length-loaded-holidays) + '</div></div>';
-  html += '<div class="metric" style="padding:10px 12px"><div class="metric-label">Futuras</div><div class="metric-value blue">' + future + '</div></div>';
-  html += '</div>';
+  html+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-bottom:16px">`;
+  html+=`<div class="metric" style="padding:10px 12px"><div class="metric-label">Total</div><div class="metric-value purple">${allDates.length}</div></div>`;
+  html+=`<div class="metric gold" style="padding:10px 12px"><div class="metric-label">Dadas</div><div class="metric-value gold">${pastAll.length}</div></div>`;
+  html+=`<div class="metric green" style="padding:10px 12px"><div class="metric-label">Registradas</div><div class="metric-value green">${loaded}</div></div>`;
+  html+=`<div class="metric red" style="padding:10px 12px"><div class="metric-label">Sin cargar</div><div class="metric-value red">${pastAll.length-loaded-holidays}</div></div>`;
+  html+=`<div class="metric" style="padding:10px 12px"><div class="metric-label">Futuras</div><div class="metric-value blue">${future}</div></div>`;
+  html+=`</div>`;
 
   // Tarea vigente
-  if(prevEntry && prevEntry.homework){
-    var nxtLbl = nextClass ? new Date(nextClass+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}) : '';
-    html += '<div class="card" style="margin-bottom:14px;border-color:var(--accent-border);padding:12px 16px">';
-    html += '<div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px">Tarea vigente — Clase #' + classNumMap[prevClass] + '</div>';
-    html += '<div style="font-size:13px">' + prevEntry.homework + '</div>';
-    if(nextClass) html += '<div style="font-size:11px;color:var(--text3);margin-top:4px">Para: Clase #' + classNumMap[nextClass] + ' · ' + nxtLbl + '</div>';
-    html += '</div>';
+  if(prevEntry?.homework){
+    const nxtLbl=nextClass?new Date(nextClass+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}):'';
+    html+=`<div class="card" style="margin-bottom:14px;border-color:var(--accent-border);padding:12px 16px">`;
+    html+=`<div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px">📋 Tarea vigente — Clase #${classNumMap[prevClass]}</div>`;
+    html+=`<div style="font-size:13px">${prevEntry.homework}</div>`;
+    if(nextClass) html+=`<div style="font-size:11px;color:var(--text3);margin-top:4px">Para: Clase #${classNumMap[nextClass]} · ${nxtLbl}</div>`;
+    html+=`</div>`;
   }
 
   if(!monthDates.length){
-    html += '<div class="empty"><i class="ti ti-calendar-off"></i>Sin clases en este mes</div>';
+    html+='<div class="empty"><i class="ti ti-calendar-off"></i>Sin clases en este mes</div>';
     return html;
   }
 
-  // Month header
-  var monthLabel = new Date(y,m-1,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'});
-  html += '<div class="card" style="padding:0;overflow:hidden">';
-  html += '<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">';
-  html += '<div><div style="font-size:14px;font-weight:600">' + g.name + ' — ' + monthLabel + '</div>';
-  if(triName) html += '<div style="font-size:11px;color:var(--text3);margin-top:2px">' + triName + '</div>';
-  html += '</div>';
-  html += '<div style="font-size:12px;color:var(--text3)">' + monthDates.length + ' clases</div>';
-  html += '</div>';
+  // Weeks with cards
+  Object.entries(byWeek).sort(([a],[b])=>Number(a)-Number(b)).forEach(([week,dates])=>{
+    html+=`<div style="margin-bottom:24px">`;
+    html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">`;
+    html+=`<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:20px;padding:3px 12px">Semana ${week}</span>`;
+    html+=`<span style="font-size:11px;color:var(--text3)">${weekRange(Number(week))}</span>`;
+    html+=`<div style="flex:1;height:1px;background:var(--border)"></div>`;
+    html+=`</div>`;
 
-  // Class rows
-  monthDates.forEach(function(dateStr){
-    var entry   = getJournalEntry(gid,dateStr);
-    var holiday = isHolidayDate(gid,dateStr)||entry.holiday;
-    var absents = getAbsentsForClass(gid,dateStr);
-    var cn      = classNumMap[dateStr];
-    var week    = getCycleWeek(dateStr);
-    var d       = new Date(dateStr+'T12:00:00');
-    var isFut   = dateStr>today;
-    var isToday = dateStr===today;
-    var hasData = entry.notes||entry.material||entry.homework;
-    var dayLbl  = d.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
+    dates.forEach(dateStr=>{
+      const entry    = getJournalEntry(gid,dateStr);
+      const holiday  = isHolidayDate(gid,dateStr)||entry.holiday;
+      const absents  = getAbsentsForClass(gid,dateStr);
+      const cn       = classNumMap[dateStr];
+      const d        = new Date(dateStr+'T12:00:00');
+      const isFut    = dateStr>today;
+      const isToday  = dateStr===today;
+      const hasData  = entry.notes||entry.material||entry.homework;
+      const dayLabel = d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
 
-    var dot='', dotColor='var(--text3)';
-    if(holiday){dot='FER';dotColor='var(--amber)';}
-    else if(isToday){dot='HOY';dotColor='var(--accent)';}
-    else if(hasData){dot='✓';dotColor='var(--green)';}
-    else if(!isFut){dot='!';dotColor='var(--red)';}
+      let statusBadge='';
+      if(holiday)         statusBadge='<span class="badge amber">🚫 Cancelada</span>';
+      else if(isToday)    statusBadge='<span class="badge gold">✦ Hoy</span>';
+      else if(isFut&&!hasData) statusBadge='<span class="badge gray">Futura</span>';
+      else if(hasData)    statusBadge='<span class="badge green">✓ Cargada</span>';
+      else                statusBadge='<span class="badge red">Sin cargar</span>';
 
-    var center='';
-    if(holiday){
-      center = '<div style="font-size:13px;font-weight:500;color:var(--amber)">Clase cancelada / Feriado</div>';
-    } else {
-      if(absents.length){
-        center += '<div style="margin-bottom:4px">';
-        absents.forEach(function(n){
-          center += '<span class="badge red" style="font-size:10px;margin-right:3px">' + n.split(' ')[0] + '</span>';
-        });
-        center += '</div>';
+      let cardBorder=isToday?'var(--accent-border)':holiday?'rgba(184,98,10,0.3)':'var(--border)';
+
+      // Build center content
+      let center='';
+      if(holiday){
+        center='<div style="color:var(--amber);font-size:13px;font-weight:500">Clase cancelada / Feriado</div>';
+      } else {
+        if(absents.length){
+          center+='<div style="margin-bottom:6px">';
+          absents.forEach(s=>{center+='<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:var(--red-bg);color:var(--red);border:1px solid rgba(192,57,43,0.25);margin:2px">'+avatar(s.name,18,s.gender||'')+s.name.split(' ')[0]+'</span>';});
+          center+='</div>';
+        }
+        if(entry.notes)    center+='<div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">'+entry.notes+'</div>';
+        if(entry.material) center+='<div style="font-size:12px;color:var(--text2);margin-bottom:3px"><span style="color:var(--text3);font-size:10px;text-transform:uppercase">Material · </span>'+entry.material+'</div>';
+        if(entry.homework) center+='<div style="font-size:12px;color:var(--text2)"><span style="color:var(--text3);font-size:10px;text-transform:uppercase">Tarea · </span>'+entry.homework+'</div>';
+        if(!hasData && isFut)  center+='<div style="font-size:12px;color:var(--text3);font-style:italic">Clase futura — tocá para cargar material por adelantado</div>';
+        if(!hasData && !isFut) center+='<div style="font-size:12px;color:var(--text3);font-style:italic">Sin registrar</div>';
+        if(isToday) center+='<span class="badge gold" style="margin-top:6px;display:inline-block">Hoy</span>';
       }
-      if(entry.notes)    center += '<div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px">' + entry.notes + '</div>';
-      if(entry.material) center += '<div style="font-size:12px;color:var(--text2);margin-bottom:2px"><span style="color:var(--text3);font-size:10px;text-transform:uppercase">Material · </span>' + entry.material + '</div>';
-      if(entry.homework) center += '<div style="font-size:12px;color:var(--text2)"><span style="color:var(--text3);font-size:10px;text-transform:uppercase">Tarea · </span>' + entry.homework + '</div>';
-      if(!hasData && isFut)  center += '<div style="font-size:12px;color:var(--text3)">Clase futura</div>';
-      if(!hasData && !isFut) center += '<div style="font-size:12px;color:var(--text3)">Sin registrar</div>';
-      if(isToday)            center += '<span class="badge gold" style="margin-top:4px;display:inline-block">Hoy</span>';
-    }
 
-    // Use a regular div with tabindex so it's focusable and clickable
-    // onclick uses data attributes to avoid quote escaping issues
-    html += '<div class="jrn-row" onclick="openJournalEntry(\'' + gid + '\',\'' + dateStr + '\',' + cn + ')"';
-    html += ' style="display:flex;border-bottom:1px solid var(--border)">';
-    html += '<div style="padding:12px 14px;min-width:96px;border-right:1px solid var(--border);flex-shrink:0;text-align:center">';
-    html += '<div style="font-size:10px;color:var(--text3)">Clase ' + cn + '</div>';
-    html += '<div style="font-size:10px;color:var(--text3);margin-top:2px;text-transform:capitalize">' + dayLbl + '</div>';
-    html += '<div style="font-size:10px;color:var(--text3)">Sem. ' + week + '</div>';
-    html += '</div>';
-    html += '<div style="flex:1;padding:12px 14px;min-width:0">' + center + '</div>';
-    html += '<div style="padding:12px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0">';
-    if(dot) html += '<span style="font-size:11px;font-weight:700;color:' + dotColor + '">' + dot + '</span>';
-    html += '<i class="ti ti-chevron-right" style="color:var(--text3);font-size:14px"></i>';
-    html += '</div>';
-    html += '</div>';
+      html+=`<div data-gid="${gid}" data-date="${dateStr}" data-cn="${cn}"`;
+      html+=` class="jrn-row"`;
+      html+=` style="display:flex;border:1px solid ${cardBorder};border-radius:var(--radius-lg);margin-bottom:8px;overflow:hidden;background:var(--bg2)">`;
+
+      // Left: class number
+      html+=`<div style="padding:14px 16px;min-width:90px;border-right:1px solid var(--border);flex-shrink:0;text-align:center;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center">`;
+      html+=`<div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Clase</div>`;
+      html+=`<div style="font-size:24px;font-weight:700;font-family:var(--font-display);color:var(--text);line-height:1;margin:2px 0">${cn}</div>`;
+      html+=`<div style="font-size:10px;color:var(--text3)">Sem. ${week}</div>`;
+      html+=`</div>`;
+
+      // Center: content
+      html+=`<div style="flex:1;padding:14px 16px;min-width:0">`;
+      html+=`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">`;
+      html+=`<span style="font-size:13px;font-weight:600;text-transform:capitalize">${dayLabel}</span>`;
+      html+=statusBadge;
+      if(absents.length&&!holiday) html+=`<span class="badge red" style="font-size:10px">${absents.length} ausente${absents.length!==1?'s':''}</span>`;
+      html+=`</div>`;
+      html+=center;
+      html+=`</div>`;
+
+      // Right: arrow
+      html+=`<div style="padding:14px 12px;display:flex;align-items:center;flex-shrink:0">`;
+      html+=`<i class="ti ti-chevron-right" style="color:var(--text3)"></i>`;
+      html+=`</div>`;
+
+      html+=`</div>`;
+    });
+    html+=`</div>`;
   });
 
-  html += '</div>';
-
-  // No wrapper needed - onclick on each row
-
-  return html;
+  // Delegated click handler wrapper
+  return '<div onclick="journalRowClick(event)">'+html+'</div>';
 }
 
 function openJournalEntry(gid, dateStr, classNum){
@@ -3705,13 +3944,13 @@ function openJournalEntry(gid, dateStr, classNum){
   const isFuture=dateStr>new Date().toISOString().slice(0,10);
   document.getElementById('mj-gid').value=gid;
   document.getElementById('mj-date').value=dateStr;
-  document.getElementById('mj-title').textContent=`${g.name} · Clase #${classNum}`;
-  document.getElementById('mj-meta').innerHTML=`<span style="text-transform:capitalize">${lbl}</span> · Semana <strong>${week}</strong> del ciclo${isFuture?` · <span style="color:var(--blue)">Clase futura</span>`:''}`;
+  document.getElementById('mj-title').textContent=g.name+' · Clase #'+classNum;
+  document.getElementById('mj-meta').innerHTML='<span style="text-transform:capitalize">'+lbl+'</span> · Semana <strong>'+week+'</strong> del ciclo'+(isFuture?' · <span style="color:var(--blue)">Clase futura</span>':'');
   const absentRow=document.getElementById('mj-absent-row');
   const absentList=document.getElementById('mj-absent-list');
   if(absents.length&&!holiday){
     absentRow.style.display='';
-    absentList.innerHTML=absents.map(n=>`<span class="badge red" style="margin-right:5px;margin-bottom:4px">${n}</span>`).join('');
+    absentList.innerHTML=absents.map(s=>'<span class="badge red" style="margin-right:5px;margin-bottom:4px">'+s.name+'</span>').join('');
   } else { absentRow.style.display='none'; }
   document.getElementById('mj-holiday').checked=holiday;
   document.getElementById('mj-fields').style.display=holiday?'none':'';
@@ -3736,7 +3975,7 @@ function saveJournalEntry(){
   db.journal[gid][dateStr]={notes,material,homework,holiday,holidayNote:holiday?'Cancelada':''};
   markHolidayFromJournal(gid,dateStr,holiday?'Cancelada':'');
   scheduleSave();closeModal('m-journal');renderJournal();
-  toast(holiday?'Clase cancelada marcada':'Clase guardada');
+  toast(holiday?'Clase cancelada guardada':'Clase guardada');
 }
 
 function toggleSection(id){
@@ -3745,6 +3984,7 @@ function toggleSection(id){
   el.style.display=hidden?'':'none';
   if(icon)icon.className=hidden?'ti ti-chevron-up':'ti ti-chevron-down';
 }
+
 
 /* ---- INIT ---- */
 async function init(){
