@@ -354,7 +354,7 @@ const DAYS_ES=['domingo','lunes','martes','miércoles','jueves','viernes','sába
 const DAY_S=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
 // ── STATE ────────────────────────────────────────────────
-let db={groups:[],students:[],attendance:{},dayNotes:{},journal:{}};
+let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{},settings:{},grades:{},cambridge2025:[],classTypes:[],classLogs:{},schools:[],journal:{}};
 let selGid='';
 let selMonth=curMonth();
 let lastHash='';
@@ -453,10 +453,16 @@ async function loadData(){
     if(rows&&rows[0]?.data){
       const d=rows[0].data;
       lastHash=dbHash(d);
-      if(d.groups)db.groups=d.groups;
-      if(d.students)db.students=d.students;
+      // Load ALL fields to avoid overwriting data we don't handle here
+      ['groups','students','payments','families','teachers','teacherPayments'].forEach(k=>{if(d[k])db[k]=d[k];});
       if(d.attendance)db.attendance=d.attendance;
       if(d.dayNotes)db.dayNotes=d.dayNotes;
+      if(d.settings)db.settings=d.settings;
+      if(d.grades)db.grades=d.grades;
+      if(d.cambridge2025)db.cambridge2025=d.cambridge2025;
+      if(d.classTypes)db.classTypes=d.classTypes;
+      if(d.classLogs)db.classLogs=d.classLogs;
+      if(d.schools)db.schools=d.schools;
       if(d.journal)db.journal=d.journal;
       db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days?.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
     }
@@ -494,9 +500,11 @@ function startPolling(){
       const h=dbHash(rows[0].data);
       if(h!==lastHash&&!saveTimer){
         const d=rows[0].data;lastHash=h;
-        if(d.groups)db.groups=d.groups;if(d.students)db.students=d.students;
+        ['groups','students','payments','families','teachers','teacherPayments'].forEach(k=>{if(d[k])db[k]=d[k];});
         if(d.attendance)db.attendance=d.attendance;if(d.dayNotes)db.dayNotes=d.dayNotes;
-        if(d.journal)db.journal=d.journal;
+        if(d.settings)db.settings=d.settings;if(d.grades)db.grades=d.grades;
+        if(d.classTypes)db.classTypes=d.classTypes;if(d.classLogs)db.classLogs=d.classLogs;
+        if(d.schools)db.schools=d.schools;if(d.journal)db.journal=d.journal;
         db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days?.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
         setSyncStatus('ok','Actualizado');
         renderMain();
