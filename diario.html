@@ -257,7 +257,9 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
       <span class="sync-dot" id="sync-dot"></span>
       <span id="sync-label" style="font-size:11px;color:var(--text3)">Cargando</span>
     </div>
-    <button class="btn sm ghost" onclick="toggleTheme()"><i class="ti ti-sun-moon"></i></button>
+    <button class="btn sm ghost" onclick="toggleTheme()" title="Cambiar tema · Mantené presionado para auto" oncontextmenu="clearThemePref();return false">
+      <i class="ti ti-moon" id="theme-btn-icon"></i>
+    </button>
   </div>
 </div>
 
@@ -324,6 +326,11 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
 
     <div class="modal-footer">
       <button class="btn" onclick="closeModal()">Cancelar</button>
+      <div id="me-copy-btn" style="display:none">
+        <button class="btn sm" onclick="copyToSiblingGroup()" style="color:var(--blue)" title="Copiar Material y Tarea al grupo hermano">
+          <i class="ti ti-copy"></i> Copiar a <span id="me-sibling-name">otro grupo</span>
+        </button>
+      </div>
       <button class="btn primary" onclick="saveEntry()"><i class="ti ti-device-floppy"></i> Guardar</button>
     </div>
   </div>
@@ -436,9 +443,33 @@ function setSyncStatus(state,label){
   if(lbl)lbl.textContent=label;
 }
 
+// ── THEME ─────────────────────────────────────────────────
+function autoTheme(){
+  try{
+    const saved=localStorage.getItem('diario_theme');
+    if(saved){document.documentElement.setAttribute('data-theme',saved);return;}
+  }catch(e){}
+  const h=new Date().getHours();
+  document.documentElement.setAttribute('data-theme',(h>=20||h<8)?'dark':'light');
+}
+
 function toggleTheme(){
-  const d=document.documentElement;
-  d.setAttribute('data-theme',d.getAttribute('data-theme')==='dark'?'light':'dark');
+  const current=document.documentElement.getAttribute('data-theme');
+  const next=current==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  try{localStorage.setItem('diario_theme',next);}catch(e){}
+  // Update icon
+  const btn=document.getElementById('theme-btn-icon');
+  if(btn)btn.className=next==='dark'?'ti ti-moon':'ti ti-sun';
+}
+
+function clearThemePref(){
+  try{localStorage.removeItem('diario_theme');}catch(e){}
+  autoTheme();
+  const next=document.documentElement.getAttribute('data-theme');
+  const btn=document.getElementById('theme-btn-icon');
+  if(btn)btn.className=next==='dark'?'ti ti-moon':'ti ti-sun';
+  toast('Tema automático activado — oscuro 20:00–08:00');
 }
 
 // ── SUPABASE ─────────────────────────────────────────────
@@ -718,6 +749,24 @@ function renderMain(){
 }
 
 // ── MODAL ─────────────────────────────────────────────────
+// Sibling groups that share the same content (same days, same level)
+const SIBLING_GROUPS = [
+  ['5th Year A', '5th Year B'],
+  ['Teens 2 Girls', 'Teens 2 Boys'],
+];
+
+function getSiblingGroup(gid){
+  const g = getGroup(gid);
+  for(const pair of SIBLING_GROUPS){
+    const idx = pair.indexOf(g.name);
+    if(idx !== -1){
+      const siblingName = pair[1-idx];
+      return db.groups.find(x=>x.name===siblingName)||null;
+    }
+  }
+  return null;
+}
+
 function openEntry(gid,dateStr,classNum,week){
   const g=getGroup(gid);
   const entry=getJournalEntry(gid,dateStr);
@@ -737,6 +786,17 @@ function openEntry(gid,dateStr,classNum,week){
   document.getElementById('me-notes').value=entry.notes||'';
   document.getElementById('me-material').value=entry.material||'';
   document.getElementById('me-homework').value=entry.homework||'';
+
+  // Show copy button if this group has a sibling
+  const sibling=getSiblingGroup(gid);
+  const copyBtn=document.getElementById('me-copy-btn');
+  const siblingName=document.getElementById('me-sibling-name');
+  if(sibling&&!holiday){
+    copyBtn.style.display='';
+    siblingName.textContent=sibling.name;
+  } else {
+    copyBtn.style.display='none';
+  }
 
   // Build absent student toggles
   const students=db.students.filter(s=>s.groupId===gid);
@@ -759,6 +819,46 @@ function openEntry(gid,dateStr,classNum,week){
   document.getElementById('m-entry').classList.add('open');
 }
 
+function copyToSiblingGroup(){
+  const gid=document.getElementById('me-gid').value;
+  const dateStr=document.getElementById('me-date').value;
+  const sibling=getSiblingGroup(gid);
+  if(!sibling)return;
+
+  const material=document.getElementById('me-material').value.trim();
+  const homework=document.getElementById('me-homework').value.trim();
+
+  if(!material&&!homework){
+    toast('No hay Material ni Tarea para copiar','error');
+    return;
+  }
+
+  // Find the sibling's class on the same week
+  // Both groups have same days so find the sibling's date closest to this one
+  const allSibDates=getClassDates(sibling);
+  const classNumMap={};
+  getClassDates(getGroup(gid)).forEach((d,i)=>{classNumMap[d]=i+1;});
+
+  // Find sibling class on same day of week or same week
+  const targetDate=dateStr; // Same date (5th A and B have same days)
+  const sibEntry=getJournalEntry(sibling.id,targetDate)||{};
+
+  if(!db.journal)db.journal={};
+  if(!db.journal[sibling.id])db.journal[sibling.id]={};
+  db.journal[sibling.id][targetDate]={
+    notes:sibEntry.notes||'',
+    material:material,
+    homework:homework,
+    holiday:sibEntry.holiday||false,
+    holidayNote:sibEntry.holidayNote||''
+  };
+
+  scheduleSave();
+  toast(`✅ Copiado a ${sibling.name}`);
+
+  // If we're viewing that group, refresh
+  if(selGid===sibling.id) renderMain();
+}
 function toggleAbsent(gid,mk,sid,day){
   if(!db.attendance[gid])db.attendance[gid]={};
   if(!db.attendance[gid][mk])db.attendance[gid][mk]={};
@@ -820,6 +920,12 @@ document.addEventListener('keydown',e=>{
 
 // ── INIT ──────────────────────────────────────────────────
 async function init(){
+  // Set theme based on time or saved preference
+  autoTheme();
+  const currentTheme=document.documentElement.getAttribute('data-theme');
+  const icon=document.getElementById('theme-btn-icon');
+  if(icon)icon.className=currentTheme==='dark'?'ti ti-moon':'ti ti-sun';
+
   const ok=await loadData();
   if(ok){
     buildGroupTabs();
