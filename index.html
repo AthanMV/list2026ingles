@@ -186,17 +186,158 @@ tr:hover td{background:var(--bg3)}
 .more-item{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:13px;color:var(--text2);cursor:pointer;border-radius:var(--radius);transition:all 0.12s}
 .more-item:hover,.more-item.active{background:var(--bg3);color:var(--text)}
 .more-item i{font-size:16px}
-.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:6px 8px;z-index:100}
-@media(max-width:768px){.sidebar{display:none}.mobile-nav{display:flex;justify-content:space-around}.page-inner{padding:16px 14px}.form-grid.c2,.form-grid.c3{grid-template-columns:1fr}.metric-grid{grid-template-columns:repeat(2,1fr)}.student-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;cursor:pointer;font-size:10px;color:var(--text3);border-radius:var(--radius);flex:1;text-align:center}
-.mobile-nav-item.active,.mobile-nav-item:hover{color:var(--accent)}
-.mobile-nav-item i{font-size:20px}
+
+
+
+
+
 
 /* Theme icon button */
 .theme-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all 0.2s;font-size:16px}
 .theme-btn:hover{background:var(--bg4);color:var(--accent);border-color:var(--accent-border)}
 [data-theme="light"] .theme-icon-moon{display:none}
 [data-theme="dark"] .theme-icon-sun{display:none}
+
+
+/* ══════════════════════════════════════════════════
+   MOBILE NAV BAR
+   ══════════════════════════════════════════════════ */
+.mobile-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  box-shadow:0 -2px 16px rgba(0,0,0,0.2);
+}
+.mobile-nav-inner{
+  display:flex;align-items:stretch;
+  height:54px;
+}
+.mnav-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;
+  color:var(--text3);font-size:10px;font-weight:500;
+  border:none;background:transparent;
+  transition:color 0.15s;position:relative;
+  padding:6px 2px;min-width:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.mnav-item.active{color:var(--accent)}
+.mnav-item:active{opacity:0.6}
+.mnav-item i{font-size:22px;line-height:1}
+.mnav-label{
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:54px;font-size:10px;line-height:1.2;
+}
+.mnav-badge{
+  position:absolute;top:5px;right:calc(50% - 16px);
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;
+  padding:1px 4px;border-radius:8px;
+  line-height:1.4;min-width:14px;text-align:center;
+}
+
+/* ── MORE MENU (mobile slide-up) ── */
+.more-overlay{
+  display:none;position:fixed;inset:0;
+  z-index:149;background:rgba(0,0,0,0.5);
+  backdrop-filter:blur(2px);
+}
+.more-overlay.open{display:block}
+.more-menu{
+  position:fixed;bottom:62px;left:8px;right:8px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--radius-xl);padding:12px;
+  z-index:150;box-shadow:var(--shadow);
+  display:none;
+}
+.more-menu.open{display:block}
+.more-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;
+}
+.more-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;font-size:14px;
+  color:var(--text2);cursor:pointer;
+  border-radius:var(--radius);transition:all 0.12s;
+  -webkit-tap-highlight-color:transparent;
+}
+.more-item:active,.more-item.active{background:var(--bg3);color:var(--text)}
+.more-item i{font-size:20px;color:var(--accent);width:22px;text-align:center;flex-shrink:0}
+
+/* ══════════════════════════════════════════════════
+   MOBILE RESPONSIVE — max-width: 768px
+   ══════════════════════════════════════════════════ */
+@media(max-width:768px){
+  /* Show mobile nav, hide sidebar */
+  .sidebar{display:none!important}
+  .mobile-nav{display:block!important}
+
+  /* Content needs space for fixed bottom nav */
+  .main{padding-bottom:60px!important}
+  .page-inner{padding:14px 12px!important}
+
+  /* Stack form grids */
+  .form-grid.c2,.form-grid.c3{grid-template-columns:1fr!important}
+
+  /* Metrics: 2 columns */
+  .metric-grid{grid-template-columns:repeat(2,1fr)!important}
+  .metric-value{font-size:22px}
+
+  /* Cards smaller */
+  .card{padding:12px}
+
+  /* Student grid: 2 columns */
+  .student-grid{grid-template-columns:repeat(2,1fr)!important}
+
+  /* Page header stacks */
+  .page-header{flex-direction:column!important;align-items:flex-start!important;gap:10px}
+  .page-title{font-size:18px}
+  .page-actions{width:100%;flex-wrap:wrap}
+  .page-actions .btn{flex:1 1 auto;justify-content:center;font-size:12px;padding:7px 10px}
+
+  /* Search row */
+  .search-row{flex-wrap:wrap}
+  .search-input{min-width:0;width:100%}
+  .chips{gap:4px}
+  .chip{font-size:11px;padding:4px 9px}
+
+  /* Tables scroll */
+  .table-wrap{-webkit-overflow-scrolling:touch}
+  table{font-size:12px}
+  th,td{padding:7px 8px}
+
+  /* Charts smaller */
+  .chart-wrap{height:120px}
+
+  /* Method boxes: wrap */
+  .method-row{flex-wrap:wrap}
+  .method-box{min-width:calc(50% - 8px)}
+
+  /* Attendance dots smaller */
+  .att-day{width:26px;height:26px;font-size:9px;border-radius:5px}
+
+  /* Modal full-screen bottom sheet */
+  .overlay{align-items:flex-end!important;padding:0!important}
+  .modal{
+    border-radius:20px 20px 0 0!important;
+    max-height:88vh!important;
+    border-left:none!important;border-right:none!important;border-bottom:none!important;
+    padding:20px 16px!important;
+    padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))!important;
+  }
+
+  /* Badges smaller */
+  .badge{font-size:10px;padding:2px 7px}
+
+  /* Section divider */
+  .section-divider{font-size:9px}
+
+  /* Hide topbar on mobile (nav is at bottom) */
+  .topbar{display:none}
+}
 </style>
 </head>
 <body>
@@ -681,8 +822,10 @@ const GROUP_SCHEDULE={
 /* ---- SUPABASE ---- */
 async function supaFetch(method,body){
   const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main`,{
-    method,headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body:body?JSON.stringify(body):undefined
+    method,
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:body?JSON.stringify(body):undefined,
+    signal:AbortSignal.timeout(10000) // 10s timeout — prevents hanging forever
   });
   return r;
 }
@@ -696,6 +839,7 @@ async function supaFetch(method,body){
 ──────────────────────────────────────────────────────── */
 const OFFLINE_KEY='cambridge_pending';
 let pendingWrite=false;
+let dbLoaded=false; // set to true only after full load from Supabase
 let lastRemoteHash='';
 let pollInterval=null;
 let retryTimer=null;
@@ -752,7 +896,8 @@ async function loadFromSupabase(){
       await saveToSupabase();
     }
     normalizePayments();
-    setSyncStatus('ok','Sincronizado');
+    dbLoaded=true;
+      setSyncStatus('ok','Sincronizado');
     isOnline=true;
     return true;
   }catch(e){
@@ -834,46 +979,55 @@ async function saveToSupabase(){
     setSyncStatus('offline','Sin conexión — cambios pendientes');
     return false;
   }
+  if(!dbLoaded){
+    pendingWrite=true;
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>saveToSupabase(),3000);
+    return false;
+  }
+
   try{
     setSyncStatus('saving','Guardando...');
 
-    // ── SAFETY CHECK: don't save if new data has significantly less content than existing ──
-    const newCount = dbDataCount(db);
+    // ── FETCH CURRENT STATE FIRST (prevents overwriting concurrent changes) ──
+    const fetchRes=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    if(!fetchRes.ok) throw new Error('Fetch '+fetchRes.status);
+    const rows=await fetchRes.json();
+    const remote=rows?.[0]?.data||null;
+
+    let dataToSave=db;
+
+    if(remote && dbHash(remote)!==lastRemoteHash){
+      // ── CONCURRENT EDIT DETECTED: deep merge ──
+      dataToSave=deepMergeDB(remote, db);
+      Object.assign(db, dataToSave);
+      lastRemoteHash=dbHash(remote);
+    }
+
+    // ── SAFETY CHECK: block if data looks suspiciously incomplete ──
+    const newCount=dbDataCount(dataToSave);
     try{
-      const lastBackupRaw = (() => {
-        let newest = null;
-        for(let i=0;i<localStorage.length;i++){
-          const k=localStorage.key(i);
-          if(k&&k.startsWith(BACKUP_PREFIX)&&!k.includes('daily')){
-            const v=localStorage.getItem(k);
-            if(v&&(!newest||k>newest.k)) newest={k,v};
-          }
-        }
-        return newest?.v||null;
-      })();
-      if(lastBackupRaw){
-        const lastSnap = JSON.parse(lastBackupRaw);
-        const lastCount = dbDataCount(lastSnap.data||{});
-        // If new data has less than 70% of the previous count — BLOCK save
-        if(lastCount > 20 && newCount < lastCount * 0.7){
-          setSyncStatus('error','⚠️ Guardado bloqueado — datos incompletos');
-          toast('⚠️ No se guardó: los datos parecen incompletos. Recargá la página.','error');
+      const bk=getNewestBackup();
+      if(bk){
+        const lastCount=dbDataCount(bk.data||{});
+        if(lastCount>20 && newCount<lastCount*0.7){
+          setSyncStatus('error','⚠️ Guardado bloqueado');
+          toast('⚠️ No se guardó: datos parecen incompletos. Recargá la página.','error');
           pendingWrite=false;
           return false;
         }
       }
     }catch(e){}
 
-    const r=await supaFetch('PATCH',{data:db,updated_at:new Date().toISOString()});
+    const r=await supaFetch('PATCH',{data:dataToSave,updated_at:new Date().toISOString()});
     if(!r.ok) throw new Error('HTTP '+r.status);
 
     pendingWrite=false;
-    lastRemoteHash=dbHash(db);
+    lastRemoteHash=dbHash(dataToSave);
     try{localStorage.removeItem(OFFLINE_KEY);}catch(e){}
-
-    // ── SAVE BACKUP AFTER SUCCESSFUL WRITE ──
-    saveLocalBackup(db);
-
+    saveLocalBackup(dataToSave);
     setSyncStatus('ok','Guardado ✓');
     return true;
   }catch(e){
@@ -886,10 +1040,129 @@ async function saveToSupabase(){
   }
 }
 
+// ── DEEP MERGE: combine two db states intelligently ──────────────
+// remote = what's in Supabase (has concurrent changes from other users)
+// local  = our current state (has our own changes)
+// Result: keep everything from both, prefer local for simple arrays,
+//         deep-merge grades and journal to combine entries from both teachers
+function deepMergeDB(remote, local){
+  // Safety: handle null/undefined inputs
+  if(!remote) return local||{};
+  if(!local) return remote||{};
+  const merged={};
+
+  // Simple arrays/objects: prefer local (admin data edited by one person at a time)
+  for(const k of ['groups','students','families','teachers','teacherPayments',
+                   'classTypes','settings','schools','cambridge2025']){
+    merged[k]=local[k]!==undefined?local[k]:(remote[k]||[]);
+  }
+
+  // Payments: full union by id
+  merged.payments=mergeByKey([...(remote.payments||[]),...(local.payments||[])], 'id');
+  
+  // classLogs: merge object keys
+  merged.classLogs=mergeObjArrays(remote.classLogs||{}, local.classLogs||{});
+
+  // Grades: deep merge per student/trimester/subject — NEVER lose an entry
+  merged.grades=mergeGrades(remote.grades||{}, local.grades||{});
+
+  // Journal, attendance, dayNotes: per key prefer local (most recently edited)
+  merged.journal=mergeDeepObj(remote.journal||{}, local.journal||{});
+  merged.attendance=mergeDeepObj(remote.attendance||{}, local.attendance||{});
+  merged.dayNotes=mergeDeepObj(remote.dayNotes||{}, local.dayNotes||{});
+
+  return merged;
+}
+
+
+function mergeByKey(arr, key){
+  const map={};
+  for(const item of arr){
+    if(item[key]) map[item[key]]=item; // last wins
+  }
+  return Object.values(map);
+}
+
+function mergeObjArrays(remote, local){
+  const merged={...remote};
+  for(const k of Object.keys(local)){
+    merged[k]=local[k]; // local wins per key
+  }
+  return merged;
+}
+
+// Deep merge plain objects 2 levels down (e.g. journal[gid][date])
+function mergeDeepObj(remote, local){
+  const merged={...remote};
+  for(const k of Object.keys(local)){
+    if(typeof local[k]==='object'&&!Array.isArray(local[k])&&remote[k]){
+      merged[k]={...remote[k],...local[k]};
+    } else {
+      merged[k]=local[k];
+    }
+  }
+  return merged;
+}
+
+// Grades merge: combine exam arrays per student/trimester/subject
+function mergeGrades(remote, local){
+  const merged={};
+  const allGids=new Set([...Object.keys(remote),...Object.keys(local)]);
+  for(const gid of allGids){
+    merged[gid]={};
+    const allSids=new Set([...Object.keys(remote[gid]||{}),...Object.keys(local[gid]||{})]);
+    for(const sid of allSids){
+      merged[gid][sid]={};
+      const allTris=new Set([...Object.keys((remote[gid]||{})[sid]||{}),...Object.keys((local[gid]||{})[sid]||{})]);
+      for(const tri of allTris){
+        merged[gid][sid][tri]={};
+        const allSubjs=new Set([
+          ...Object.keys(((remote[gid]||{})[sid]||{})[tri]||{}),
+          ...Object.keys(((local[gid]||{})[sid]||{})[tri]||{})
+        ]);
+        for(const subj of allSubjs){
+          const rEntries=(((remote[gid]||{})[sid]||{})[tri]||{})[subj]||[];
+          const lEntries=(((local[gid]||{})[sid]||{})[tri]||{})[subj]||[];
+          // Union: combine both, deduplicate by score+desc
+          const seen=new Set();
+          const combined=[];
+          for(const e of [...rEntries,...lEntries]){
+            const key=`${e.score}|${e.desc||''}`;
+            if(!seen.has(key)){seen.add(key);combined.push(e);}
+          }
+          merged[gid][sid][tri][subj]=combined;
+        }
+      }
+    }
+  }
+  return merged;
+}
+
+function getNewestBackup(){
+  try{
+    let newest=null;
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k&&k.startsWith(BACKUP_PREFIX)&&!k.includes('daily')){
+        const v=localStorage.getItem(k);
+        if(v&&(!newest||k>newest.k)) newest={k,v};
+      }
+    }
+    return newest?JSON.parse(newest.v):null;
+  }catch(e){return null;}
+}
+
+
+
 async function flushPending(){
+  try{
   if(pendingWrite){
     const ok=await saveToSupabase();
     if(ok) toast('Cambios sincronizados con la nube');
+  }
+  }catch(e){
+    setSyncStatus('error','Error: '+e.message);
+    toast('Error al guardar: '+e.message,'error');
   }
 }
 
@@ -938,7 +1211,7 @@ function startPolling(){
         toast('Datos actualizados desde otro dispositivo');
       }
     }catch(e){}
-  },25000);
+  },10000);
 }
 
 function setSyncStatus(state,label){
@@ -1816,7 +2089,7 @@ function openAddStudent(groupId){
   ['ms-name','ms-dob','ms-school','ms-dad-phone','ms-dad-name','ms-mom-phone','ms-mom-name','ms-notes'].forEach(id=>document.getElementById(id).value='');
   const sel=document.getElementById('ms-group');
   sel.innerHTML=db.groups.map(g=>`<option value="${g.id}"${g.id===groupId?' selected':''}>${g.name}</option>`).join('');
-  document.getElementById('ms-wa-target').value='dad';
+  
   document.getElementById('ms-gender').value='';
   document.getElementById('ms-title').textContent='Nuevo alumno';
   // Populate schools datalist
@@ -1866,11 +2139,16 @@ function saveStudent(){
 }
 
 async function deleteStudent(id){
+  try{
   if(!await confirmDialog('¿Eliminar alumno? Esta acción no se puede deshacer.',{title:'Eliminar alumno',icon:'🗑️',okLabel:'Eliminar',okClass:'danger'}))return;
   db.students=db.students.filter(s=>s.id!==id);
   db.payments=db.payments.filter(p=>p.studentId!==id);
   db.families.forEach(f=>{f.memberIds=f.memberIds.filter(x=>x!==id);});
   scheduleSave();if(currentPage==='students')renderStudents();else renderGroups();updatePendingBadge();toast('Alumno eliminado');
+  }catch(e){
+    setSyncStatus('error','Error: '+e.message);
+    toast('Error al guardar: '+e.message,'error');
+  }
 }
 
 function showProfile(id){
@@ -2162,6 +2440,7 @@ function confirmPay(){
 }
 
 async function unmarkPay(sid,month){
+  try{
   const fam=getFam(sid);
   if(fam&&fam.memberIds.some(mid=>hasPaid(mid,month))){
     if(!await confirmDialog(`¿Quitar el pago de toda la familia ${fam.name}?`,{title:'Quitar pago familiar',icon:'💸',okLabel:'Quitar pago',okClass:'danger'}))return;
@@ -2173,6 +2452,10 @@ async function unmarkPay(sid,month){
     toast('Pago eliminado');
   }
   scheduleSave();refreshCurrentPage();
+  }catch(e){
+    setSyncStatus('error','Error: '+e.message);
+    toast('Error al guardar: '+e.message,'error');
+  }
 }
 
 /* ---- FAMILIES ---- */
@@ -2250,9 +2533,14 @@ function saveFamily(){
 }
 
 async function deleteFamily(id){
+  try{
   if(!await confirmDialog('¿Eliminar esta familia? Los alumnos quedarán sin grupo familiar.',{title:'Eliminar familia',icon:'🗑️',okLabel:'Eliminar',okClass:'danger'}))return;
   db.families=db.families.filter(f=>f.id!==id);
   scheduleSave();renderFamilies();toast('Familia eliminada');
+  }catch(e){
+    setSyncStatus('error','Error: '+e.message);
+    toast('Error al guardar: '+e.message,'error');
+  }
 }
 
 /* ---- ATTENDANCE ---- */
@@ -2786,10 +3074,15 @@ function saveTeacher(){
 }
 
 async function deleteTeacher(id){
+  try{
   if(!await confirmDialog('¿Eliminar este profesor y todos sus pagos registrados?',{title:'Eliminar profesor',icon:'🗑️',okLabel:'Eliminar',okClass:'danger'}))return;
   db.teachers=db.teachers.filter(t=>t.id!==id);
   db.teacherPayments=db.teacherPayments.filter(p=>p.teacherId!==id);
   scheduleSave();renderTeachers();
+  }catch(e){
+    setSyncStatus('error','Error: '+e.message);
+    toast('Error al guardar: '+e.message,'error');
+  }
 }
 
 function openTpay(tid, defaultMonth){
@@ -2892,9 +3185,14 @@ function saveTeacherPayment(){
 }
 
 async function deleteTPay(id){
+  try{
   if(!await confirmDialog('¿Eliminar este pago del historial?',{title:'Eliminar pago',icon:'🗑️',okLabel:'Eliminar',okClass:'danger'}))return;
   db.teacherPayments=db.teacherPayments.filter(p=>p.id!==id);
   scheduleSave();renderTeachers();
+  }catch(e){
+    setSyncStatus('error','Error: '+e.message);
+    toast('Error al guardar: '+e.message,'error');
+  }
 }
 
 /* ---- BILLS ---- */
@@ -3045,6 +3343,7 @@ async function restoreLocalBackup(slot){
 }
 
 async function restoreFamilies(){
+  try{
   if(!await confirmDialog('Reagrupará los alumnos en sus familias originales 2026 con sus descuentos. No modifica pagos ni notas.',{title:'Restaurar familias',icon:'👨‍👩‍👧‍👦',okLabel:'Restaurar',okClass:'primary',cancelLabel:'Cancelar'}))return;
   const SEED_FAMILIES=[
     {name:'Zirilli',members:['Agustin Zirilli','Victoria Zirilli'],discount:17000},
@@ -3065,6 +3364,10 @@ async function restoreFamilies(){
   scheduleSave();
   renderFamilies();
   toast('✅ '+db.families.length+' familias restauradas');
+  }catch(e){
+    setSyncStatus('error','Error: '+e.message);
+    toast('Error al guardar: '+e.message,'error');
+  }
 }
 
 function showAllBackups(){
@@ -3470,7 +3773,10 @@ function saveGradeEntry(){
   if(!db.grades[gid][sid][tri])db.grades[gid][sid][tri]={};
   if(!db.grades[gid][sid][tri][subj])db.grades[gid][sid][tri][subj]=[];
   db.grades[gid][sid][tri][subj].push({score:isAbsent?'A':numScore,desc});
-  scheduleSave();closeModal('m-grade-entry');renderGrades();toast('Nota guardada');
+  pendingWrite=true;
+  closeModal('m-grade-entry');renderGrades();
+  toast('Nota guardada ✓');
+  saveToSupabase();
 }
 
 function deleteGradeEntry(gid,sid,tri,subj,idx){
@@ -3530,9 +3836,14 @@ function openAddClassType(){
 }
 
 async function deleteClassType(id){
+  try{
   if(!await confirmDialog('¿Eliminar este tipo de clase?',{title:'Eliminar tipo',icon:'🗑️',okLabel:'Eliminar',okClass:'danger'}))return;
   db.classTypes=(db.classTypes||[]).filter(t=>t.id!==id);
   scheduleSave();renderTeachers();
+  }catch(e){
+    setSyncStatus('error','Error: '+e.message);
+    toast('Error al guardar: '+e.message,'error');
+  }
 }
 
 function saveClassType(){
@@ -3838,8 +4149,10 @@ function saveJournalEntry(){
   if(!db.journal)db.journal={};if(!db.journal[gid])db.journal[gid]={};
   db.journal[gid][dateStr]={notes,material,homework,holiday,holidayNote:holiday?'Cancelada':''};
   markHolidayFromJournal(gid,dateStr,holiday?'Cancelada':'');
-  scheduleSave();closeModal('m-journal');renderJournal();
-  toast(holiday?'Clase cancelada guardada':'Clase guardada');
+  pendingWrite=true;
+  closeModal('m-journal');renderJournal();
+  toast(holiday?'Clase cancelada guardada':'Clase guardada ✓');
+  saveToSupabase();
 }
 
 function toggleSection(id){
@@ -3851,6 +4164,16 @@ function toggleSection(id){
 
 
 /* ---- INIT ---- */
+
+// Warn if leaving page with unsaved changes
+window.addEventListener('beforeunload', e=>{
+  if(pendingWrite){
+    e.preventDefault();
+    e.returnValue='Hay cambios sin guardar. ¿Salir de todas formas?';
+    return e.returnValue;
+  }
+});
+
 async function init(){
   autoTheme();
   initSidebar();
