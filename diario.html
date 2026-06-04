@@ -366,6 +366,7 @@ let selGid='';
 let selMonth=curMonth();
 let lastHash='';
 let saveTimer=null;
+let dbLoaded=false; // Only allow saves after full load
 let pollTimer=null;
 
 // ── UTILS ────────────────────────────────────────────────
@@ -495,27 +496,81 @@ async function loadData(){
       if(d.classLogs)db.classLogs=d.classLogs;
       if(d.schools)db.schools=d.schools;
       if(d.journal)db.journal=d.journal;
+        if(d.cambridge2025)db.cambridge2025=d.cambridge2025;
       db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days?.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
     }
     setSyncStatus('ok','Sincronizado');
+    dbLoaded=true;
     return true;
   }catch(e){setSyncStatus('error','Sin conexión');return false;}
 }
 
+function dbDataCount(data){
+  return (data.students||[]).length*10 +
+    (data.payments||[]).length*5 +
+    (data.groups||[]).length*3 +
+    Object.values(data.attendance||{}).reduce((a,m)=>a+Object.keys(m).length,0) +
+    Object.values(data.journal||{}).reduce((a,g)=>a+Object.keys(g).length,0) +
+    Object.values(data.grades||{}).reduce((a,g)=>a+Object.keys(g).length,0);
+}
+
+// ── SAFE MERGE SAVE ─────────────────────────────────────
+// Diario only modifies journal, attendance, dayNotes.
+// We fetch current Supabase state, update only those 3 fields,
+// then write back. This prevents overwriting grades, payments, etc.
 async function saveData(){
+  if(!dbLoaded){
+    // Not loaded yet - retry in 2s
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>saveData(),2000);
+    return;
+  }
+
   setSyncStatus('saving','Guardando...');
   try{
-    const r=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main`,{
+    // Step 1: Get current Supabase state
+    const res=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main&select=data`,{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    if(!res.ok) throw new Error('Fetch '+res.status);
+    const rows=await res.json();
+    if(!rows?.[0]?.data) throw new Error('No data');
+
+    const current=rows[0].data;
+
+    // Step 2: Only update the 3 fields diario manages
+    current.journal    = db.journal;
+    current.attendance = db.attendance;
+    current.dayNotes   = db.dayNotes;
+
+    // Step 3: Write merged object back
+    const patch=await fetch(`${SUPA_URL}/rest/v1/institute_data?id=eq.main`,{
       method:'PATCH',
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({data:db,updated_at:new Date().toISOString()})
+      body:JSON.stringify({data:current,updated_at:new Date().toISOString()})
     });
-    if(!r.ok)throw new Error('HTTP '+r.status);
+    if(!patch.ok) throw new Error('Patch '+patch.status);
+
+    // Step 4: Sync local db with what we just saved
+    Object.assign(db,current);
     lastHash=dbHash(db);
+
+    // Step 5: Local backup
+    try{localStorage.setItem('diario_bk',JSON.stringify({ts:new Date().toISOString(),data:current}));}catch(e){}
+
     setSyncStatus('ok','Guardado ✓');
     setTimeout(()=>setSyncStatus('ok','Sincronizado'),2000);
-  }catch(e){setSyncStatus('error','Error al guardar');}
+  }catch(e){
+    setSyncStatus('error','Error al guardar');
+    // Retry once in 5s
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>saveData(),5000);
+    toast('Reintentando guardar...','error');
+  }
 }
+
+
+
 
 function scheduleSave(){
   clearTimeout(saveTimer);
@@ -905,10 +960,10 @@ function saveEntry(){
   if(holiday)db.dayNotes[mk][key]='Cancelada';
   else delete db.dayNotes[mk][key];
 
-  scheduleSave();
   closeModal();
   renderMain();
-  toast(holiday?'Clase cancelada guardada':'Clase guardada');
+  toast(holiday?'Clase cancelada guardada 📋':'Clase guardada 📋');
+  saveData(); // Save immediately
 }
 
 // Keyboard shortcuts
@@ -919,6 +974,28 @@ document.addEventListener('keydown',e=>{
 });
 
 // ── INIT ──────────────────────────────────────────────────
+
+function restoreDiarioBackup(){
+  try{
+    const bk=localStorage.getItem('diario_bk');
+    if(!bk){toast('No hay backup local disponible','error');return;}
+    const data=JSON.parse(bk);
+    const sc=(data.students||[]).length;
+    const jc=Object.values(data.journal||{}).reduce((a,g)=>a+Object.keys(g).length,0);
+    if(!confirm('¿Restaurar backup local?\n'+sc+' alumnos · '+jc+' entradas del diario\n\nEsto sobreescribirá Supabase.')){return;}
+    Object.assign(db,data);
+    saveData().then(()=>{renderMain();toast('✅ Backup restaurado');});
+  }catch(e){toast('Error al restaurar: '+e.message,'error');}
+}
+
+window.addEventListener('beforeunload', e=>{
+  if(saveTimer){
+    e.preventDefault();
+    e.returnValue='Hay cambios sin guardar. ¿Salir?';
+    return e.returnValue;
+  }
+});
+
 async function init(){
   // Set theme based on time or saved preference
   autoTheme();
