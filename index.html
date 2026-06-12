@@ -338,6 +338,12 @@ tr:hover td{background:var(--bg3)}
   /* Hide topbar on mobile (nav is at bottom) */
   .topbar{display:none}
 }
+
+/* ── SIDEBAR FOOTER (theme + version) ─────────────────────────────── */
+.sidebar-footer{margin-top:auto;padding:12px 14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.version-tag{font-size:10px;color:var(--text3);font-family:var(--font-mono);letter-spacing:0.03em;opacity:0.75;white-space:nowrap}
+.sidebar.collapsed .sidebar-footer{justify-content:center;padding:12px 6px}
+.sidebar.collapsed .version-tag{display:none}
 </style>
 </head>
 <body>
@@ -363,10 +369,6 @@ tr:hover td{background:var(--bg3)}
         <div class="sync-dot" id="sync-dot" title="Estado de sincronización"></div>
       </div>
       <div style="display:flex;align-items:center;gap:5px">
-        <button class="theme-btn" onclick="toggleTheme()" title="Cambiar tema">
-          <i class="ti ti-sun theme-icon-sun"></i>
-          <i class="ti ti-moon theme-icon-moon"></i>
-        </button>
         <button class="sidebar-toggle" onclick="toggleSidebar()" title="Colapsar menú" id="sidebar-toggle-btn">
           <i class="ti ti-layout-sidebar-left-collapse" id="sidebar-toggle-icon"></i>
         </button>
@@ -388,12 +390,17 @@ tr:hover td{background:var(--bg3)}
     <div class="nav-item" onclick="nav('teachers',this)"><i class="ti ti-award nav-icon"></i> Profesores</div>
     <div class="nav-item" onclick="nav('grades',this)"><i class="ti ti-clipboard-list nav-icon"></i> Notas 2026</div>
     <div class="nav-item" onclick="nav('exams',this)"><i class="ti ti-checklist nav-icon"></i><span class="nav-label"> Exámenes</span></div>
+    <div class="nav-item" onclick="nav('boletin',this)"><i class="ti ti-certificate nav-icon"></i><span class="nav-label"> Boletín</span></div>
     <div class="nav-item" onclick="nav('bills',this)"><i class="ti ti-calculator nav-icon"></i> Billetes</div>
     <div class="nav-item" onclick="nav('datamanager',this)"><i class="ti ti-database nav-icon"></i> Datos</div>
     <div class="nav-item" onclick="nav('settings',this)"><i class="ti ti-settings nav-icon"></i> Configuración</div>
   </nav>
   <div class="sidebar-footer">
-    
+    <button class="theme-btn" onclick="toggleTheme()" oncontextmenu="event.preventDefault();clearThemePref();" title="Cambiar tema · clic derecho: automático por hora">
+      <i class="ti ti-sun theme-icon-sun"></i>
+      <i class="ti ti-moon theme-icon-moon"></i>
+    </button>
+    <span class="version-tag" title="Versión del software">v2.5.0</span>
   </div>
 </div>
 
@@ -409,6 +416,7 @@ tr:hover td{background:var(--bg3)}
   <div id="page-teachers" class="page-inner" style="display:none"></div>
   <div id="page-grades" class="page-inner" style="display:none"></div>
   <div id="page-journal" class="page-inner" style="display:none"></div>
+  <div id="page-boletin" class="page-inner" style="display:none"></div>
   <div id="page-bills" class="page-inner" style="display:none"></div>
   <div id="page-datamanager" class="page-inner" style="display:none"></div>
   <div id="page-exams" class="page-inner" style="display:none"></div>
@@ -801,13 +809,14 @@ tr:hover td{background:var(--bg3)}
 <script>
 
 
+const VERSION='2.5.0';
 const SUPA_URL='https://hnusoslzobzuplhdephe.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhudXNvc2x6b2J6dXBsaGRlcGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzEwNjQsImV4cCI6MjA5NDMwNzA2NH0.HTSM4lp4Dpl_voNAPYlWcNqvUQaaXDH1OTgjkUrWAI8';
 const MONTHS=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 const DAY_SHORT=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const DAY_FULL=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 
-let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{},settings:{},grades:{},cambridge2025:[],classTypes:[],classLogs:{},schools:[],journal:{},exams:[]};
+let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{},settings:{},grades:{},cambridge2025:[],classTypes:[],classLogs:{},schools:[],journal:{},exams:[],boletin:{}};
 
 // Grade subjects — fixed 8, split into 2 categories
 const GRADE_SUBJECTS=[
@@ -888,7 +897,7 @@ async function loadFromSupabase(){
       const h=dbHash(d);
       if(h!==lastRemoteHash){
         lastRemoteHash=h;
-        ['groups','students','payments','families','teachers','teacherPayments','exams'].forEach(k=>{if(d[k])db[k]=d[k];});
+        ['groups','students','payments','families','teachers','teacherPayments','exams','boletin'].forEach(k=>{if(d[k])db[k]=d[k];});;
         // Backfill missing schedule
         db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days||!g.days.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
         if(d.attendance)db.attendance=d.attendance;
@@ -1080,6 +1089,7 @@ function deepMergeDB(remote, local){
   merged.journal=mergeDeepObj(remote.journal||{}, local.journal||{});
   merged.attendance=mergeDeepObj(remote.attendance||{}, local.attendance||{});
   merged.dayNotes=mergeDeepObj(remote.dayNotes||{}, local.dayNotes||{});
+  merged.boletin=mergeDeepObj(remote.boletin||{}, local.boletin||{});
 
   return merged;
 }
@@ -1207,7 +1217,7 @@ function startPolling(){
         if(anyModalOpen) return;
         const d=rows[0].data;
         lastRemoteHash=h;
-        ['groups','students','payments','families','teachers','teacherPayments','exams'].forEach(k=>{if(d[k])db[k]=d[k];});
+        ['groups','students','payments','families','teachers','teacherPayments','exams','boletin'].forEach(k=>{if(d[k])db[k]=d[k];});;
         if(d.attendance)db.attendance=d.attendance;
         if(d.dayNotes)db.dayNotes=d.dayNotes;
         if(d.settings)db.settings=d.settings;
@@ -1232,7 +1242,7 @@ function setSyncStatus(state,label){
 }
 
 function refreshCurrentPage(){
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={boletin:renderBoletin,dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[currentPage]) renders[currentPage]();
   updatePendingBadge();
 }
@@ -1449,7 +1459,7 @@ function syncThemeUI(theme){
 
 /* ---- NAV ---- */
 // Valid pages for URL routing
-const VALID_PAGES=['dashboard','timetable','journal','groups','payments','families','attendance','students','teachers','grades','exams','bills','datamanager','settings'];
+const VALID_PAGES=['dashboard','timetable','journal','groups','payments','families','attendance','students','teachers','grades','exams','boletin','bills','datamanager','settings'];
 
 function nav(page,el){
   // Validate page
@@ -1479,7 +1489,7 @@ function nav(page,el){
     history.pushState({page}, '', '#'+page);
   }
 
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,grades:renderGrades,exams:renderExams,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,grades:renderGrades,exams:renderExams,boletin:renderBoletin,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[page])renders[page]();
 }
 
@@ -3624,6 +3634,121 @@ function deleteExam(examId){
   });
 }
 
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  BOLETÍN — Devolución de boletines firmados por trimestre
+// ══════════════════════════════════════════════════════════════════════
+
+function renderBoletin(){
+  const selGid = document.getElementById('bol-gid')?.value || '';
+  const selTri = document.getElementById('bol-tri')?.value || '1';
+
+  document.getElementById('page-boletin').innerHTML=`
+    <div class="page-header">
+      <div>
+        <div class="page-title">Boletín</div>
+        <div class="page-subtitle">Registro de devolución de boletines firmados</div>
+      </div>
+    </div>
+
+    <div class="search-row" style="margin-bottom:20px">
+      <select class="search-input" id="bol-gid" onchange="renderBoletin()" style="flex:1;min-width:160px">
+        <option value="">Seleccionar grupo...</option>
+        ${db.groups.map(g=>`<option value="${g.id}"${g.id===selGid?' selected':''}>${g.name}</option>`).join('')}
+      </select>
+      <select class="search-input" id="bol-tri" onchange="renderBoletin()" style="flex:0 0 auto;min-width:180px">
+        <option value="1"${selTri==='1'?' selected':''}>1° Trimestre</option>
+        <option value="2"${selTri==='2'?' selected':''}>2° Trimestre</option>
+        <option value="3"${selTri==='3'?' selected':''}>3° Trimestre</option>
+      </select>
+    </div>
+
+    ${!selGid
+      ? '<div class="empty"><i class="ti ti-certificate"></i>Seleccioná un grupo para ver el boletín</div>'
+      : renderBoletinGroup(selGid, selTri)}`;
+}
+
+function renderBoletinGroup(gid, tri){
+  const students = db.students.filter(s=>s.groupId===gid);
+  if(!students.length) return '<div class="empty">Sin alumnos en este grupo</div>';
+
+  const bol = db.boletin||{};
+  const key = `${gid}-${tri}`;
+  const returned = new Set(bol[key]||[]);
+  const total = students.length;
+  const done = returned.size;
+  const pct = total>0?Math.round(done/total*100):0;
+  const group = getGroup(gid);
+
+  // Student cards
+  const studentCards = students
+    .sort((a,b)=>a.name.localeCompare(b.name))
+    .map(s=>{
+      const ok = returned.has(s.id);
+      return '<div onclick="toggleBoletin(\''+gid+'\',\''+tri+'\',\''+s.id+'\')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius-lg);border:1px solid '+(ok?'var(--green-border)':'var(--border)')+';background:'+(ok?'var(--green-bg)':'var(--bg3)')+';cursor:pointer;transition:all 0.15s;user-select:none">'
+        + '<div style="width:22px;height:22px;border-radius:50%;border:2px solid '+(ok?'var(--green)':'var(--border2)')+';background:'+(ok?'var(--green)':'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s">'
+        + (ok?'<i class="ti ti-check" style="font-size:12px;color:#fff"></i>':'')
+        + '</div>'
+        + avatar(s.name,26,s.gender||'')
+        + '<span style="font-size:13px;font-weight:'+(ok?'600':'400')+';color:'+(ok?'var(--green)':'var(--text2)')+'">'+s.name+'</span>'
+        + '</div>';
+    }).join('');
+
+  // Pending / returned lists
+  const returnedList = students.filter(s=>returned.has(s.id)).sort((a,b)=>a.name.localeCompare(b.name));
+  const pendingList  = students.filter(s=>!returned.has(s.id)).sort((a,b)=>a.name.localeCompare(b.name));
+
+  return '<div class="card" style="margin-bottom:16px">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">'
+    + '<div>'
+    + '<div style="font-size:15px;font-weight:700">'+(group?.name||'')+' — Trimestre '+tri+'</div>'
+    + '<div style="font-size:12px;color:var(--text3);margin-top:3px">'+done+' de '+total+' devolvieron · '+pct+'% completado</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    + '<button class="btn sm" onclick="markAllBoletin(\''+gid+'\',\''+tri+'\',true)" style="color:var(--green)"><i class="ti ti-checks"></i> Marcar todos</button>'
+    + '<button class="btn sm" onclick="markAllBoletin(\''+gid+'\',\''+tri+'\',false)"><i class="ti ti-eraser"></i> Limpiar</button>'
+    + '</div></div>'
+    + '<div style="height:5px;background:var(--bg4);border-radius:99px;margin-bottom:16px;overflow:hidden">'
+    + '<div style="height:100%;width:'+pct+'%;background:'+(pct===100?'var(--green)':'var(--accent)')+';border-radius:99px;transition:width 0.3s"></div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:7px;margin-bottom:16px">'
+    + studentCards
+    + '</div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    + '<div class="card" style="border-color:var(--green-border)">'
+    + '<div class="card-title" style="color:var(--green);margin-bottom:10px"><i class="ti ti-circle-check"></i> Devolvieron ('+done+')</div>'
+    + (returnedList.length===0
+        ? '<div style="font-size:13px;color:var(--text3)">Ninguno aún</div>'
+        : returnedList.map(s=>'<div style="font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px">'+avatar(s.name,18,s.gender||'')+' '+s.name+'</div>').join(''))
+    + '</div>'
+    + '<div class="card" style="border-color:var(--red-border)">'
+    + '<div class="card-title" style="color:var(--red);margin-bottom:10px"><i class="ti ti-clock"></i> Pendientes ('+pendingList.length+')</div>'
+    + (pendingList.length===0
+        ? '<div style="font-size:13px;color:var(--green)">¡Todos devolvieron! 🎉</div>'
+        : pendingList.map(s=>'<div style="font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px">'+avatar(s.name,18,s.gender||'')+' '+s.name+'</div>').join(''))
+    + '</div></div>';
+}
+
+function toggleBoletin(gid, tri, sid){
+  if(!db.boletin) db.boletin={};
+  const key=`${gid}-${tri}`;
+  if(!db.boletin[key]) db.boletin[key]=[];
+  const idx=db.boletin[key].indexOf(sid);
+  if(idx>=0) db.boletin[key].splice(idx,1);
+  else db.boletin[key].push(sid);
+  scheduleSave();
+  renderBoletin();
+}
+
+function markAllBoletin(gid, tri, mark){
+  if(!db.boletin) db.boletin={};
+  const key=`${gid}-${tri}`;
+  db.boletin[key] = mark ? db.students.filter(s=>s.groupId===gid).map(s=>s.id) : [];
+  scheduleSave();
+  renderBoletin();
+}
 
 function renderSettings(){
   const s=getSettings();
