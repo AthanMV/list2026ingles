@@ -344,6 +344,54 @@ tr:hover td{background:var(--bg3)}
 .version-tag{font-size:10px;color:var(--text3);font-family:var(--font-mono);letter-spacing:0.03em;opacity:0.75;white-space:nowrap}
 .sidebar.collapsed .sidebar-footer{justify-content:center;padding:12px 6px}
 .sidebar.collapsed .version-tag{display:none}
+
+/* ══════════════════════════════════════════════════════════════════
+   MEJORAS VISUALES v2.6 — menú móvil completo + personalización
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Menú "Más" móvil: bottom sheet ancho con grilla de íconos ───── */
+.more-menu{left:10px;right:10px;bottom:70px;max-height:62vh;overflow-y:auto;border-radius:20px;padding:14px 14px 16px;box-shadow:0 -10px 50px rgba(0,0,0,0.5)}
+.more-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+.more-title{grid-column:1/-1;font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text);padding:2px 4px 8px;letter-spacing:0.01em;display:flex;align-items:center;gap:6px}
+.more-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.more-item{flex-direction:column;gap:7px;padding:14px 4px;text-align:center;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--bg3);border-radius:14px;justify-content:center}
+.more-item i{font-size:21px;color:var(--accent)}
+.more-item:active{transform:scale(0.96)}
+.more-item.active-page{border-color:var(--accent-border);background:var(--accent-bg);color:var(--accent)}
+
+/* ── Bottom nav: indicador de sección activa ─────────────────────── */
+.mnav-item{position:relative;transition:color 0.15s}
+.mnav-item.active::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.mnav-item:active i{transform:scale(0.9)}
+.mnav-item i{transition:transform 0.12s}
+
+/* ── Sidebar: hover y activo más vivos ───────────────────────────── */
+.nav-item{transition:background 0.15s,color 0.15s,transform 0.12s;border-radius:8px}
+.sidebar:not(.collapsed) .nav-item:hover{transform:translateX(2px)}
+.nav-section{transition:color 0.15s}
+
+/* ── Cards con hover sutil ────────────────────────────────────────── */
+.card{transition:border-color 0.2s,box-shadow 0.2s}
+.card:hover{border-color:var(--border2)}
+
+/* ── Filas del personalizador de menú ─────────────────────────────── */
+.navcfg-row{display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid var(--border);border-radius:11px;background:var(--bg3);margin-bottom:6px}
+.navcfg-row.hidden-row{opacity:0.45}
+.navcfg-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all 0.12s}
+.navcfg-btn:hover:not(:disabled){color:var(--accent);border-color:var(--accent-border)}
+.navcfg-btn:disabled{opacity:0.3;cursor:default}
+.navcfg-row input{flex:1;min-width:80px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 9px;color:var(--text);font-size:13px;font-family:var(--font-body)}
+.navcfg-row input:focus{outline:none;border-color:var(--accent-border)}
+.navcfg-row select{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 7px;color:var(--text);font-size:12px;max-width:140px;font-family:var(--font-body)}
+@media(max-width:600px){
+  .navcfg-row{flex-wrap:wrap}
+  .navcfg-row input{min-width:120px;order:5;flex-basis:100%}
+}
+
+/* ── FIX: sidebar colapsada — logo limpio, solo botón centrado ────── */
+.sidebar.collapsed .sidebar-logo{display:none!important}
+.sidebar.collapsed .sidebar-header{justify-content:center!important;padding-left:0;padding-right:0}
+.sidebar.collapsed .sync-dot{display:none}
 </style>
 </head>
 <body>
@@ -400,7 +448,7 @@ tr:hover td{background:var(--bg3)}
       <i class="ti ti-sun theme-icon-sun"></i>
       <i class="ti ti-moon theme-icon-moon"></i>
     </button>
-    <span class="version-tag" title="Versión del software">v2.5.0</span>
+    <span class="version-tag" title="Versión del software">v2.11.0</span>
   </div>
 </div>
 
@@ -417,6 +465,9 @@ tr:hover td{background:var(--bg3)}
   <div id="page-grades" class="page-inner" style="display:none"></div>
   <div id="page-journal" class="page-inner" style="display:none"></div>
   <div id="page-boletin" class="page-inner" style="display:none"></div>
+  <div id="page-waitlist" class="page-inner" style="display:none"></div>
+  <div id="page-expenses" class="page-inner" style="display:none"></div>
+  <div id="page-extrapay" class="page-inner" style="display:none"></div>
   <div id="page-bills" class="page-inner" style="display:none"></div>
   <div id="page-datamanager" class="page-inner" style="display:none"></div>
   <div id="page-exams" class="page-inner" style="display:none"></div>
@@ -442,7 +493,11 @@ tr:hover td{background:var(--bg3)}
   <input type="hidden" id="mg-id">
   <div class="form-grid c2">
     <div class="field"><label>Nombre</label><input id="mg-name" placeholder="Kids 5, Teens 3..."></div>
-    <div class="field"><label>Arancel ($)</label><input id="mg-fee" type="number" placeholder="77000"></div>
+    <div class="field"><label>Arancel mensual ($)</label><input id="mg-fee" type="number" placeholder="77000"></div>
+  </div>
+  <div class="form-grid c2">
+    <div class="field"><label>Examen final de este grupo ($)</label><input id="mg-examfee" type="number" placeholder="0 si no aplica"></div>
+    <div class="field"></div>
   </div>
   <div class="form-grid c2">
     <div class="field"><label>Días (ej: Lunes,Miércoles)</label><input id="mg-days" placeholder="Lunes,Miércoles"></div>
@@ -470,6 +525,22 @@ tr:hover td{background:var(--bg3)}
       <datalist id="schools-datalist"></datalist>
     </div>
   </div>
+  <div class="form-grid c2">
+    <div class="field"><label>Grado / Año del colegio</label><input id="ms-grade" placeholder="Ej: 5to grado, 3er año"></div>
+    <div class="field"><label>Turno del colegio</label>
+      <select id="ms-shift">
+        <option value="">Sin especificar</option>
+        <option value="Mañana">Mañana</option>
+        <option value="Tarde">Tarde</option>
+        <option value="Completo">Doble turno</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-grid c2">
+    <div class="field"><label>Email de contacto</label><input id="ms-email" type="email" placeholder="opcional"></div>
+    <div class="field"><label>Dirección</label><input id="ms-address" placeholder="opcional"></div>
+  </div>
+  <div class="form-grid"><div class="field"><label>Salud / alergias / aclaraciones</label><textarea id="ms-health" rows="2" placeholder="Alergias, medicación, lo que el profe deba saber. Opcional."></textarea></div></div>
   <div class="section-divider">Contactos</div>
   <div class="form-grid c2">
     <div class="field"><label>Tel. Papá</label><input id="ms-dad-phone" placeholder="+549..."></div>
@@ -510,7 +581,7 @@ tr:hover td{background:var(--bg3)}
   <div class="modal-header"><div class="modal-title" id="mpay-title">Registrar pago</div><button class="btn ghost sm" onclick="closeModal('m-pay')"><i class="ti ti-x"></i></button></div>
   <input type="hidden" id="mpay-sid"><input type="hidden" id="mpay-month">
   <div class="form-grid c2">
-    <div class="field"><label>Monto ($)</label><input id="mpay-amount" type="number"></div>
+    <div class="field"><label>Monto que paga ($)</label><input id="mpay-amount" type="number" oninput="updatePartialHint()"></div>
     <div class="field"><label>Método</label>
       <select id="mpay-method">
         <option value="Transferencia">Transferencia</option>
@@ -520,7 +591,16 @@ tr:hover td{background:var(--bg3)}
       </select>
     </div>
   </div>
-  <div class="form-grid"><div class="field"><label>Notas (opcional)</label><input id="mpay-notes" placeholder="Pago doble, adelanto..."></div></div>
+  <div class="field" style="margin-top:2px">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500">
+      <input type="checkbox" id="mpay-partial" onchange="togglePartialField()"> Pago parcial (queda saldo pendiente)
+    </label>
+  </div>
+  <div class="form-grid" id="mpay-total-wrap" style="display:none;margin-top:8px">
+    <div class="field"><label>Total que debería pagar ($)</label><input id="mpay-total" type="number" oninput="updatePartialHint()" placeholder="Monto completo del concepto"></div>
+  </div>
+  <div id="mpay-hint" style="font-size:12px;color:var(--amber);margin:4px 0 0;display:none"></div>
+  <div class="form-grid" style="margin-top:8px"><div class="field"><label>Notas (opcional)</label><input id="mpay-notes" placeholder="Pago doble, adelanto..."></div></div>
   <div class="modal-footer">
     <button class="btn" onclick="closeModal('m-pay')">Cancelar</button>
     <button class="btn primary" onclick="confirmPay()">Guardar pago</button>
@@ -762,6 +842,11 @@ tr:hover td{background:var(--bg3)}
 <!-- MORE OVERLAY -->
 <div class="more-overlay" id="more-overlay" onclick="closeMore()"></div>
 
+<div class="overlay" id="m-cycle"><div class="modal" style="max-width:520px"><div id="m-cycle-body"></div></div></div>
+<div class="overlay" id="m-expense"><div class="modal" style="max-width:520px"><div id="m-expense-body"></div></div></div>
+<div class="overlay" id="m-dashcfg"><div class="modal" style="max-width:480px"><div id="m-dashcfg-body"></div></div></div>
+<div class="overlay" id="m-waitlist"><div class="modal" style="max-width:520px"><div id="m-waitlist-body"></div></div></div>
+
 <!-- MORE MENU (extra pages) -->
 <div class="more-menu" id="more-menu">
   <div class="more-grid">
@@ -809,14 +894,14 @@ tr:hover td{background:var(--bg3)}
 <script>
 
 
-const VERSION='2.5.0';
+const VERSION='2.11.0';
 const SUPA_URL='https://hnusoslzobzuplhdephe.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhudXNvc2x6b2J6dXBsaGRlcGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzEwNjQsImV4cCI6MjA5NDMwNzA2NH0.HTSM4lp4Dpl_voNAPYlWcNqvUQaaXDH1OTgjkUrWAI8';
 const MONTHS=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 const DAY_SHORT=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const DAY_FULL=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 
-let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{},settings:{},grades:{},cambridge2025:[],classTypes:[],classLogs:{},schools:[],journal:{},exams:[],boletin:{}};
+let db={groups:[],students:[],payments:[],families:[],teachers:[],teacherPayments:[],attendance:{},dayNotes:{},settings:{},grades:{},cambridge2025:[],classTypes:[],classLogs:{},schools:[],journal:{},exams:[],boletin:{},waitlist:[],expenses:[],quickNotes:[]};
 
 // Grade subjects — fixed 8, split into 2 categories
 const GRADE_SUBJECTS=[
@@ -897,7 +982,7 @@ async function loadFromSupabase(){
       const h=dbHash(d);
       if(h!==lastRemoteHash){
         lastRemoteHash=h;
-        ['groups','students','payments','families','teachers','teacherPayments','exams','boletin'].forEach(k=>{if(d[k])db[k]=d[k];});;
+        ['groups','students','payments','families','teachers','teacherPayments','exams','boletin','waitlist','expenses','quickNotes'].forEach(k=>{if(d[k])db[k]=d[k];});;
         // Backfill missing schedule
         db.groups.forEach(g=>{const sc=GROUP_SCHEDULE[g.name];if(sc){if(!g.days||!g.days.length)g.days=sc.days;if(!g.time)g.time=sc.time;}});
         if(d.attendance)db.attendance=d.attendance;
@@ -927,9 +1012,6 @@ async function loadFromSupabase(){
 }
 
 // ── BACKUP SYSTEM ────────────────────────────────────────
-const BACKUP_PREFIX = 'cambridge_bk_';
-const MAX_BACKUPS = 5;
-
 function dbDataCount(data){
   // Returns a "weight" of the db — used to detect data loss
   return (
@@ -943,37 +1025,7 @@ function dbDataCount(data){
   );
 }
 
-function saveLocalBackup(data){
-  try{
-    const ts = new Date().toISOString();
-    const snap = JSON.stringify({ts, data});
-    // Read existing backups
-    const keys = [];
-    for(let i=0;i<localStorage.length;i++){
-      const k=localStorage.key(i);
-      if(k && k.startsWith(BACKUP_PREFIX)) keys.push(k);
-    }
-    keys.sort().reverse(); // newest first
-    // Shift: remove oldest if at max
-    while(keys.length >= MAX_BACKUPS){
-      localStorage.removeItem(keys.pop());
-    }
-    // Save new backup
-    const newKey = BACKUP_PREFIX + ts.replace(/[:.]/g,'-');
-    localStorage.setItem(newKey, snap);
-    // Also save daily backup (overwrite same-day key)
-    const dayKey = BACKUP_PREFIX + 'daily_' + ts.slice(0,10);
-    localStorage.setItem(dayKey, snap);
-    localStorage.setItem('cambridge_last_backup', ts);
-  }catch(e){
-    // localStorage full — remove oldest backup and retry
-    try{
-      const keys2=[];
-      for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(BACKUP_PREFIX)&&!k.includes('daily'))keys2.push(k);}
-      if(keys2.length){localStorage.removeItem(keys2.sort()[0]);saveLocalBackup(data);}
-    }catch(e2){}
-  }
-}
+
 
 function getLocalBackups(){
   const backups=[];
@@ -1072,7 +1124,7 @@ function deepMergeDB(remote, local){
 
   // Simple arrays/objects: prefer local (admin data edited by one person at a time)
   for(const k of ['groups','students','families','teachers','teacherPayments',
-                   'classTypes','settings','schools','cambridge2025','exams']){
+                   'classTypes','settings','schools','cambridge2025','exams','waitlist','expenses','quickNotes']){
     merged[k]=local[k]!==undefined?local[k]:(remote[k]||[]);
   }
 
@@ -1217,7 +1269,7 @@ function startPolling(){
         if(anyModalOpen) return;
         const d=rows[0].data;
         lastRemoteHash=h;
-        ['groups','students','payments','families','teachers','teacherPayments','exams','boletin'].forEach(k=>{if(d[k])db[k]=d[k];});;
+        ['groups','students','payments','families','teachers','teacherPayments','exams','boletin','waitlist','expenses','quickNotes'].forEach(k=>{if(d[k])db[k]=d[k];});;
         if(d.attendance)db.attendance=d.attendance;
         if(d.dayNotes)db.dayNotes=d.dayNotes;
         if(d.settings)db.settings=d.settings;
@@ -1242,7 +1294,7 @@ function setSyncStatus(state,label){
 }
 
 function refreshCurrentPage(){
-  const renders={boletin:renderBoletin,dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={boletin:renderBoletin,waitlist:renderWaitlist,expenses:renderExpenses,dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,extrapay:renderExtraPay,families:renderFamilies,attendance:()=>{if(document.getElementById('att-body'))renderAttendance();},students:renderStudents,teachers:renderTeachers,grades:renderGrades,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[currentPage]) renders[currentPage]();
   updatePendingBadge();
 }
@@ -1459,7 +1511,513 @@ function syncThemeUI(theme){
 
 /* ---- NAV ---- */
 // Valid pages for URL routing
-const VALID_PAGES=['dashboard','timetable','journal','groups','payments','families','attendance','students','teachers','grades','exams','boletin','bills','datamanager','settings'];
+const VALID_PAGES=['dashboard','timetable','journal','groups','payments','families','attendance','students','teachers','grades','exams','boletin','bills','datamanager','settings','waitlist','expenses','extrapay'];
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  NAVEGACIÓN PERSONALIZABLE — orden, visibilidad, nombres y categorías
+//  Se guarda en este dispositivo (localStorage). PC y teléfono pueden
+//  tener cada uno su propia disposición.
+// ══════════════════════════════════════════════════════════════════════
+
+const NAV_DEFAULTS = [
+  {id:'dashboard',   label:'Dashboard',        icon:'layout-dashboard', cat:'Principal', lock:true},
+  {id:'timetable',   label:'Horario',          icon:'calendar-time',    cat:'Principal'},
+  {id:'journal',     label:'Diario de Clases', icon:'notebook',         cat:'Principal'},
+  {id:'groups',      label:'Grupos',           icon:'users',            cat:'Gestión'},
+  {id:'payments',    label:'Pagos',            icon:'cash',             cat:'Gestión'},
+  {id:'extrapay',    label:'Pagos Extra',      icon:'coin',             cat:'Gestión'},
+  {id:'families',    label:'Familias',         icon:'home',             cat:'Gestión'},
+  {id:'attendance',  label:'Asistencias',      icon:'calendar-check',   cat:'Gestión'},
+  {id:'students',    label:'Alumnos',          icon:'user',             cat:'Gestión'},
+  {id:'teachers',    label:'Profesores',       icon:'award',            cat:'Administración'},
+  {id:'grades',      label:'Notas 2026',       icon:'clipboard-list',   cat:'Administración'},
+  {id:'exams',       label:'Exámenes',         icon:'checklist',        cat:'Administración'},
+  {id:'boletin',     label:'Boletín',          icon:'certificate',      cat:'Administración'},
+  {id:'expenses',    label:'Gastos',           icon:'receipt-2',        cat:'Administración'},
+  {id:'bills',       label:'Billetes',         icon:'calculator',       cat:'Administración'},
+  {id:'datamanager', label:'Datos',            icon:'database',         cat:'Administración'},
+  {id:'waitlist',    label:'Lista de espera',  icon:'hourglass',        cat:'Gestión'},
+  {id:'settings',    label:'Configuración',    icon:'settings',         cat:'Administración', lock:true},
+];
+
+let navConfig = loadNavConfig();
+
+function loadNavConfig(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('cambridge_nav_v1')||'null');
+    if(!saved || !Array.isArray(saved) || !saved.length) return NAV_DEFAULTS.map(d=>({...d}));
+    const result = [];
+    saved.forEach(s=>{
+      const def = NAV_DEFAULTS.find(d=>d.id===s.id);
+      if(def) result.push({...def, label:(s.label||def.label), cat:(s.cat||def.cat), hidden:(!!s.hidden && !def.lock)});
+    });
+    // Secciones nuevas que no estaban cuando se guardó la config: se agregan al final
+    NAV_DEFAULTS.forEach(d=>{ if(!result.find(r=>r.id===d.id)) result.push({...d}); });
+    return result;
+  }catch(e){ return NAV_DEFAULTS.map(d=>({...d})); }
+}
+
+function saveNavConfig(){
+  try{
+    localStorage.setItem('cambridge_nav_v1',
+      JSON.stringify(navConfig.map(n=>({id:n.id,label:n.label,cat:n.cat,hidden:!!n.hidden}))));
+  }catch(e){}
+}
+
+function shortNavLabel(l){
+  const map={'Dashboard':'Inicio','Diario de Clases':'Diario','Configuración':'Config.','Notas 2026':'Notas','Asistencias':'Asist.','Profesores':'Profes'};
+  if(map[l]) return map[l];
+  return l.length>9 ? l.slice(0,8)+'.' : l;
+}
+
+function navBadgeHtml(id){
+  return id==='payments' ? ' <span class="nav-badge" id="badge-pending" style="display:none">0</span>' : '';
+}
+
+// ── Render de la sidebar (desktop) ────────────────────────────────────
+function renderSidebarNav(){
+  try{
+    const navEl = document.querySelector('.sidebar .nav');
+    if(!navEl) return;
+    const cur = (typeof currentPage!=='undefined') ? currentPage : 'dashboard';
+    const visible = navConfig.filter(n=>!n.hidden);
+    const cats = [];
+    visible.forEach(n=>{ if(!cats.includes(n.cat)) cats.push(n.cat); });
+    let html='';
+    cats.forEach(cat=>{
+      html += '<div class="nav-section">'+cat+'</div>';
+      visible.filter(n=>n.cat===cat).forEach(n=>{
+        html += '<div class="nav-item'+(cur===n.id?' active':'')+'" onclick="nav(\''+n.id+'\',this)">'
+              + '<i class="ti ti-'+n.icon+' nav-icon"></i><span class="nav-label"> '+n.label+'</span>'
+              + navBadgeHtml(n.id)
+              + '</div>';
+      });
+    });
+    navEl.innerHTML = html;
+  }catch(e){ console.error('renderSidebarNav:', e); }
+}
+
+// ── Render del bottom nav móvil (primeros 4 visibles + Más) ──────────
+function renderMobileNavBar(){
+  try{
+    const inner = document.querySelector('.mobile-nav-inner');
+    if(!inner) return;
+    const cur = (typeof currentPage!=='undefined') ? currentPage : 'dashboard';
+    const first4 = navConfig.filter(n=>!n.hidden).slice(0,4);
+    let html='';
+    first4.forEach(n=>{
+      html += '<div class="mnav-item'+(cur===n.id?' active':'')+'" id="mn-'+n.id+'" onclick="mobileNav(\''+n.id+'\')">'
+            + '<i class="ti ti-'+n.icon+'"></i><span class="mnav-label">'+shortNavLabel(n.label)+'</span>'
+            + (n.id==='payments' ? '<span class="mnav-badge" id="mn-badge" style="display:none">0</span>' : '')
+            + '</div>';
+    });
+    html += '<div class="mnav-item" id="mn-more" onclick="toggleMore()"><i class="ti ti-dots"></i><span class="mnav-label">Más</span></div>';
+    inner.innerHTML = html;
+  }catch(e){ console.error('renderMobileNavBar:', e); }
+}
+
+// ── Render del menú "Más" móvil (todo lo que no está en el bottom) ───
+function renderMobileMoreMenu(){
+  try{
+    const grid = document.querySelector('.more-menu .more-grid');
+    if(!grid) return;
+    const visible = navConfig.filter(n=>!n.hidden);
+    const rest = visible.slice(4);
+    let html = '<div class="more-title">Todas las secciones</div>';
+    rest.forEach(n=>{
+      html += '<div class="more-item" id="mm-'+n.id+'" onclick="mobileNav(\''+n.id+'\')">'
+            + '<i class="ti ti-'+n.icon+'"></i>'+shortNavLabel(n.label)+'</div>';
+    });
+    grid.innerHTML = html;
+  }catch(e){ console.error('renderMobileMoreMenu:', e); }
+}
+
+function refreshNavUI(){
+  renderSidebarNav();
+  renderMobileNavBar();
+  renderMobileMoreMenu();
+}
+
+// ── Acciones del personalizador ───────────────────────────────────────
+function navMove(id, dir){
+  const idx = navConfig.findIndex(n=>n.id===id);
+  if(idx<0) return;
+  const target = idx + dir;
+  if(target<0 || target>=navConfig.length) return;
+  const tmp = navConfig[idx];
+  navConfig[idx] = navConfig[target];
+  navConfig[target] = tmp;
+  saveNavConfig(); refreshNavUI(); renderNavCustomizer();
+}
+
+function navToggle(id){
+  const item = navConfig.find(n=>n.id===id);
+  if(!item || item.lock) return;
+  item.hidden = !item.hidden;
+  saveNavConfig(); refreshNavUI(); renderNavCustomizer();
+}
+
+function navRename(id, val){
+  const item = navConfig.find(n=>n.id===id);
+  if(!item) return;
+  const v = (val||'').trim();
+  if(v) item.label = v.slice(0,28);
+  saveNavConfig(); refreshNavUI();
+}
+
+function navSetCat(id, val){
+  const item = navConfig.find(n=>n.id===id);
+  if(!item) return;
+  if(val==='__new__'){
+    const nueva = prompt('Nombre de la nueva categoría:');
+    if(nueva && nueva.trim()) item.cat = nueva.trim().slice(0,24);
+  } else if(val){
+    item.cat = val;
+  }
+  saveNavConfig(); refreshNavUI(); renderNavCustomizer();
+}
+
+function navReset(){
+  if(!confirm('¿Restaurar el menú original? Se pierde tu personalización de este dispositivo.')) return;
+  navConfig = NAV_DEFAULTS.map(d=>({...d}));
+  try{ localStorage.removeItem('cambridge_nav_v1'); }catch(e){}
+  refreshNavUI(); renderNavCustomizer();
+  toast('Menú restaurado');
+}
+
+// ── UI del personalizador (en Configuración) ──────────────────────────
+function navCustomizerHtml(){
+  const cats = [];
+  navConfig.forEach(n=>{ if(!cats.includes(n.cat)) cats.push(n.cat); });
+  let rows='';
+  navConfig.forEach((n,i)=>{
+    const catOpts = cats.map(ct=>'<option value="'+ct+'"'+(n.cat===ct?' selected':'')+'>'+ct+'</option>').join('')
+                  + '<option value="__new__">+ Nueva categoría…</option>';
+    rows += '<div class="navcfg-row'+(n.hidden?' hidden-row':'')+'">'
+      + '<button class="navcfg-btn" onclick="navMove(\''+n.id+'\',-1)" '+(i===0?'disabled':'')+' title="Subir"><i class="ti ti-chevron-up"></i></button>'
+      + '<button class="navcfg-btn" onclick="navMove(\''+n.id+'\',1)" '+(i===navConfig.length-1?'disabled':'')+' title="Bajar"><i class="ti ti-chevron-down"></i></button>'
+      + '<i class="ti ti-'+n.icon+'" style="color:var(--accent);font-size:15px;flex-shrink:0"></i>'
+      + '<input value="'+n.label.replace(/"/g,'&quot;')+'" maxlength="28" onchange="navRename(\''+n.id+'\',this.value)" title="Renombrar sección">'
+      + '<select onchange="navSetCat(\''+n.id+'\',this.value)" title="Categoría">'+catOpts+'</select>'
+      + (n.lock
+          ? '<button class="navcfg-btn" disabled title="Esta sección no se puede ocultar"><i class="ti ti-lock"></i></button>'
+          : '<button class="navcfg-btn" onclick="navToggle(\''+n.id+'\')" title="'+(n.hidden?'Mostrar':'Ocultar')+'"><i class="ti ti-'+(n.hidden?'eye-off':'eye')+'"></i></button>')
+      + '</div>';
+  });
+  return '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">'
+    + '<div><div class="card-title" style="margin:0"><i class="ti ti-layout-list"></i> Personalizar menú</div>'
+    + '<div style="font-size:12px;color:var(--text3);margin-top:4px">Ordená con ↑↓, renombrá, cambiá de categoría u ocultá secciones. Las primeras 4 visibles aparecen en la barra inferior del teléfono. Se guarda en este dispositivo.</div></div>'
+    + '<button class="btn sm" onclick="navReset()"><i class="ti ti-restore"></i> Restaurar original</button>'
+    + '</div>'
+    + '<div style="margin-top:12px">'+rows+'</div>';
+}
+
+function renderNavCustomizer(){
+  const el = document.getElementById('nav-customizer');
+  if(el) el.innerHTML = navCustomizerHtml();
+}
+
+function appendNavCustomizer(){
+  try{
+    const page = document.getElementById('page-settings');
+    if(!page) return;
+    let el = document.getElementById('nav-customizer');
+    if(!el){
+      el = document.createElement('div');
+      el.id='nav-customizer';
+      el.className='card';
+      el.style.marginTop='16px';
+      page.appendChild(el);
+    }
+    el.innerHTML = navCustomizerHtml();
+  }catch(e){ console.error('appendNavCustomizer:', e); }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  AUMENTO DE ARANCELES — masivo, con vista previa. Solo modifica
+//  el arancel de cada grupo: NO toca alumnos, pagos ni historial.
+// ══════════════════════════════════════════════════════════════════════
+
+function feeIncreasePreview(){
+  const val = Number(document.getElementById('fee-inc-val')?.value)||0;
+  const type = document.getElementById('fee-inc-type')?.value||'pct';
+  const round = document.getElementById('fee-inc-round')?.checked;
+  const box = document.getElementById('fee-inc-preview');
+  if(!box) return;
+  if(!val){ box.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">Ingresá un valor para ver la vista previa.</div>'; return; }
+  let rows='';
+  db.groups.forEach(g=>{
+    let nuevo = type==='pct' ? g.fee*(1+val/100) : g.fee+val;
+    if(round) nuevo = Math.round(nuevo/1000)*1000;
+    nuevo = Math.max(0, Math.round(nuevo));
+    rows += '<tr>'
+      + '<td style="padding:7px 10px;border-bottom:1px solid var(--border)">'+g.name+'</td>'
+      + '<td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text3)">$'+(g.fee||0).toLocaleString('es-AR')+'</td>'
+      + '<td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:center;color:var(--text3)">→</td>'
+      + '<td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:var(--green)">$'+nuevo.toLocaleString('es-AR')+'</td>'
+      + '</tr>';
+  });
+  box.innerHTML = '<div style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;margin-top:10px">'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px">'
+    + '<thead><tr>'
+    + '<th style="padding:7px 10px;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border)">Grupo</th>'
+    + '<th style="padding:7px 10px;text-align:right;background:var(--bg3);border-bottom:1px solid var(--border)">Actual</th>'
+    + '<th style="background:var(--bg3);border-bottom:1px solid var(--border)"></th>'
+    + '<th style="padding:7px 10px;text-align:right;background:var(--bg3);border-bottom:1px solid var(--border)">Nuevo</th>'
+    + '</tr></thead><tbody>'+rows+'</tbody></table></div>'
+    + '<button class="btn primary" style="margin-top:12px" onclick="applyFeeIncrease()"><i class="ti ti-trending-up"></i> Aplicar aumento a todos los grupos</button>';
+}
+
+function applyFeeIncrease(){
+  const val = Number(document.getElementById('fee-inc-val')?.value)||0;
+  const type = document.getElementById('fee-inc-type')?.value||'pct';
+  const round = document.getElementById('fee-inc-round')?.checked;
+  if(!val) return toast('Ingresá un valor','error');
+  const desc = type==='pct' ? val+'%' : '$'+val.toLocaleString('es-AR');
+  if(!confirm('¿Aplicar aumento de '+desc+' a TODOS los grupos?\n\nLos alumnos de cada grupo y los pagos ya registrados NO se modifican.')) return;
+  db.groups.forEach(g=>{
+    let nuevo = type==='pct' ? g.fee*(1+val/100) : g.fee+val;
+    if(round) nuevo = Math.round(nuevo/1000)*1000;
+    g.fee = Math.max(0, Math.round(nuevo));
+  });
+  scheduleSave();
+  toast('Aranceles actualizados en '+db.groups.length+' grupos ✓');
+  renderSettings();
+}
+
+function appendFeeTool(){
+  try{
+    const page = document.getElementById('page-settings');
+    if(!page) return;
+    let el = document.getElementById('fee-tool');
+    if(!el){
+      el = document.createElement('div');
+      el.id='fee-tool';
+      el.className='card';
+      el.style.marginTop='16px';
+      page.appendChild(el);
+    }
+    el.innerHTML = '<div class="card-title" style="margin-bottom:4px"><i class="ti ti-trending-up"></i> Aumento de aranceles</div>'
+      + '<div style="font-size:12px;color:var(--text3);margin-bottom:12px">Aplicá un aumento a todos los grupos de una vez. Los alumnos y los pagos ya registrados no se tocan: cada pago guarda el monto del momento en que se cobró.</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+      + '<input id="fee-inc-val" type="number" min="0" placeholder="Valor" style="width:110px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px" oninput="feeIncreasePreview()">'
+      + '<select id="fee-inc-type" onchange="feeIncreasePreview()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px">'
+      + '<option value="pct">% porcentaje</option><option value="fixed">$ monto fijo</option></select>'
+      + '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer">'
+      + '<input type="checkbox" id="fee-inc-round" checked onchange="feeIncreasePreview()"> Redondear a miles</label>'
+      + '</div>'
+      + '<div id="fee-inc-preview"><div style="font-size:12px;color:var(--text3);padding:8px 0">Ingresá un valor para ver la vista previa.</div></div>';
+  }catch(e){ console.error('appendFeeTool:', e); }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  LISTA DE ESPERA — consultas de futuros alumnos
+// ══════════════════════════════════════════════════════════════════════
+
+function renderWaitlist(){
+  const list = [...(db.waitlist||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('page-waitlist').innerHTML =
+    '<div class="page-header">'
+    + '<div><div class="page-title">Lista de espera</div>'
+    + '<div class="page-subtitle">Consultas de futuros alumnos · '+list.length+' anotado'+(list.length===1?'':'s')+'</div></div>'
+    + '<div class="page-actions"><button class="btn primary" onclick="openWaitlistModal()"><i class="ti ti-plus"></i> Anotar consulta</button></div>'
+    + '</div>'
+    + (list.length===0
+        ? '<div class="empty"><i class="ti ti-hourglass"></i>Sin consultas anotadas.<br>Cuando alguien pregunte por un lugar, anotalo acá.</div>'
+        : '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px">'
+          + list.map(w=>waitlistCardHtml(w)).join('') + '</div>');
+}
+
+function waitlistCardHtml(w){
+  const d = w.date ? new Date(w.date+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '';
+  const phone = (w.phone||'').replace(/[^0-9]/g,'');
+  return '<div class="card" style="display:flex;flex-direction:column;gap:8px">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+    + '<div style="font-size:15px;font-weight:700">'+(w.name||'Sin nombre')+'</div>'
+    + '<div style="display:flex;gap:5px">'
+    + '<button class="btn xs" onclick="openWaitlistModal(\''+w.id+'\')" title="Editar"><i class="ti ti-edit"></i></button>'
+    + '<button class="btn xs danger" onclick="deleteWaitlistEntry(\''+w.id+'\')" title="Eliminar"><i class="ti ti-trash"></i></button>'
+    + '</div></div>'
+    + '<div style="display:flex;gap:6px;flex-wrap:wrap;font-size:12px">'
+    + (w.age ? '<span class="badge blue">'+w.age+' años</span>' : '')
+    + (w.level ? '<span class="badge gold">'+w.level+'</span>' : '')
+    + (d ? '<span class="badge gray">Consultó: '+d+'</span>' : '')
+    + '</div>'
+    + (w.phone ? '<div style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px"><i class="ti ti-phone" style="color:var(--accent)"></i>'+w.phone
+        + (phone.length>=8 ? ' <a href="https://wa.me/549'+phone+'" target="_blank" rel="noopener" style="color:var(--green);text-decoration:none;font-weight:600;font-size:12px"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>' : '')
+        + '</div>' : '')
+    + (w.notes ? '<div style="font-size:12px;color:var(--text3);line-height:1.5;border-top:1px solid var(--border);padding-top:8px">'+w.notes+'</div>' : '')
+    + '</div>';
+}
+
+function openWaitlistModal(id){
+  const w = id ? (db.waitlist||[]).find(x=>x.id===id) : null;
+  document.getElementById('m-waitlist-body').innerHTML =
+    '<div class="modal-header"><div class="modal-title">'+(w?'Editar consulta':'Anotar consulta')+'</div>'
+    + '<button class="btn ghost" onclick="closeModal(\'m-waitlist\')"><i class="ti ti-x"></i></button></div>'
+    + '<input type="hidden" id="wl-id" value="'+(w?w.id:'')+'">'
+    + '<div class="form-grid c2" style="margin-bottom:10px">'
+    + '<div class="field"><label>Nombre</label><input id="wl-name" value="'+(w?(w.name||'').replace(/"/g,'&quot;'):'')+'" placeholder="Nombre del interesado"></div>'
+    + '<div class="field"><label>Edad</label><input id="wl-age" type="number" min="3" max="99" value="'+(w?(w.age||''):'')+'" placeholder="Edad"></div>'
+    + '</div>'
+    + '<div class="form-grid c2" style="margin-bottom:10px">'
+    + '<div class="field"><label>Nivel / grupo deseado</label><input id="wl-level" value="'+(w?(w.level||'').replace(/"/g,'&quot;'):'')+'" placeholder="Ej: Teens, principiante…"></div>'
+    + '<div class="field"><label>Teléfono</label><input id="wl-phone" value="'+(w?(w.phone||''):'')+'" placeholder="341..."></div>'
+    + '</div>'
+    + '<div class="field" style="margin-bottom:14px"><label>Notas</label>'
+    + '<textarea id="wl-notes" rows="3" placeholder="Disponibilidad horaria, cómo se enteró, etc.">'+(w?(w.notes||''):'')+'</textarea></div>'
+    + '<div class="modal-footer">'
+    + '<button class="btn" onclick="closeModal(\'m-waitlist\')">Cancelar</button>'
+    + '<button class="btn primary" onclick="saveWaitlistEntry()"><i class="ti ti-device-floppy"></i> Guardar</button>'
+    + '</div>';
+  document.getElementById('m-waitlist').classList.add('open');
+}
+
+function saveWaitlistEntry(){
+  const id = document.getElementById('wl-id').value;
+  const name = document.getElementById('wl-name').value.trim();
+  if(!name) return toast('Poné al menos el nombre','error');
+  const data = {
+    name,
+    age: document.getElementById('wl-age').value,
+    level: document.getElementById('wl-level').value.trim(),
+    phone: document.getElementById('wl-phone').value.trim(),
+    notes: document.getElementById('wl-notes').value.trim(),
+  };
+  if(!db.waitlist) db.waitlist=[];
+  if(id){
+    const w = db.waitlist.find(x=>x.id===id);
+    if(w) Object.assign(w, data);
+  } else {
+    db.waitlist.push({id:uid(), date:new Date().toISOString().slice(0,10), ...data});
+  }
+  scheduleSave();
+  closeModal('m-waitlist');
+  renderWaitlist();
+  toast('Consulta guardada ✓');
+}
+
+function deleteWaitlistEntry(id){
+  if(!confirm('¿Eliminar esta consulta de la lista de espera?')) return;
+  db.waitlist = (db.waitlist||[]).filter(x=>x.id!==id);
+  scheduleSave();
+  renderWaitlist();
+  toast('Consulta eliminada');
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  CIERRE DE CICLO — archiva el año y promueve los grupos al siguiente
+//  nivel. Guarda backup completo antes. El historial NO se borra.
+// ══════════════════════════════════════════════════════════════════════
+
+// Promoción sugerida por nombre de grupo (editable por el profe en el modal)
+const GROUP_PROMOTION = {
+  'Kids 5':'Teens 2 Girls',
+  'Teens 2 Girls':'Teens 3',
+  'Teens 2 Boys':'Teens 3',
+  'Teens 3':'Teens 4',
+  'Teens 4':'5th Year A',
+  '5th Year A':'Superior',
+  '5th Year B':'Superior',
+  'Superior':'(egresa)',
+};
+
+function openCycleClose(){
+  const body = document.getElementById('m-cycle-body');
+  let rows='';
+  db.groups.forEach(g=>{
+    const count = db.students.filter(s=>s.groupId===g.id).length;
+    const sugerido = GROUP_PROMOTION[g.name] || '(sin cambio)';
+    const opts = ['(sin cambio)','(egresa)'].concat(db.groups.map(x=>x.name))
+      .filter((v,i,a)=>a.indexOf(v)===i)
+      .map(name=>'<option value="'+name+'"'+(name===sugerido?' selected':'')+'>'+name+'</option>').join('');
+    rows += '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">'
+      + '<div style="flex:1"><div style="font-size:13px;font-weight:600">'+g.name+'</div>'
+      + '<div style="font-size:11px;color:var(--text3)">'+count+' alumno'+(count!==1?'s':'')+'</div></div>'
+      + '<i class="ti ti-arrow-right" style="color:var(--text3)"></i>'
+      + '<select id="promo-'+g.id+'" style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:7px 8px;color:var(--text);font-size:12px">'+opts+'</select>'
+      + '</div>';
+  });
+  body.innerHTML =
+    '<div class="modal-header"><div><div class="modal-title">Cierre de ciclo</div>'
+    + '<div style="font-size:12px;color:var(--text3);margin-top:2px">Promové cada grupo al nivel siguiente para el año nuevo.</div></div>'
+    + '<button class="btn ghost" onclick="closeModal(\'m-cycle\')"><i class="ti ti-x"></i></button></div>'
+    + '<div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);margin-bottom:12px">'
+    + '<b>Antes de aplicar se guarda un backup completo.</b> Los alumnos pasan al grupo elegido. Los que “egresan” se pueden borrar o conservar como inactivos. El historial de pagos, notas y asistencias del año queda intacto.</div>'
+    + rows
+    + '<div style="margin-top:14px"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer">'
+    + '<input type="checkbox" id="promo-clear-grades"> Vaciar notas y asistencias para empezar el año nuevo (el backup las conserva)</label></div>'
+    + '<div class="modal-footer">'
+    + '<button class="btn" onclick="closeModal(\'m-cycle\')">Cancelar</button>'
+    + '<button class="btn primary" onclick="applyCycleClose()"><i class="ti ti-arrow-big-up-lines"></i> Aplicar promoción</button>'
+    + '</div>';
+  document.getElementById('m-cycle').classList.add('open');
+}
+
+function applyCycleClose(){
+  if(!confirm('¿Aplicar el cierre de ciclo?\n\nSe guarda un backup completo antes de hacer cualquier cambio.')) return;
+  // 1) Backup de seguridad
+  saveLocalBackup(JSON.parse(JSON.stringify(db)));
+
+  // 2) Mapear nombre→id de grupos
+  const byName = {};
+  db.groups.forEach(g=>{ byName[g.name]=g.id; });
+
+  // 3) Promover alumnos
+  let movidos=0, egresados=0;
+  db.groups.forEach(g=>{
+    const sel = document.getElementById('promo-'+g.id);
+    if(!sel) return;
+    const destino = sel.value;
+    if(destino==='(sin cambio)') return;
+    const alumnos = db.students.filter(s=>s.groupId===g.id);
+    if(destino==='(egresa)'){
+      alumnos.forEach(s=>{ s.graduated=true; s.graduatedYear=new Date().getFullYear(); egresados++; });
+    } else if(byName[destino]){
+      alumnos.forEach(s=>{ s.groupId=byName[destino]; movidos++; });
+    }
+  });
+
+  // 4) Limpieza opcional de notas/asistencias
+  if(document.getElementById('promo-clear-grades')?.checked){
+    db.grades={};
+    db.attendance={};
+    db.boletin={};
+  }
+
+  scheduleSave();
+  closeModal('m-cycle');
+  refreshCurrentPage();
+  toast('✅ Ciclo cerrado: '+movidos+' alumnos promovidos'+(egresados?', '+egresados+' egresados':''));
+}
+
+function appendCycleTool(){
+  try{
+    const page = document.getElementById('page-settings');
+    if(!page) return;
+    let el = document.getElementById('cycle-tool');
+    if(!el){
+      el = document.createElement('div');
+      el.id='cycle-tool'; el.className='card'; el.style.marginTop='16px';
+      page.appendChild(el);
+    }
+    el.innerHTML = '<div class="card-title" style="margin-bottom:4px"><i class="ti ti-calendar-stats"></i> Cierre de ciclo</div>'
+      + '<div style="font-size:12px;color:var(--text3);margin-bottom:12px">Para fin de año: promové los grupos al nivel siguiente y arrancá el año nuevo limpio. Se guarda un backup completo antes de cualquier cambio.</div>'
+      + '<button class="btn" onclick="openCycleClose()"><i class="ti ti-arrow-big-up-lines"></i> Iniciar cierre de ciclo</button>';
+  }catch(e){ console.error('appendCycleTool:', e); }
+}
+
+function renderSettings(){
+  renderSettingsBase();
+  appendFeeTool();
+  appendCycleTool();
+  appendNavCustomizer();
+}
+
 
 function nav(page,el){
   // Validate page
@@ -1489,7 +2047,7 @@ function nav(page,el){
     history.pushState({page}, '', '#'+page);
   }
 
-  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,grades:renderGrades,exams:renderExams,boletin:renderBoletin,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
+  const renders={dashboard:renderDashboard,timetable:renderTimetable,groups:renderGroups,payments:renderPayments,extrapay:renderExtraPay,families:renderFamilies,attendance:initAttendance,students:renderStudents,teachers:renderTeachers,grades:renderGrades,exams:renderExams,boletin:renderBoletin,waitlist:renderWaitlist,expenses:renderExpenses,journal:renderJournal,bills:renderBills,datamanager:renderDataManager,settings:renderSettings};
   if(renders[page])renders[page]();
 }
 
@@ -1712,6 +2270,362 @@ function renderTimetable(){
 }
 
 /* ---- DATA MANAGER ---- */
+
+// ══════════════════════════════════════════════════════════════════════
+//  SISTEMA DE BACKUPS LOCALES — 2 por día, hasta 10 guardados, restaurables
+//  Se guardan en este dispositivo. Cada backup es una foto completa de db.
+// ══════════════════════════════════════════════════════════════════════
+
+const BK_PREFIX = 'cambridge_bk_';     // claves de cada snapshot
+const BK_MAX = 10;                      // cuántos snapshots conservar
+
+function bkAllKeys(){
+  const keys = [];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith(BK_PREFIX)) keys.push(k);
+    }
+  }catch(e){}
+  return keys.sort().reverse(); // más nuevo primero (ts ISO ordena bien)
+}
+
+function bkList(){
+  return bkAllKeys().map(k=>{
+    try{
+      const snap = JSON.parse(localStorage.getItem(k));
+      return {key:k, ts:snap.ts, data:snap.data};
+    }catch(e){ return null; }
+  }).filter(Boolean);
+}
+
+// Guarda un snapshot. Máximo 2 por día (mañana/tarde): si ya hay 2 de hoy,
+// sobrescribe el más cercano en horario en vez de acumular.
+function saveLocalBackup(data){
+  try{
+    if(!data || !data.students) return; // nunca respaldar algo vacío
+    const now = new Date();
+    const ts = now.toISOString();
+    const snap = JSON.stringify({ts, data});
+    const today = ts.slice(0,10);
+
+    // backups de hoy
+    const todays = bkList().filter(b=>(b.ts||'').slice(0,10)===today);
+    const slot = now.getHours() < 14 ? 'am' : 'pm'; // 2 franjas por día
+    const slotKey = BK_PREFIX + today + '_' + slot;
+
+    localStorage.setItem(slotKey, snap);
+    localStorage.setItem('cambridge_last_backup', ts);
+
+    // Recorte: conservar como mucho BK_MAX, borrando los más viejos
+    const all = bkAllKeys();
+    while(all.length > BK_MAX){
+      const oldest = all.pop();
+      try{ localStorage.removeItem(oldest); }catch(e){}
+    }
+  }catch(e){
+    // localStorage lleno: borrar el más viejo y reintentar una vez
+    try{
+      const all = bkAllKeys();
+      if(all.length){ localStorage.removeItem(all[all.length-1]); saveLocalBackup(data); }
+    }catch(e2){}
+  }
+}
+
+function bkInfo(data){
+  const s = (data.students||[]).length;
+  const p = (data.payments||[]).filter(x=>x.amount>0).length;
+  const j = Object.values(data.journal||{}).reduce((a,g)=>a+Object.keys(g||{}).length,0);
+  return s+' alumnos · '+p+' pagos · '+j+' clases en diario';
+}
+
+function bkCardsHtml(){
+  const list = bkList();
+  if(!list.length){
+    return '<div class="empty" style="padding:24px"><i class="ti ti-shield-off"></i>Todavía no hay backups.<br>Se crean solos cada vez que se guardan cambios (hasta 2 por día).</div>';
+  }
+  let html='';
+  list.forEach((b,i)=>{
+    const d = new Date(b.ts);
+    const fecha = d.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
+    const hora = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 14px;background:var(--bg3);border:1px solid '+(i===0?'var(--accent-border)':'var(--border)')+';border-radius:12px;margin-bottom:8px">'
+      + '<div><div style="font-size:13px;font-weight:600;color:var(--text);text-transform:capitalize">'+(i===0?'⭐ ':'')+fecha+' · '+hora+'</div>'
+      + '<div style="font-size:12px;color:var(--text3);margin-top:3px">'+bkInfo(b.data)+'</div></div>'
+      + '<div style="display:flex;gap:6px">'
+      + '<button class="btn sm" onclick="downloadBackupSnapshot(\''+b.key+'\')" title="Descargar este backup"><i class="ti ti-download"></i></button>'
+      + '<button class="btn sm primary" onclick="restoreBackup(\''+b.key+'\')"><i class="ti ti-history"></i> Restaurar</button>'
+      + '</div></div>';
+  });
+  return html;
+}
+
+function restoreBackup(key){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw){ toast('Ese backup ya no existe','error'); return; }
+    const snap = JSON.parse(raw);
+    if(!snap.data || !snap.data.students){ toast('Backup inválido','error'); return; }
+    const d = new Date(snap.ts);
+    if(!confirm('¿Restaurar el backup del '+d.toLocaleString('es-AR')+'?\n\n'+bkInfo(snap.data)+'\n\nEsto reemplaza los datos actuales en la nube. Antes de hacerlo se guarda un backup del estado de ahora, por si querés volver.')) return;
+    // Seguridad: snapshot del estado actual ANTES de pisar
+    saveLocalBackup(JSON.parse(JSON.stringify(db)));
+    // Restaurar
+    Object.keys(snap.data).forEach(k=>{ db[k]=snap.data[k]; });
+    saveToSupabase().then(()=>{
+      toast('✅ Datos restaurados');
+      refreshCurrentPage();
+      renderDataManager();
+    });
+  }catch(e){ toast('Error al restaurar: '+e.message,'error'); }
+}
+
+function downloadBackupSnapshot(key){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw){ toast('Ese backup ya no existe','error'); return; }
+    const snap = JSON.parse(raw);
+    const blob = new Blob([JSON.stringify(snap.data,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cambridge_backup_'+(snap.ts||'').slice(0,10)+'.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('Backup descargado');
+  }catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+// Backup manual inmediato (botón "Crear backup ahora")
+function createManualBackup(){
+  saveLocalBackup(JSON.parse(JSON.stringify(db)));
+  renderDataManager();
+  toast('Backup creado ✓');
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  GASTOS — registro de egresos y balance real del instituto
+// ══════════════════════════════════════════════════════════════════════
+
+const EXPENSE_CATS = ['Alquiler','Sueldos','Materiales','Servicios','Impuestos','Marketing','Otros'];
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  PAGOS EXTRA — Micro (monto único global) y Examen final (monto por grupo)
+//  Pago único cada uno, con plazo hasta diciembre. Aislados de la cuota mensual.
+// ══════════════════════════════════════════════════════════════════════
+
+let extraTab = 'extra-micro'; // pestaña activa
+
+function getMicroFee(){ return Number(getSettings().microFee)||0; }
+function setMicroFee(v){ getSettings().microFee = Number(v)||0; scheduleSave(); }
+
+function examFeeFor(gid){ const g=getGroup(gid); return Number(g.examFee)||0; }
+
+function renderExtraPay(){
+  const concept = extraTab;
+  const label = extraLabel(concept);
+  const gid = document.getElementById('xp-gid')?.value || '';
+  let students = gid ? db.students.filter(s=>s.groupId===gid && !s.graduated)
+                     : db.students.filter(s=>!s.graduated);
+  students = students.sort((a,b)=>a.name.localeCompare(b.name));
+
+  // Monto esperado por alumno según concepto
+  const feeFor = s => concept==='extra-micro' ? getMicroFee() : examFeeFor(s.groupId);
+
+  // Totales
+  let totalEsperado=0, totalCobrado=0, pagados=0, parciales=0;
+  students.forEach(s=>{
+    const pay = db.payments.find(p=>p.studentId===s.id && p.month===concept);
+    const fee = feeFor(s);
+    totalEsperado += fee;
+    if(pay){
+      totalCobrado += Number(pay.amount||0);
+      if(pay.partial) parciales++; else pagados++;
+    }
+  });
+  const pendientes = students.length - pagados - parciales;
+
+  // Header con monto configurable
+  let configBox='';
+  if(concept==='extra-micro'){
+    configBox = '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:16px">'
+      + '<i class="ti ti-bus" style="font-size:20px;color:var(--accent)"></i>'
+      + '<div style="flex:1;min-width:140px"><div style="font-size:13px;font-weight:600">Valor del micro</div>'
+      + '<div style="font-size:11px;color:var(--text3)">Mismo monto para todos los alumnos</div></div>'
+      + '<input type="number" id="xp-micro-fee" value="'+(getMicroFee()||'')+'" placeholder="0" onchange="setMicroFee(this.value);renderExtraPay()" style="width:130px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-family:var(--font-mono)">'
+      + '</div>';
+  } else {
+    configBox = '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--text3)">'
+      + '<i class="ti ti-info-circle" style="color:var(--accent)"></i> El valor del examen final se configura por grupo, en <b>Grupos → editar grupo</b>. Cada grupo puede tener un monto distinto.'
+      + '</div>';
+  }
+
+  // Filas
+  let rows='';
+  students.forEach(s=>{
+    const g=getGroup(s.groupId);
+    const pay=db.payments.find(p=>p.studentId===s.id&&p.month===concept);
+    const fee=feeFor(s);
+    const paid=!!pay;
+    let estado;
+    if(pay&&pay.partial) estado='<span class="badge amber">Parcial</span><div style="font-size:11px;color:var(--amber);margin-top:2px">Pagó '+fm(pay.amount)+' · debe '+fm((pay.total||fee)-pay.amount)+'</div>';
+    else if(paid) estado='<span class="badge green">Pagó</span>';
+    else estado='<span class="badge red">Pendiente</span>';
+    rows += '<tr>'
+      + '<td><div style="display:flex;align-items:center;gap:8px">'+avatar(s.name,28,s.gender||'')+'<span>'+s.name+'</span></div></td>'
+      + '<td><span class="badge gold">'+g.name+'</span></td>'
+      + '<td style="font-family:var(--font-mono);font-size:12px">'+(fee>0?fm(fee):'<span style="color:var(--text3)">sin definir</span>')+'</td>'
+      + '<td>'+estado+'</td>'
+      + '<td>'+(pay?'<span class="badge '+(pay.method==='Transferencia'?'blue':pay.method==='Efectivo'?'green':'amber')+'">'+pay.method+'</span>':'')+'</td>'
+      + '<td style="font-size:12px;color:var(--text2)">'+(pay?fdate(pay.date):'')+'</td>'
+      + '<td><div class="td-actions">'
+      + (paid
+          ? (pay.partial?'<button class="btn xs primary" onclick="openExtraPayModal(\''+s.id+'\',\''+concept+'\','+((pay.total||fee)-pay.amount)+')" title="Cobrar saldo"><i class="ti ti-plus"></i> Saldo</button>':'')
+            + '<button class="btn xs danger" onclick="unmarkPay(\''+s.id+'\',\''+concept+'\')"><i class="ti ti-x"></i></button>'
+          : '<button class="btn xs primary" onclick="openExtraPayModal(\''+s.id+'\',\''+concept+'\','+fee+')"><i class="ti ti-check"></i> Marcar</button>')
+      + '</div></td>'
+      + '</tr>';
+  });
+
+  document.getElementById('page-extrapay').innerHTML =
+    '<div class="page-header">'
+    + '<div><div class="page-title">Pagos Extra</div><div class="page-subtitle">Micro y examen final · pago único hasta diciembre</div></div>'
+    + '</div>'
+    + '<div class="chips" style="margin-bottom:16px">'
+    + EXTRA_CONCEPTS.map(ec=>'<span class="chip '+(extraTab===ec.key?'active':'')+'" onclick="extraTab=\''+ec.key+'\';renderExtraPay()"><i class="ti ti-'+ec.icon+'"></i> '+ec.label+'</span>').join('')
+    + '</div>'
+    + configBox
+    + '<div class="metric-grid" style="margin-bottom:16px">'
+    + '<div class="metric"><div class="metric-label">Cobrado</div><div class="metric-value" style="color:var(--green)">'+fm(totalCobrado)+'</div></div>'
+    + '<div class="metric"><div class="metric-label">Total esperado</div><div class="metric-value">'+fm(totalEsperado)+'</div></div>'
+    + '<div class="metric"><div class="metric-label">Pagaron</div><div class="metric-value">'+pagados+(parciales?' <span style="font-size:13px;color:var(--amber)">+'+parciales+' parc.</span>':'')+'</div></div>'
+    + '<div class="metric"><div class="metric-label">Pendientes</div><div class="metric-value" style="color:'+(pendientes?'var(--red)':'var(--green)')+'">'+pendientes+'</div></div>'
+    + '</div>'
+    + '<div class="chips" style="margin-bottom:12px">'
+    + '<span class="chip '+(!gid?'active':'')+'" onclick="document.getElementById(\'xp-gid\').value=\'\';renderExtraPay()">Todos</span>'
+    + '<select id="xp-gid" onchange="renderExtraPay()" style="display:none">'
+    + '<option value="">Todos</option>'+db.groups.map(g=>'<option value="'+g.id+'"'+(g.id===gid?' selected':'')+'>'+g.name+'</option>').join('')
+    + '</select>'
+    + db.groups.map(g=>'<span class="chip '+(gid===g.id?'active':'')+'" onclick="document.getElementById(\'xp-gid\').value=\''+g.id+'\';renderExtraPay()">'+g.name+'</span>').join('')
+    + '</div>'
+    + (students.length===0
+        ? '<div class="empty"><i class="ti ti-users"></i>Sin alumnos para mostrar</div>'
+        : '<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">'
+          + '<thead><tr><th style="text-align:left;padding:9px 12px;background:var(--bg3)">Alumno</th><th style="text-align:left;padding:9px 12px;background:var(--bg3)">Grupo</th><th style="text-align:left;padding:9px 12px;background:var(--bg3)">Monto</th><th style="text-align:left;padding:9px 12px;background:var(--bg3)">Estado</th><th style="text-align:left;padding:9px 12px;background:var(--bg3)">Método</th><th style="text-align:left;padding:9px 12px;background:var(--bg3)">Fecha</th><th style="background:var(--bg3)"></th></tr></thead>'
+          + '<tbody>'+rows+'</tbody></table></div></div>');
+}
+
+// Reusa el modal de pago normal (m-pay) que ya soporta parcial
+function openExtraPayModal(sid, concept, fee){
+  openPayModal(sid, concept, fee);
+}
+
+function renderExpenses(){
+  const month = document.getElementById('exp-month')?.value || curMonth();
+  const expenses = (db.expenses||[]).filter(e=>e.month===month).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const totalExp = expenses.reduce((a,e)=>a+Number(e.amount||0),0);
+
+  // Ingresos del mes (pagos cobrados)
+  const income = (db.payments||[]).filter(p=>p.month===month).reduce((a,p)=>a+Number(p.amount||0),0);
+  const balance = income - totalExp;
+
+  let rows='';
+  expenses.forEach(e=>{
+    const d = e.date ? new Date(e.date+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '';
+    rows += '<tr>'
+      + '<td style="padding:9px 12px;border-bottom:1px solid var(--border)"><span class="badge gold">'+(e.cat||'Otros')+'</span></td>'
+      + '<td style="padding:9px 12px;border-bottom:1px solid var(--border)">'+(e.desc||'')+'</td>'
+      + '<td style="padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text3);font-size:12px">'+d+'</td>'
+      + '<td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-mono);font-weight:600;color:var(--red)">-'+fm(e.amount)+'</td>'
+      + '<td style="padding:9px 8px;border-bottom:1px solid var(--border);text-align:center"><button class="btn xs danger" onclick="deleteExpense(\''+e.id+'\')"><i class="ti ti-trash"></i></button></td>'
+      + '</tr>';
+  });
+
+  document.getElementById('page-expenses').innerHTML =
+    '<div class="page-header">'
+    + '<div><div class="page-title">Gastos</div><div class="page-subtitle">Egresos y balance del instituto</div></div>'
+    + '<div class="page-actions"><button class="btn primary" onclick="openExpenseModal()"><i class="ti ti-plus"></i> Anotar gasto</button></div>'
+    + '</div>'
+    + '<div class="search-row" style="margin-bottom:16px">'
+    + '<input type="month" class="search-input" id="exp-month" value="'+month+'" onchange="renderExpenses()" style="flex:0 0 auto;min-width:160px">'
+    + '</div>'
+    + '<div class="metric-grid" style="margin-bottom:16px">'
+    + '<div class="metric"><div class="metric-label">Ingresos del mes</div><div class="metric-value" style="color:var(--green)">'+fm(income)+'</div></div>'
+    + '<div class="metric"><div class="metric-label">Gastos del mes</div><div class="metric-value" style="color:var(--red)">'+fm(totalExp)+'</div></div>'
+    + '<div class="metric"><div class="metric-label">Balance</div><div class="metric-value" style="color:'+(balance>=0?'var(--green)':'var(--red)')+'">'+(balance>=0?'':'-')+fm(Math.abs(balance))+'</div></div>'
+    + '</div>'
+    + (expenses.length===0
+        ? '<div class="empty"><i class="ti ti-receipt-off"></i>Sin gastos anotados en este mes.</div>'
+        : '<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">'
+          + '<thead><tr>'
+          + '<th style="padding:9px 12px;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border)">Categoría</th>'
+          + '<th style="padding:9px 12px;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border)">Detalle</th>'
+          + '<th style="padding:9px 12px;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border)">Fecha</th>'
+          + '<th style="padding:9px 12px;text-align:right;background:var(--bg3);border-bottom:1px solid var(--border)">Monto</th>'
+          + '<th style="background:var(--bg3);border-bottom:1px solid var(--border)"></th>'
+          + '</tr></thead><tbody>'+rows+'</tbody></table></div></div>');
+}
+
+function openExpenseModal(id){
+  const e = id ? (db.expenses||[]).find(x=>x.id===id) : null;
+  const month = document.getElementById('exp-month')?.value || curMonth();
+  document.getElementById('m-expense-body').innerHTML =
+    '<div class="modal-header"><div class="modal-title">'+(e?'Editar gasto':'Anotar gasto')+'</div>'
+    + '<button class="btn ghost" onclick="closeModal(\'m-expense\')"><i class="ti ti-x"></i></button></div>'
+    + '<input type="hidden" id="ex-id" value="'+(e?e.id:'')+'">'
+    + '<div class="form-grid c2" style="margin-bottom:10px">'
+    + '<div class="field"><label>Categoría</label><select id="ex-cat">'
+    + EXPENSE_CATS.map(ct=>'<option value="'+ct+'"'+(e&&e.cat===ct?' selected':'')+'>'+ct+'</option>').join('')
+    + '</select></div>'
+    + '<div class="field"><label>Monto</label><input id="ex-amount" type="number" min="0" value="'+(e?e.amount:'')+'" placeholder="0"></div>'
+    + '</div>'
+    + '<div class="field" style="margin-bottom:10px"><label>Detalle</label><input id="ex-desc" value="'+(e?(e.desc||'').replace(/"/g,'&quot;'):'')+'" placeholder="Ej: Alquiler julio, resma de hojas…"></div>'
+    + '<div class="form-grid c2" style="margin-bottom:14px">'
+    + '<div class="field"><label>Fecha</label><input id="ex-date" type="date" value="'+(e?e.date:new Date().toISOString().slice(0,10))+'"></div>'
+    + '<div class="field"><label>Mes que afecta</label><input id="ex-month" type="month" value="'+(e?e.month:month)+'"></div>'
+    + '</div>'
+    + '<div class="modal-footer">'
+    + '<button class="btn" onclick="closeModal(\'m-expense\')">Cancelar</button>'
+    + '<button class="btn primary" onclick="saveExpense()"><i class="ti ti-device-floppy"></i> Guardar</button>'
+    + '</div>';
+  document.getElementById('m-expense').classList.add('open');
+}
+
+function saveExpense(){
+  const id = document.getElementById('ex-id').value;
+  const amount = Number(document.getElementById('ex-amount').value);
+  if(!amount) return toast('Ingresá el monto','error');
+  const data = {
+    cat: document.getElementById('ex-cat').value,
+    amount,
+    desc: document.getElementById('ex-desc').value.trim(),
+    date: document.getElementById('ex-date').value,
+    month: document.getElementById('ex-month').value || curMonth(),
+  };
+  if(!db.expenses) db.expenses=[];
+  if(id){
+    const ex = db.expenses.find(x=>x.id===id);
+    if(ex) Object.assign(ex, data);
+  } else {
+    db.expenses.push({id:uid(), ...data});
+  }
+  scheduleSave();
+  closeModal('m-expense');
+  document.getElementById('exp-month').value = data.month;
+  renderExpenses();
+  toast('Gasto guardado ✓');
+}
+
+function deleteExpense(id){
+  if(!confirm('¿Eliminar este gasto?')) return;
+  db.expenses = (db.expenses||[]).filter(x=>x.id!==id);
+  scheduleSave();
+  renderExpenses();
+  toast('Gasto eliminado');
+}
+
 function renderDataManager(){
   const total=db.students.length+db.groups.length+db.payments.length+db.families.length+db.teachers.length;
   const dataStr=JSON.stringify(db,null,2);
@@ -1753,6 +2667,14 @@ function renderDataManager(){
         <button class="btn" onclick="loadFromSupabase().then(()=>{renderDataManager();toast('Datos recargados desde Supabase')})"><i class="ti ti-cloud-download"></i> Recargar desde nube</button>
         <button class="btn primary" onclick="saveToSupabase().then(()=>toast('Guardado en nube'))"><i class="ti ti-cloud-upload"></i> Guardar en nube ahora</button>
       </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+        <div><div class="card-title" style="margin:0"><i class="ti ti-shield-check"></i> Backups automáticos</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">El sistema guarda una copia en este dispositivo cada vez que hay cambios (hasta 2 por día). Si algo sale mal, restaurás cualquiera.</div></div>
+        <button class="btn sm" onclick="createManualBackup()"><i class="ti ti-camera"></i> Crear backup ahora</button>
+      </div>
+      <div style="margin-top:12px">${bkCardsHtml()}</div>
     </div>`;
 
   const lbl=document.getElementById('sync-label-dm');
@@ -1813,6 +2735,149 @@ function getWeeklyAbsences(){
   return results;
 }
 
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  DASHBOARD PERSONALIZABLE — elegí qué secciones ver
+// ══════════════════════════════════════════════════════════════════════
+
+const DASH_SECTIONS = [
+  {id:'quicknotes',label:'Pendientes del profe',      desc:'Bloc de notas rápidas sincronizado'},
+  {id:'metrics',   label:'Métricas del mes',          desc:'Alumnos, pagaron, pendientes, recaudado'},
+  {id:'methods',   label:'Métodos de pago',           desc:'Efectivo vs transferencia del mes'},
+  {id:'charts',    label:'Gráficos',                  desc:'Recaudación mensual y estado de cobro'},
+  {id:'groups',    label:'Ausencias y cobro por grupo', desc:'Resumen semanal por grupo'},
+  {id:'birthdays', label:'Cumpleaños del mes',        desc:'Quiénes cumplen este mes'},
+  {id:'pending',   label:'Pagos pendientes',          desc:'Lista de quienes deben el mes'},
+];
+
+function dashHidden(){
+  try{
+    const v = JSON.parse(localStorage.getItem('cambridge_dash_v1')||'[]');
+    return Array.isArray(v) ? v : [];
+  }catch(e){ return []; }
+}
+
+function dashShow(id){ return !dashHidden().includes(id); }
+
+function toggleDashSection(id){
+  let hidden = dashHidden();
+  if(hidden.includes(id)) hidden = hidden.filter(x=>x!==id);
+  else hidden.push(id);
+  try{ localStorage.setItem('cambridge_dash_v1', JSON.stringify(hidden)); }catch(e){}
+  renderDashboard();
+  renderDashConfigBody();
+}
+
+function renderDashConfigBody(){
+  const body = document.getElementById('m-dashcfg-body');
+  if(!body) return;
+  let rows='';
+  DASH_SECTIONS.forEach(sec=>{
+    const on = dashShow(sec.id);
+    rows += '<div onclick="toggleDashSection(\''+sec.id+'\')" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid '+(on?'var(--accent-border)':'var(--border)')+';border-radius:11px;background:'+(on?'var(--accent-bg)':'var(--bg3)')+';cursor:pointer;margin-bottom:7px;user-select:none;transition:all 0.15s;'+(on?'':'opacity:0.55')+'">'
+      + '<div style="width:38px;height:22px;border-radius:99px;background:'+(on?'var(--accent)':'var(--bg4)')+';border:1px solid '+(on?'var(--accent)':'var(--border2)')+';position:relative;flex-shrink:0;transition:all 0.2s">'
+      + '<div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;'+(on?'right:2px':'left:2px')+';transition:all 0.2s"></div></div>'
+      + '<div><div style="font-size:14px;font-weight:600;color:var(--text)">'+sec.label+'</div>'
+      + '<div style="font-size:11px;color:var(--text3)">'+sec.desc+'</div></div>'
+      + '</div>';
+  });
+  body.innerHTML =
+    '<div class="modal-header"><div><div class="modal-title">Personalizar Dashboard</div>'
+    + '<div style="font-size:12px;color:var(--text3);margin-top:2px">Tocá para mostrar u ocultar. Se guarda en este dispositivo.</div></div>'
+    + '<button class="btn ghost" onclick="closeModal(\'m-dashcfg\')"><i class="ti ti-x"></i></button></div>'
+    + rows
+    + '<div class="modal-footer"><button class="btn primary" onclick="closeModal(\'m-dashcfg\')"><i class="ti ti-check"></i> Listo</button></div>';
+}
+
+function openDashConfig(){
+  renderDashConfigBody();
+  document.getElementById('m-dashcfg').classList.add('open');
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  NOTAS RÁPIDAS — pendientes del profe, sincronizados entre dispositivos
+// ══════════════════════════════════════════════════════════════════════
+
+function quickNotesCardHtml(){
+  const notes = db.quickNotes||[];
+  let items='';
+  notes.forEach(n=>{
+    items += '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;background:var(--bg3);margin-bottom:6px">'
+      + '<div onclick="toggleQuickNote(\''+n.id+'\')" style="width:20px;height:20px;border-radius:6px;border:2px solid '+(n.done?'var(--green)':'var(--border2)')+';background:'+(n.done?'var(--green)':'transparent')+';cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">'
+      + (n.done?'<i class="ti ti-check" style="color:#fff;font-size:12px"></i>':'')+'</div>'
+      + '<span style="flex:1;font-size:13px;color:'+(n.done?'var(--text3)':'var(--text)')+';'+(n.done?'text-decoration:line-through':'')+'">'+n.text+'</span>'
+      + '<button class="btn xs" onclick="deleteQuickNote(\''+n.id+'\')" style="flex-shrink:0"><i class="ti ti-x"></i></button>'
+      + '</div>';
+  });
+  return '<div class="card" style="margin-bottom:14px">'
+    + '<div class="card-title">📌 Pendientes del profe</div>'
+    + '<div style="display:flex;gap:8px;margin:4px 0 12px">'
+    + '<input id="qn-input" placeholder="Agregar pendiente y Enter…" onkeydown="if(event.key===\'Enter\')addQuickNote()" style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px">'
+    + '<button class="btn sm primary" onclick="addQuickNote()"><i class="ti ti-plus"></i></button>'
+    + '</div>'
+    + (notes.length? items : '<div style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Sin pendientes. ¡Todo al día! ✨</div>')
+    + '</div>';
+}
+
+function addQuickNote(){
+  const inp = document.getElementById('qn-input');
+  const text = (inp?.value||'').trim();
+  if(!text) return;
+  if(!db.quickNotes) db.quickNotes=[];
+  db.quickNotes.unshift({id:uid(), text, done:false});
+  scheduleSave();
+  renderDashboard();
+}
+
+function toggleQuickNote(id){
+  const n = (db.quickNotes||[]).find(x=>x.id===id);
+  if(n){ n.done=!n.done; scheduleSave(); renderDashboard(); }
+}
+
+function deleteQuickNote(id){
+  db.quickNotes = (db.quickNotes||[]).filter(x=>x.id!==id);
+  scheduleSave();
+  renderDashboard();
+}
+
+// ── Cumpleaños del mes (Dashboard) ────────────────────────────────────
+function birthdaysMonthCardHtml(){
+  try{
+    const now = new Date();
+    const mes = now.getMonth();
+    const hoy = now.getDate();
+    const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const list = db.students
+      .filter(s=>s.dob && parseDOB(s.dob).getMonth()===mes)
+      .map(s=>{
+        const dob = parseDOB(s.dob);
+        const dia = dob.getDate();
+        let age = now.getFullYear()-dob.getFullYear();
+        return {s, dia, cumple: age, pasado: dia<hoy, esHoy: dia===hoy};
+      })
+      .sort((a,b)=>a.dia-b.dia);
+    if(!list.length) return '';
+    let rows='';
+    list.forEach(b=>{
+      const estado = b.esHoy
+        ? '<span class="badge gold">🎉 ¡HOY!</span>'
+        : b.pasado
+          ? '<span class="badge gray">ya pasó</span>'
+          : '<span style="color:var(--accent);font-weight:600">en '+(b.dia-hoy)+' día'+((b.dia-hoy)===1?'':'s')+'</span>';
+      rows += '<div class="bday-item" style="'+(b.pasado&&!b.esHoy?'opacity:0.5':'')+'">'
+        + avatar(b.s.name,28,b.s.gender||'')
+        + '<div><strong>'+b.s.name+'</strong> — '+b.dia+' de '+MESES[mes]
+        + ' · cumple <strong>'+b.cumple+' años</strong> · '+estado
+        + ' <span class="badge gold">'+getGroup(b.s.groupId).name+'</span></div></div>';
+    });
+    return '<div class="card" style="margin-bottom:14px;border-color:var(--accent-border)">'
+      + '<div class="card-title">🎂 Cumpleaños de '+MESES[mes]+' ('+list.length+')</div>'
+      + rows + '</div>';
+  }catch(e){ console.error('birthdays:', e); return ''; }
+}
+
 function renderDashboard(){
   const month=curMonth();
   const total=db.students.length;
@@ -1851,8 +2916,10 @@ function renderDashboard(){
         <div class="page-title">Dashboard</div>
         <div class="page-subtitle">${monthName(month)} ${month.split('-')[0]} · Cambridge Institute</div>
       </div>
-      <div style="font-size:12px;color:var(--text3);text-align:right">${total} alumnos · ${db.groups.length} grupos</div>
+      <div style="display:flex;align-items:center;gap:10px"><div style="font-size:12px;color:var(--text3);text-align:right">${total} alumnos · ${db.groups.length} grupos</div><button class="btn sm" onclick="openDashConfig()" title="Personalizar dashboard"><i class="ti ti-adjustments-horizontal"></i></button></div>
     </div>
+
+    ${dashShow('metrics')?`${dashShow('quicknotes')?quickNotesCardHtml():''}
 
     <!-- TOP METRICS -->
     <div class="metric-grid">
@@ -1880,7 +2947,8 @@ function renderDashboard(){
       </div>
     </div>
 
-    <!-- METHODS -->
+    `:''}
+    ${dashShow('methods')?`<!-- METHODS -->
     <div class="method-row">
       <div class="method-box"><div class="method-label">Transferencia</div><div class="method-val" style="color:var(--blue)">${fm(trans)}</div></div>
       <div class="method-box"><div class="method-label">Efectivo</div><div class="method-val" style="color:var(--green)">${fm(efect)}</div></div>
@@ -1888,7 +2956,8 @@ function renderDashboard(){
       <div class="method-box"><div class="method-label">Falta cobrar</div><div class="method-val" style="color:var(--red)">${fm(falta)}</div></div>
     </div>
 
-    <!-- CHARTS ROW -->
+    `:''}
+    ${dashShow('charts')?`<!-- CHARTS ROW -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
 
       <!-- Revenue bar chart -->
@@ -1920,7 +2989,8 @@ function renderDashboard(){
       </div>
     </div>
 
-    <!-- SECOND ROW -->
+    `:''}
+    ${dashShow('groups')?`<!-- SECOND ROW -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
 
       <!-- Weekly absences -->
@@ -1951,25 +3021,26 @@ function renderDashboard(){
       </div>
     </div>
 
+    `:''}
     <!-- BIRTHDAYS -->
-    ${soon.length?`<div class="card" style="margin-bottom:14px;border-color:var(--accent-border)">
-      <div class="card-title">🎂 Cumpleaños próximos (7 días)</div>
-      ${soon.map(s=>{const dob=parseDOB(s.dob);const next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);const diff=Math.ceil((next-now)/86400000);let age=now.getFullYear()-dob.getFullYear();if(!(now.getMonth()>dob.getMonth()||(now.getMonth()===dob.getMonth()&&now.getDate()>=dob.getDate())))age--;return`<div class="bday-item">${avatar(s.name,28,s.gender||'')}<div><strong>${s.name}</strong> — ${next.toLocaleDateString('es-AR')} · cumple <strong>${age+1} años</strong> · en <span style="color:var(--accent)">${diff} días</span> <span class="badge gold">${getGroup(s.groupId).name}</span></div></div>`;}).join('')}
-    </div>`:''}
+    ${dashShow('birthdays')?birthdaysMonthCardHtml():''}
 
-    <!-- PENDING -->
+    ${dashShow('pending')?`<!-- PENDING -->
     ${pendSt.length?`<div class="card">
       <div class="card-title">⏳ Pagos pendientes</div>
       <div class="table-wrap"><table><thead><tr><th>Alumno</th><th>Grupo</th><th>Monto</th></tr></thead><tbody>
       ${pendSt.slice(0,8).map(s=>{const g=getGroup(s.groupId);const f=getFam(s.id);return`<tr><td><div style="display:flex;align-items:center;gap:7px">${avatar(s.name,26,s.gender||'')}<span>${s.name}</span></div></td><td><span class="badge gold">${g.name}</span></td><td style="font-family:var(--font-mono);font-size:12px">${f?fm(f.total)+' fam':fm(g.fee)}</td></tr>`;}).join('')}
       </tbody></table></div>
       ${pendSt.length>8?`<div style="font-size:12px;color:var(--text3);margin-top:8px;text-align:center">+${pendSt.length-8} más — ver en Pagos</div>`:''}
-    </div>`:`<div class="card"><div class="empty"><i class="ti ti-circle-check"></i>¡Todos pagaron este mes! 🎉</div></div>`}`;
+    </div>`:`<div class="card"><div class="empty"><i class="ti ti-circle-check"></i>¡Todos pagaron este mes! 🎉</div></div>`}`:''}
+    `;
 
   // Draw charts after render
   requestAnimationFrame(()=>{
-    drawRevenueChart(revenueData);
-    drawDonutChart(paidC, pending);
+    if(dashShow('charts')){
+      drawRevenueChart(revenueData);
+      drawDonutChart(paidC, pending);
+    }
   });
 }
 
@@ -2083,6 +3154,7 @@ function editGroup(id){
   document.getElementById('mg-id').value=id;
   document.getElementById('mg-name').value=g.name;
   document.getElementById('mg-fee').value=g.fee;
+  document.getElementById('mg-examfee').value=g.examFee||'';
   document.getElementById('mg-days').value=(g.days||[]).map(d=>DAY_SHORT[d]).join(',');
   document.getElementById('mg-time').value=g.time||'';
   document.getElementById('mg-title').textContent='Editar grupo';
@@ -2093,12 +3165,13 @@ function saveGroup(){
   const id=document.getElementById('mg-id').value;
   const name=document.getElementById('mg-name').value.trim();
   const fee=Number(document.getElementById('mg-fee').value);
+  const examFee=Number(document.getElementById('mg-examfee').value)||0;
   if(!name||!fee)return toast('Completá nombre y arancel','error');
   const dm={dom:0,lun:1,mar:2,'mié':3,mie:3,jue:4,vie:5,'sáb':6,sab:6};
   const days=document.getElementById('mg-days').value.split(/[,\s]+/).map(d=>dm[d.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').slice(0,3)]).filter(d=>d!==undefined);
   const time=document.getElementById('mg-time').value.trim();
-  if(id){const g=db.groups.find(x=>x.id===id);g.name=name;g.fee=fee;g.days=days;g.time=time;}
-  else db.groups.push({id:uid(),name,fee,days,time});
+  if(id){const g=db.groups.find(x=>x.id===id);g.name=name;g.fee=fee;g.examFee=examFee;g.days=days;g.time=time;}
+  else db.groups.push({id:uid(),name,fee,examFee,days,time});
   document.getElementById('mg-id').value='';
   scheduleSave();closeModal('m-group');renderGroups();toast('Grupo guardado');
 }
@@ -2106,7 +3179,7 @@ function saveGroup(){
 /* ---- STUDENTS ---- */
 function openAddStudent(groupId){
   document.getElementById('ms-id').value='';
-  ['ms-name','ms-dob','ms-school','ms-dad-phone','ms-dad-name','ms-mom-phone','ms-mom-name','ms-notes'].forEach(id=>document.getElementById(id).value='');
+  ['ms-name','ms-dob','ms-school','ms-dad-phone','ms-dad-name','ms-mom-phone','ms-mom-name','ms-grade','ms-shift','ms-email','ms-address','ms-health','ms-notes'].forEach(id=>document.getElementById(id).value='');
   const sel=document.getElementById('ms-group');
   sel.innerHTML=db.groups.map(g=>`<option value="${g.id}"${g.id===groupId?' selected':''}>${g.name}</option>`).join('');
   
@@ -2128,6 +3201,11 @@ function editStudent(id){
   document.getElementById('ms-dad-name').value=s.dadName||'';
   document.getElementById('ms-mom-phone').value=s.momPhone||'';
   document.getElementById('ms-mom-name').value=s.momName||'';
+  document.getElementById('ms-grade').value=s.grade||'';
+  document.getElementById('ms-shift').value=s.shift||'';
+  document.getElementById('ms-email').value=s.email||'';
+  document.getElementById('ms-address').value=s.address||'';
+  document.getElementById('ms-health').value=s.health||'';
   document.getElementById('ms-notes').value=s.notes||'';
   document.getElementById('ms-gender').value=s.gender||'';
   const sel=document.getElementById('ms-group');
@@ -2148,7 +3226,7 @@ function saveStudent(){
     if(!db.schools)db.schools=[];
     db.schools.push(school);
   }
-  const data={name,groupId:document.getElementById('ms-group').value,dob:document.getElementById('ms-dob').value,school,gender:document.getElementById('ms-gender').value,dadPhone:document.getElementById('ms-dad-phone').value.trim(),dadName:document.getElementById('ms-dad-name').value.trim(),momPhone:document.getElementById('ms-mom-phone').value.trim(),momName:document.getElementById('ms-mom-name').value.trim(),notes:document.getElementById('ms-notes').value.trim()};
+  const data={name,groupId:document.getElementById('ms-group').value,dob:document.getElementById('ms-dob').value,school,gender:document.getElementById('ms-gender').value,dadPhone:document.getElementById('ms-dad-phone').value.trim(),dadName:document.getElementById('ms-dad-name').value.trim(),momPhone:document.getElementById('ms-mom-phone').value.trim(),momName:document.getElementById('ms-mom-name').value.trim(),grade:document.getElementById('ms-grade').value.trim(),shift:document.getElementById('ms-shift').value,email:document.getElementById('ms-email').value.trim(),address:document.getElementById('ms-address').value.trim(),health:document.getElementById('ms-health').value.trim(),notes:document.getElementById('ms-notes').value.trim()};
   if(id)Object.assign(db.students.find(x=>x.id===id),data);
   else db.students.push({id:uid(),...data});
   scheduleSave();closeModal('m-student');
@@ -2168,6 +3246,130 @@ async function deleteStudent(id){
   }catch(e){
     setSyncStatus('error','Error: '+e.message);
     toast('Error al guardar: '+e.message,'error');
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  INFORME POR ALUMNO — imprimible, para reuniones con padres
+// ══════════════════════════════════════════════════════════════════════
+
+function reportClassDates(g){
+  // Fechas de clase del grupo desde el inicio del ciclo hasta hoy (dictadas)
+  if(!g || !g.days || !g.days.length) return [];
+  const dates=[];
+  const start=new Date(CYCLE_MONDAY+'T12:00:00');
+  const today=new Date(); today.setHours(23,59,59,0);
+  const cur=new Date(start);
+  while(cur<=today){
+    if(g.days.includes(cur.getDay())) dates.push(new Date(cur));
+    cur.setDate(cur.getDate()+1);
+  }
+  return dates;
+}
+
+function openStudentReport(id){
+  try{
+    const s = db.students.find(x=>x.id===id);
+    if(!s) return;
+    const g = getGroup(s.groupId);
+    const now = new Date();
+    const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+    // Edad
+    let edad='';
+    if(s.dob){
+      const dob=parseDOB(s.dob);
+      let a=now.getFullYear()-dob.getFullYear();
+      if(!(now.getMonth()>dob.getMonth()||(now.getMonth()===dob.getMonth()&&now.getDate()>=dob.getDate())))a--;
+      edad = a+' años';
+    }
+
+    // Asistencia: clases dictadas (menos canceladas) y faltas
+    const dictadas = reportClassDates(g).filter(d=>{
+      const mk=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      const noteKey=g.id+'-'+mk+'-'+d.getDate();
+      return (db.dayNotes[mk]||{})[noteKey]!=='Cancelada';
+    }).length;
+    const faltas = Object.entries(db.attendance[s.groupId]||{}).reduce((total,[mk,students])=>{
+      const recs=students[s.id]||{};
+      return total+Object.values(recs).filter(v=>v==='A').length;
+    },0);
+    const presentes = Math.max(0, dictadas-faltas);
+    const pctAsis = dictadas>0 ? Math.round(presentes/dictadas*100) : null;
+
+    // Notas por trimestre y materia
+    const grades=(db.grades[s.groupId]||{})[s.id]||{};
+    let notasHtml='';
+    [1,2,3].forEach(tri=>{
+      const triData=grades[tri]||{};
+      let filas=''; const proms=[];
+      GRADE_SUBJECTS.forEach(catObj=>{
+        filas += '<tr><td colspan="2" style="padding:6px 10px;background:#f3efe6;font-weight:700;font-size:11px;letter-spacing:0.05em">'+catObj.cat+'</td></tr>';
+        catObj.items.forEach(subj=>{
+          const entries=(triData[subj]||[]);
+          const nums=entries.filter(e=>e.score!=='A').map(e=>Number(e.score));
+          const ausentes=entries.length-nums.length;
+          let val='—';
+          if(nums.length){
+            const avg=nums.reduce((a,b)=>a+b,0)/nums.length;
+            proms.push(avg);
+            val=avg.toFixed(1);
+          } else if(ausentes>0){ val='Ausente'; }
+          filas += '<tr><td style="padding:5px 10px 5px 22px;border-bottom:1px solid #e8e2d4">'+subj+'</td>'
+            + '<td style="padding:5px 10px;border-bottom:1px solid #e8e2d4;text-align:center;font-weight:600">'+val+'</td></tr>';
+        });
+      });
+      const promTri = proms.length ? (proms.reduce((a,b)=>a+b,0)/proms.length).toFixed(1) : null;
+      if(proms.length || Object.keys(triData).length){
+        notasHtml += '<h3 style="margin:18px 0 6px;font-size:13px">Trimestre '+tri+(promTri?' — Promedio: '+promTri:'')+'</h3>'
+          + '<table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #e0d9c8">'+filas+'</table>';
+      }
+    });
+    if(!notasHtml) notasHtml='<p style="color:#999;font-size:12px">Sin notas cargadas todavía.</p>';
+
+    const obs = (s.notes||'').trim();
+
+    const reportHtml = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe — '+s.name+'</title>'
+      + '<style>body{font-family:Georgia,serif;color:#2a2418;max-width:720px;margin:24px auto;padding:0 24px;line-height:1.5}'
+      + 'h1{font-size:21px;margin:0}h2{font-size:15px;border-bottom:2px solid #c9a84c;padding-bottom:4px;margin:22px 0 10px}'
+      + '.head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px double #c9a84c;padding-bottom:10px}'
+      + '.meta{font-size:12px;color:#777}.datos{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;margin-top:8px}'
+      + '.stat{display:inline-block;margin-right:26px;font-size:13px}.stat b{font-size:19px;display:block}'
+      + '.obs-lines{border-bottom:1px solid #ccc;height:26px}'
+      + '@media print{body{margin:8mm auto}}</style></head><body>'
+      + '<div class="head"><div><h1>Cambridge Institute</h1><div class="meta">Informe de alumno · Ciclo 2026</div></div>'
+      + '<div class="meta">'+now.getDate()+' de '+MESES[now.getMonth()]+' de '+now.getFullYear()+'</div></div>'
+      + '<h2>Datos</h2><div class="datos">'
+      + '<div><b>Alumno:</b> '+s.name+'</div>'
+      + (edad?'<div><b>Edad:</b> '+edad+'</div>':'')
+      + (s.grade?'<div><b>Colegio:</b> '+(s.school||'')+' — '+s.grade+'</div>':(s.school?'<div><b>Colegio:</b> '+s.school+'</div>':''))
+      + '<div><b>Grupo:</b> '+(g.name||'—')+'</div>'
+      + '<div><b>Horario:</b> '+(g.time||'—')+'</div>'
+      + '</div>'
+      + '<h2>Asistencia</h2>'
+      + '<div><span class="stat"><b>'+dictadas+'</b>Clases dictadas</span>'
+      + '<span class="stat"><b>'+faltas+'</b>Faltas</span>'
+      + (pctAsis!==null?'<span class="stat"><b>'+pctAsis+'%</b>Asistencia</span>':'')
+      + '</div>'
+      + '<h2>Calificaciones</h2>'+notasHtml
+      + '<h2>Observaciones</h2>'
+      + (obs?'<p style="font-size:13px;white-space:pre-wrap">'+obs.replace(/</g,'&lt;')+'</p>':'')
+      + '<div class="obs-lines"></div><div class="obs-lines"></div><div class="obs-lines"></div>'
+      + '<div style="margin-top:50px;display:flex;justify-content:space-between;font-size:12px;color:#777">'
+      + '<div style="border-top:1px solid #999;padding-top:4px;width:200px;text-align:center">Firma del profesor</div>'
+      + '<div style="border-top:1px solid #999;padding-top:4px;width:200px;text-align:center">Firma del padre/madre</div>'
+      + '</div>'
+      + '<scr'+'ipt>window.onload=function(){window.print();}</scr'+'ipt>'
+      + '</body></html>';
+
+    const win = window.open('', '_blank');
+    if(!win){ toast('Permití las ventanas emergentes para ver el informe','error'); return; }
+    win.document.write(reportHtml);
+    win.document.close();
+  }catch(e){
+    console.error('openStudentReport:', e);
+    toast('Error al generar el informe: '+e.message,'error');
   }
 }
 
@@ -2240,7 +3442,10 @@ function showProfile(id){
     <div style="font-size:13px;line-height:2">
       ${s.dadName||s.dadPhone?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="color:var(--text3);min-width:60px">Papá</span><span>${s.dadName||''}</span>${s.dadPhone?`<span style="color:var(--text2)">${s.dadPhone}</span>`:''}</div>`:''}
       ${s.momName||s.momPhone?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="color:var(--text3);min-width:60px">Mamá</span><span>${s.momName||''}</span>${s.momPhone?`<span style="color:var(--text2)">${s.momPhone}</span>`:''}</div>`:''}
-      ${s.school?`<div><span style="color:var(--text3)">Colegio &nbsp;</span>${s.school}</div>`:''}
+      ${s.school?`<div><span style="color:var(--text3)">Colegio &nbsp;</span>${s.school}${s.grade?` · ${s.grade}`:''}${s.shift?` (${s.shift})`:''}</div>`:''}
+      ${s.email?`<div><span style="color:var(--text3)">Email &nbsp;</span>${s.email}</div>`:''}
+      ${s.address?`<div><span style="color:var(--text3)">Dirección &nbsp;</span>${s.address}</div>`:''}
+      ${s.health?`<div style="color:var(--amber)"><i class="ti ti-heartbeat"></i> ${s.health}</div>`:''}
     </div>
     ${s.notes?`<div class="sep"></div><div style="font-size:13px;color:var(--text2)">${s.notes}</div>`:''}
 
@@ -2260,6 +3465,7 @@ function showProfile(id){
     ${myPays.length>8?`<div style="font-size:12px;color:var(--text3);margin-top:6px">+${myPays.length-8} más</div>`:''}`}
     <div style="margin-top:14px;display:flex;gap:8px">
       <button class="btn sm" onclick="closeModal('m-profile');editStudent('${id}')"><i class="ti ti-edit"></i> Editar</button>
+      <button class="btn sm" onclick="openStudentReport('${id}')" style="color:var(--blue)"><i class="ti ti-file-text"></i> Informe</button>
       ${!paid?`<button class="btn sm primary" onclick="closeModal('m-profile');nav('payments',null)"><i class="ti ti-credit-card"></i> Ir a pagos</button>`:''}
     </div>`;
   openModal('m-profile');
@@ -2340,9 +3546,9 @@ function renderStudents(){
 }
 
 /* ---- PAYMENTS ---- */
-function renderPayments(){
+function renderPayments(forceMonth){
   const pm=document.getElementById('pay-month-input');
-  const month=pm?pm.value||curMonth():curMonth();
+  const month = forceMonth || (pm && pm.value ? pm.value : curMonth());
   const activeGroupChip=document.querySelector('#pay-chips .chip.active');
   const gid=activeGroupChip?activeGroupChip.dataset.gid:'';
   const activeMethodChip=document.querySelector('#pay-method-chips .chip.active');
@@ -2367,7 +3573,7 @@ function renderPayments(){
   document.getElementById('page-payments').innerHTML=`
     <div class="page-header">
       <div><div class="page-title">Pagos</div><div class="page-subtitle">${paidC} pagados · ${pending} pendientes · ${students.length} mostrados</div></div>
-      <div class="page-actions"><input type="month" id="pay-month-input" value="${month}" onchange="renderPayments()" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none"></div>
+      <div class="page-actions"><input type="month" id="pay-month-input" value="${month}" onchange="renderPayments(this.value)" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none"></div>
     </div>
     <div class="chips" id="pay-chips" style="margin-bottom:6px">
       <span class="chip ${!gid?'active':''}" data-gid="" onclick="groupChipClick(this)">Todos los grupos</span>
@@ -2391,11 +3597,11 @@ function renderPayments(){
         <td><div style="display:flex;align-items:center;gap:8px">${avatar(s.name,28,s.gender||'')}<span>${s.name}</span>${f?`<span class="badge gold" style="font-size:10px">${f.name}</span>`:''}</div></td>
         <td><span class="badge gold">${g.name}</span></td>
         <td style="font-family:var(--font-mono);font-size:12px">${f?fm(f.total)+' fam':fm(g.fee)}</td>
-        <td><span class="badge ${paid?'green':'red'}">${paid?'Pagó':'Pendiente'}</span></td>
+        <td>${pay&&pay.partial?`<span class="badge amber">Parcial</span>`:`<span class="badge ${paid?'green':'red'}">${paid?'Pagó':'Pendiente'}</span>`}${pay&&pay.partial?`<div style="font-size:11px;color:var(--amber);margin-top:2px">Pagó ${fm(pay.amount)} · debe ${fm((pay.total||0)-pay.amount)}</div>`:''}</td>
         <td>${pay?`<span class="badge ${pay.method==='Transferencia'?'blue':pay.method==='Efectivo'?'green':'amber'}">${pay.method}</span>`:''}</td>
         <td style="font-size:12px;color:var(--text2)">${pay?fdate(pay.date):''}</td>
         <td><div class="td-actions">
-          ${paid?`<button class="btn xs danger" onclick="unmarkPay('${s.id}','${month}')"><i class="ti ti-x"></i></button>`:
+          ${paid?`${pay.partial?`<button class="btn xs primary" onclick="openPayModal('${s.id}','${month}','${(pay.total||0)-pay.amount}')" title="Cobrar saldo restante"><i class="ti ti-plus"></i> Saldo</button>`:''}<button class="btn xs danger" onclick="unmarkPay('${s.id}','${month}')"><i class="ti ti-x"></i></button>`:
           `<button class="btn xs primary" onclick="openPayModal('${s.id}','${month}','${g.fee}')"><i class="ti ti-check"></i> Marcar</button>`}
         </div></td>
       </tr>`;
@@ -2425,8 +3631,17 @@ function openPayModal(sid,month,fee){
   const s=db.students.find(x=>x.id===sid);
   document.getElementById('mpay-sid').value=sid;
   document.getElementById('mpay-month').value=month;
-  document.getElementById('mpay-amount').value=fam?fam.total:fee;
+  // Conceptos extra no son familiares
+  const extra=isExtraConcept(month);
+  const expected = (fam && !extra) ? fam.total : fee;
+  window._payExpected = expected;
+  document.getElementById('mpay-amount').value=expected;
   document.getElementById('mpay-notes').value='';
+  // Reset parcial
+  const pc=document.getElementById('mpay-partial'); if(pc)pc.checked=false;
+  const tw=document.getElementById('mpay-total-wrap'); if(tw)tw.style.display='none';
+  const tt=document.getElementById('mpay-total'); if(tt)tt.value='';
+  const hh=document.getElementById('mpay-hint'); if(hh)hh.style.display='none';
   if(fam){
     const members=fam.memberIds.map(id=>db.students.find(x=>x.id===id)).filter(Boolean).map(x=>x.name.split(' ')[0]).join(', ');
     document.getElementById('mpay-title').textContent=`Familia ${fam.name} — ${members}`;
@@ -2436,6 +3651,59 @@ function openPayModal(sid,month,fee){
   openModal('m-pay');
 }
 
+
+// ══════════════════════════════════════════════════════════════════════
+//  CONCEPTOS DE PAGO EXTRA (micro, examen final) + PAGO PARCIAL
+//  Se guardan como "meses" especiales: extra-micro / extra-examen.
+//  Reutilizan toda la infraestructura de pagos existente.
+// ══════════════════════════════════════════════════════════════════════
+
+const EXTRA_CONCEPTS = [
+  {key:'extra-micro',  label:'Micro',         icon:'bus'},
+  {key:'extra-examen', label:'Examen final',  icon:'certificate-2'},
+];
+
+function isExtraConcept(month){ return (month||'').startsWith('extra-'); }
+
+function extraLabel(month){
+  const e = EXTRA_CONCEPTS.find(x=>x.key===month);
+  return e ? e.label : month;
+}
+
+// Toggle del campo "total" al marcar pago parcial
+function togglePartialField(){
+  const on = document.getElementById('mpay-partial')?.checked;
+  const wrap = document.getElementById('mpay-total-wrap');
+  if(wrap) wrap.style.display = on ? '' : 'none';
+  if(on){
+    const tot = document.getElementById('mpay-total');
+    const amt = document.getElementById('mpay-amount');
+    // Sugerir el total = lo que se esperaba cobrar
+    if(tot && !tot.value && window._payExpected) tot.value = window._payExpected;
+  }
+  updatePartialHint();
+}
+
+function updatePartialHint(){
+  const hint = document.getElementById('mpay-hint');
+  if(!hint) return;
+  const partial = document.getElementById('mpay-partial')?.checked;
+  if(!partial){ hint.style.display='none'; return; }
+  const amount = Number(document.getElementById('mpay-amount')?.value)||0;
+  const total = Number(document.getElementById('mpay-total')?.value)||0;
+  const saldo = total - amount;
+  if(total>0 && saldo>0){
+    hint.style.display='';
+    hint.textContent = 'Queda un saldo pendiente de '+fm(saldo)+'.';
+  } else if(total>0 && saldo<=0){
+    hint.style.display='';
+    hint.style.color='var(--green)';
+    hint.textContent = '✓ Con este monto queda saldado.';
+  } else {
+    hint.style.display='none';
+  }
+}
+
 function confirmPay(){
   const sid=document.getElementById('mpay-sid').value;
   const month=document.getElementById('mpay-month').value;
@@ -2443,18 +3711,22 @@ function confirmPay(){
   const method=document.getElementById('mpay-method').value;
   const notes=document.getElementById('mpay-notes').value.trim();
   if(!amount)return toast('Ingresá el monto','error');
+  // Pago parcial: guardar total esperado y saldo
+  const isPartial=document.getElementById('mpay-partial')?.checked;
+  const total=Number(document.getElementById('mpay-total')?.value)||0;
+  const partialData = (isPartial && total>amount) ? {partial:true, total} : {};
   const fam=getFam(sid);
-  if(fam){
-    // Mark ALL family members paid; amount only on first
+  // Conceptos extra (micro/examen): NO son familiares, se cobran por alumno
+  if(fam && !isExtraConcept(month)){
     fam.memberIds.forEach((mid,i)=>{
       db.payments=db.payments.filter(p=>!(p.studentId===mid&&p.month===month));
-      db.payments.push({id:uid(),studentId:mid,month,amount:i===0?amount:0,method,date:new Date().toISOString(),notes:i===0?notes:'pago familiar',familyId:fam.id});
+      db.payments.push({id:uid(),studentId:mid,month,amount:i===0?amount:0,method,date:new Date().toISOString(),notes:i===0?notes:'pago familiar',familyId:fam.id, ...(i===0?partialData:{})});
     });
     toast(`Familia ${fam.name}: ${fam.memberIds.length} alumnos marcados`);
   } else {
     db.payments=db.payments.filter(p=>!(p.studentId===sid&&p.month===month));
-    db.payments.push({id:uid(),studentId:sid,month,amount,method,date:new Date().toISOString(),notes});
-    toast('Pago registrado');
+    db.payments.push({id:uid(),studentId:sid,month,amount,method,date:new Date().toISOString(),notes, ...partialData});
+    toast(partialData.partial?'Pago parcial registrado':'Pago registrado');
   }
   scheduleSave();closeModal('m-pay');refreshCurrentPage();
 }
@@ -3750,7 +5022,7 @@ function markAllBoletin(gid, tri, mark){
   renderBoletin();
 }
 
-function renderSettings(){
+function renderSettingsBase(){
   const s=getSettings();
   const theme=document.documentElement.getAttribute('data-theme');
   const h=new Date().getHours();
@@ -3846,24 +5118,7 @@ function setTheme(theme){
 }
 
 
-async function restoreLocalBackup(slot){
-  try{
-    const raw=localStorage.getItem('cambridge_backup_'+slot);
-    if(!raw){toast('No hay backup en ese slot','error');return;}
-    const snap=JSON.parse(raw);
-    if(!snap.data){toast('Backup inválido','error');return;}
-    const d=new Date(snap.ts);
-    const pCount=(snap.data.payments||[]).filter(p=>p.amount>0).length;
-    const sCount=(snap.data.students||[]).length;
-    if(!await confirmDialog(`Restaurar backup del ${d.toLocaleString('es-AR')}\n${sCount} alumnos · ${pCount} pagos. Esto sobreescribirá los datos actuales.`,{title:'Restaurar backup',icon:'🛡️',okLabel:'Restaurar',okClass:'primary'}))return;
-    // Restore
-    Object.assign(db, snap.data);
-    saveToSupabase().then(()=>{
-      toast('✅ Datos restaurados correctamente');
-      refreshCurrentPage();
-    });
-  }catch(e){toast('Error al restaurar: '+e.message,'error');}
-}
+
 
 async function restoreFamilies(){
   try{
@@ -3893,36 +5148,7 @@ async function restoreFamilies(){
   }
 }
 
-function showAllBackups(){
-  let html='<div style="padding:4px">';
-  html+='<div style="font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:16px">Backups locales disponibles</div>';
-  [3,2,1].forEach((slot,i)=>{
-    try{
-      const raw=localStorage.getItem('cambridge_backup_'+slot);
-      if(!raw){html+=`<div style="padding:12px;color:var(--text3);font-size:13px">Slot ${slot}: vacío</div>`;return;}
-      const snap=JSON.parse(raw);
-      const d=new Date(snap.ts);
-      const pCount=(snap.data?.payments||[]).filter(p=>p.amount>0).length;
-      const sCount=(snap.data?.students||[]).length;
-      const jCount=Object.values(snap.data?.journal||{}).reduce((a,g)=>a+Object.keys(g).length,0);
-      html+=`<div style="padding:12px 14px;background:var(--bg3);border-radius:var(--radius);margin-bottom:8px;border:1px solid var(--border)">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-          <div>
-            <div style="font-size:13px;font-weight:600">${i===0?'⭐ Más reciente':'Backup '+slot}</div>
-            <div style="font-size:12px;color:var(--text3);margin-top:2px">${d.toLocaleString('es-AR')}</div>
-            <div style="font-size:12px;color:var(--text2);margin-top:3px">${sCount} alumnos · ${pCount} pagos · ${jCount} entradas del diario</div>
-          </div>
-          <button class="btn sm primary" onclick="restoreLocalBackup(${slot});closeModal('m-profile')">
-            <i class="ti ti-history"></i> Restaurar este
-          </button>
-        </div>
-      </div>`;
-    }catch(e){html+=`<div style="padding:12px;color:var(--red);font-size:13px">Slot ${slot}: error al leer</div>`;}
-  });
-  html+='</div>';
-  document.getElementById('profile-content').innerHTML=html;
-  openModal('m-profile');
-}
+
 
 function recoverSchools(){
   // Gather schools already in students
@@ -4700,6 +5926,7 @@ window.addEventListener('beforeunload', e=>{
 async function init(){
   autoTheme();
   initSidebar();
+  try{refreshNavUI();}catch(e){console.error('refreshNavUI:',e);}
   // Show app after max 8s even if Supabase is slow
   const showApp=()=>{
     const l=document.getElementById('loading');
